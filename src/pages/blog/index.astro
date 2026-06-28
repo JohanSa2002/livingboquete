@@ -1,0 +1,57 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { POSTS } from '../../data/data';
+---
+
+<Layout activeKey="blog" title="Blog · Boquete" titleEn="Blog · Boquete">
+
+  <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding:70px 26px 0">
+    <div style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:14px">
+      <span class="lang-es">Blog &amp; noticias</span><span class="lang-en" hidden>Blog &amp; news</span>
+    </div>
+    <h1 style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(40px,6vw,72px);line-height:.98;letter-spacing:-.025em;margin:0 0 14px;color:#251D14">
+      <span class="lang-es">Historias de las tierras altas</span>
+      <span class="lang-en" hidden>Stories from the highlands</span>
+    </h1>
+    <p style="font-size:18px;color:#5A4F42;max-width:540px;margin:0 0 46px">
+      <span class="lang-es">Guías, cultura y novedades de la comunidad.</span>
+      <span class="lang-en" hidden>Guides, culture and community news.</span>
+    </p>
+  </section>
+
+  <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding:0 26px 96px">
+    <div class="cols-2" style="display:grid;grid-template-columns:1fr 1fr;gap:34px">
+      {POSTS.map(b => (
+        <a href={`/blog/${b.id}`} class="blog-card rv" style="cursor:pointer;background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:20px;overflow:hidden;text-decoration:none;color:inherit;display:block">
+          <div style="position:relative;aspect-ratio:16/8.6;overflow:hidden">
+            <img src={b.img} alt={b.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+          </div>
+          <div style="padding:24px 26px 28px">
+            <div style="display:flex;gap:10px;align-items:center;font-size:12.5px;color:#8A7D69;margin-bottom:11px">
+              <span style="color:#B95C36;font-weight:700">
+                <span class="lang-es">{b.cat.es}</span><span class="lang-en" hidden>{b.cat.en}</span>
+              </span>
+              <span>·</span>
+              <span><span class="lang-es">{b.date.es}</span><span class="lang-en" hidden>{b.date.en}</span></span>
+            </div>
+            <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:24px;line-height:1.16;margin:0 0 11px;color:#251D14">
+              <span class="lang-es">{b.title.es}</span><span class="lang-en" hidden>{b.title.en}</span>
+            </h3>
+            <p style="font-size:15px;line-height:1.58;color:#5A4F42;margin:0 0 16px">
+              <span class="lang-es">{b.excerpt.es}</span><span class="lang-en" hidden>{b.excerpt.en}</span>
+            </p>
+            <span style="color:#B95C36;font-weight:700;font-size:14px">
+              <span class="lang-es">Leer más</span><span class="lang-en" hidden>Read more</span> →
+            </span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .blog-card { transition: transform .25s, box-shadow .25s; }
+  .blog-card:hover { transform: translateY(-4px); box-shadow: 0 22px 40px -22px rgba(37,29,20,.4); }
+</style>

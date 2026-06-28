@@ -1,0 +1,86 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { POSTS } from '../../data/data';
+
+export function getStaticPaths() {
+  return POSTS.map(p => ({ params: { id: p.id }, props: { post: p } }));
+}
+
+const { post } = Astro.props;
+const related = POSTS.filter(p => p.id !== post.id).slice(0, 3);
+---
+
+<Layout activeKey="blog" title={`${post.title.es} · Boquete`} titleEn={`${post.title.en} · Boquete`}>
+
+  <!-- ARTICLE HEADER -->
+  <article class="pad-sec" style="max-width:760px;margin:0 auto;padding:60px 26px 20px">
+    <a href="/blog" style="display:inline-flex;align-items:center;gap:7px;color:#B95C36;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:22px">
+      ← <span class="lang-es">Volver al blog</span><span class="lang-en" hidden>Back to blog</span>
+    </a>
+    <div style="display:flex;gap:10px;align-items:center;font-size:13px;color:#8A7D69;margin-bottom:16px">
+      <span style="color:#B95C36;font-weight:700">
+        <span class="lang-es">{post.cat.es}</span><span class="lang-en" hidden>{post.cat.en}</span>
+      </span>
+      <span>·</span>
+      <span><span class="lang-es">Por</span><span class="lang-en" hidden>By</span> {post.author}</span>
+      <span>·</span>
+      <span><span class="lang-es">{post.date.es}</span><span class="lang-en" hidden>{post.date.en}</span></span>
+    </div>
+    <h1 style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(34px,5vw,52px);line-height:1.04;letter-spacing:-.02em;margin:0 0 22px;color:#251D14">
+      <span class="lang-es">{post.title.es}</span><span class="lang-en" hidden>{post.title.en}</span>
+    </h1>
+    <p style="font-family:'Spectral';font-style:italic;font-size:21px;line-height:1.5;color:#5A4F42;margin:0 0 30px">
+      <span class="lang-es">{post.excerpt.es}</span><span class="lang-en" hidden>{post.excerpt.en}</span>
+    </p>
+  </article>
+
+  <!-- HERO IMAGE -->
+  <div class="pad-sec" style="max-width:980px;margin:0 auto;padding:0 26px 14px">
+    <div style="position:relative;aspect-ratio:16/8;border-radius:20px;overflow:hidden">
+      <img src={post.img} alt={post.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <article class="pad-sec" style="max-width:760px;margin:0 auto;padding:34px 26px 0">
+    <div style="display:flex;flex-direction:column;gap:22px">
+      {post.body.es.map((para, i) => (
+        <p style="font-size:18px;line-height:1.75;color:#3D3328;margin:0">
+          <span class="lang-es">{para}</span>
+          <span class="lang-en" hidden>{post.body.en[i]}</span>
+        </p>
+      ))}
+    </div>
+    <div class="cols-2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:34px 0 10px">
+      {['-g1','-g2'].map(suf => (
+        <div style="position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden">
+          <img src={`https://picsum.photos/seed/${post.id}${suf}/800/600`} alt={post.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+        </div>
+      ))}
+    </div>
+  </article>
+
+  <!-- RELATED -->
+  <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:60px 26px 96px">
+    <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:26px;margin:0 0 24px;color:#251D14;letter-spacing:-.01em">
+      <span class="lang-es">Publicaciones relacionadas</span><span class="lang-en" hidden>Related posts</span>
+    </h3>
+    <div class="cols-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      {related.map(r => (
+        <a href={`/blog/${r.id}`} style="cursor:pointer;text-decoration:none;color:inherit">
+          <div style="position:relative;aspect-ratio:3/2;border-radius:14px;overflow:hidden;margin-bottom:13px">
+            <img src={r.img} alt={r.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+          </div>
+          <div style="font-size:12px;color:#B95C36;font-weight:700;margin-bottom:6px">
+            <span class="lang-es">{r.cat.es} · {r.date.es}</span>
+            <span class="lang-en" hidden>{r.cat.en} · {r.date.en}</span>
+          </div>
+          <h4 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:18px;line-height:1.2;margin:0;color:#251D14">
+            <span class="lang-es">{r.title.es}</span><span class="lang-en" hidden>{r.title.en}</span>
+          </h4>
+        </a>
+      ))}
+    </div>
+  </section>
+
+</Layout>

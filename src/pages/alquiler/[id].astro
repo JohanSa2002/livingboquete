@@ -1,0 +1,211 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { RENTALS, TYPE_LABELS, AMEN_LABELS } from '../../data/data';
+
+export function getStaticPaths() {
+  return RENTALS.map(p => ({ params: { id: p.id }, props: { stay: p } }));
+}
+
+const { stay } = Astro.props;
+---
+
+<Layout activeKey="stays" title={`${stay.name.es} · Boquete`} titleEn={`${stay.name.en} · Boquete`}>
+
+  <!-- GALLERY HERO -->
+  <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:54px 26px 0">
+    <a href="/alquiler" style="display:inline-flex;align-items:center;gap:7px;color:#B95C36;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:18px">
+      ← <span class="lang-es">Volver a alojamientos</span><span class="lang-en" hidden>Back to stays</span>
+    </a>
+    <h1 style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(32px,4.6vw,52px);line-height:1.02;letter-spacing:-.02em;margin:0 0 12px;color:#251D14">
+      <span class="lang-es">{stay.name.es}</span><span class="lang-en" hidden>{stay.name.en}</span>
+    </h1>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;font-size:15px;color:#5A4F42">
+      <span style="display:flex;align-items:center;gap:5px;font-weight:700;color:#251D14"><span style="color:#C8964A">★</span>{stay.rating.toFixed(1)}</span>
+      <span>·</span>
+      <span>{stay.reviews} <span class="lang-es">reseñas</span><span class="lang-en" hidden>reviews</span></span>
+      <span>·</span>
+      <span><span class="lang-es">{stay.loc.es}</span><span class="lang-en" hidden>{stay.loc.en}</span></span>
+    </div>
+
+    <!-- Photo grid -->
+    <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;aspect-ratio:2.4;border-radius:20px;overflow:hidden;margin-bottom:40px">
+      <div style="grid-row:1/3;position:relative">
+        <img src={stay.img} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+      </div>
+      {['-g1','-g2','-g3','-g4'].slice(0,4).map((suf, i) => (
+        <div style="position:relative">
+          <img src={`https://picsum.photos/seed/${stay.id}${suf}/600/400`} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:0 26px 40px">
+    <div class="split-2" style="display:grid;grid-template-columns:1.5fr 1fr;gap:48px;align-items:start">
+
+      <!-- Left: description + amenities + reviews -->
+      <div>
+        <p style="font-size:17px;line-height:1.72;color:#3D3328;margin:0 0 30px">
+          <span class="lang-es">{stay.desc.es}</span><span class="lang-en" hidden>{stay.desc.en}</span>
+        </p>
+
+        <!-- Amenities -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px">
+          <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
+            <span class="lang-es">Lo que incluye</span><span class="lang-en" hidden>What's included</span>
+          </h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            {stay.amen.map(key => (
+              <div style="display:flex;align-items:center;gap:10px;font-size:15px;color:#3D3328">
+                <span style="font-size:20px">{AMEN_LABELS[key]?.icon}</span>
+                <span class="lang-es">{AMEN_LABELS[key]?.es}</span>
+                <span class="lang-en" hidden>{AMEN_LABELS[key]?.en}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Host -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px;display:flex;align-items:center;gap:16px">
+          <div style="width:54px;height:54px;border-radius:50%;background:#2C3A2A;color:#C8964A;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;flex:none">{stay.host.name[0]}</div>
+          <div>
+            <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:18px;color:#251D14">{stay.host.name}</div>
+            <div style="font-size:14px;color:#8A7D69">
+              <span class="lang-es">{stay.host.line.es}</span><span class="lang-en" hidden>{stay.host.line.en}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviews -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px">
+          <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;margin:0 0 18px;color:#251D14">
+            <span class="lang-es">Reseñas</span><span class="lang-en" hidden>Reviews</span>
+          </h3>
+          <div style="display:flex;flex-direction:column;gap:18px">
+            {stay.reviewsList.map(rv => (
+              <div style="background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:16px;padding:20px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:38px;height:38px;border-radius:50%;background:#EFE7D6;color:#B95C36;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px">{rv.name[0]}</div>
+                    <div>
+                      <div style="font-weight:700;font-size:15px;color:#251D14">{rv.name}</div>
+                      <div style="font-size:12.5px;color:#8A7D69">
+                        <span class="lang-es">{rv.date.es}</span><span class="lang-en" hidden>{rv.date.en}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span style="font-weight:700;color:#C8964A">★ {rv.rating.toFixed(1)}</span>
+                </div>
+                <p style="font-size:15px;line-height:1.6;color:#3D3328;margin:0">
+                  <span class="lang-es">{rv.text.es}</span><span class="lang-en" hidden>{rv.text.en}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: booking card -->
+      <div style="position:sticky;top:92px">
+        <div style="background:#fff;border:1px solid rgba(37,29,20,.1);border-radius:20px;padding:28px;box-shadow:0 12px 30px -22px rgba(37,29,20,.5)">
+          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:20px">
+            <span style="font-family:'Bricolage Grotesque';font-weight:800;font-size:28px;color:#251D14">${stay.price}</span>
+            <span style="font-size:15px;color:#8A7D69">/ <span class="lang-es">noche</span><span class="lang-en" hidden>night</span></span>
+          </div>
+
+          <div id="book-form" style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(37,29,20,.18);border-radius:12px;overflow:hidden">
+              <label style="padding:12px;border-right:1px solid rgba(37,29,20,.18)">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
+                  <span class="lang-es">Llegada</span><span class="lang-en" hidden>Check-in</span>
+                </div>
+                <input id="book-in" type="date" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%" />
+              </label>
+              <label style="padding:12px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
+                  <span class="lang-es">Salida</span><span class="lang-en" hidden>Check-out</span>
+                </div>
+                <input id="book-out" type="date" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%" />
+              </label>
+            </div>
+            <div style="border:1px solid rgba(37,29,20,.18);border-radius:12px;padding:12px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
+                <span class="lang-es">Huéspedes</span><span class="lang-en" hidden>Guests</span>
+              </div>
+              <select id="book-guests" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%">
+                {Array.from({length: stay.guests}, (_, i) => <option value={i+1}>{i+1}</option>)}
+              </select>
+            </div>
+
+            <div id="book-total" style="display:none;background:#F7F1E6;border-radius:12px;padding:16px">
+              <div style="display:flex;justify-content:space-between;font-size:15px;color:#5A4F42;margin-bottom:8px">
+                <span id="nights-line"></span>
+                <span id="total-price"></span>
+              </div>
+            </div>
+
+            <button id="book-btn" style="cursor:pointer;background:#B95C36;color:#F7F1E6;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:13px;box-shadow:0 14px 30px -14px rgba(185,92,54,.9)">
+              <span class="lang-es">Solicitar reserva</span><span class="lang-en" hidden>Request booking</span>
+            </button>
+          </div>
+
+          <div id="book-confirm" style="display:none;text-align:center;padding:20px 0;animation:fadein .4s both">
+            <div style="font-size:32px;margin-bottom:12px">✓</div>
+            <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:20px;color:#251D14;margin-bottom:8px">
+              <span class="lang-es">¡Solicitud enviada!</span><span class="lang-en" hidden>Request sent!</span>
+            </div>
+            <p style="font-size:14px;color:#5A4F42;margin:0 0 16px">
+              <span class="lang-es">El anfitrión te contactará pronto.</span><span class="lang-en" hidden>The host will contact you soon.</span>
+            </p>
+            <button id="book-reset" style="cursor:pointer;background:#EFE7D6;border:none;color:#251D14;font-weight:700;font-size:14px;padding:10px 18px;border-radius:10px">
+              <span class="lang-es">Nueva consulta</span><span class="lang-en" hidden>New inquiry</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<script define:vars={{ price: stay.price }}>
+  const bookIn = document.getElementById('book-in');
+  const bookOut = document.getElementById('book-out');
+  const totalDiv = document.getElementById('book-total');
+  const nightsLine = document.getElementById('nights-line');
+  const totalPrice = document.getElementById('total-price');
+  const bookBtn = document.getElementById('book-btn');
+  const bookForm = document.getElementById('book-form');
+  const bookConfirm = document.getElementById('book-confirm');
+  const bookReset = document.getElementById('book-reset');
+
+  function updateTotal() {
+    if (!bookIn.value || !bookOut.value) { totalDiv.style.display = 'none'; return; }
+    const nights = Math.round((new Date(bookOut.value) - new Date(bookIn.value)) / 86400000);
+    if (nights <= 0) { totalDiv.style.display = 'none'; return; }
+    totalDiv.style.display = 'block';
+    const lang = document.documentElement.getAttribute('data-lang') || 'es';
+    const nightLabel = lang === 'en'
+      ? (nights > 1 ? 'nights' : 'night')
+      : (nights > 1 ? 'noches' : 'noche');
+    nightsLine.textContent = `${nights} ${nightLabel} × $${price}`;
+    totalPrice.textContent = `$${nights * price}`;
+  }
+
+  bookIn?.addEventListener('change', updateTotal);
+  bookOut?.addEventListener('change', updateTotal);
+
+  bookBtn?.addEventListener('click', () => {
+    bookForm.style.display = 'none';
+    bookConfirm.style.display = 'block';
+  });
+
+  bookReset?.addEventListener('click', () => {
+    bookConfirm.style.display = 'none';
+    bookForm.style.display = 'flex';
+    totalDiv.style.display = 'none';
+    bookIn.value = '';
+    bookOut.value = '';
+  });
+</script>

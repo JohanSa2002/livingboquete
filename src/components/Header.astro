@@ -1,0 +1,112 @@
+---
+import { NAV } from '../data/data';
+const { activeKey = 'home' } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<header style="position:sticky;top:0;z-index:60;background:rgba(247,241,230,.82);backdrop-filter:blur(14px);border-bottom:1px solid rgba(37,29,20,.1)">
+  <div style="max-width:1240px;margin:0 auto;padding:0 26px;height:72px;display:flex;align-items:center;gap:18px">
+    <!-- Logo -->
+    <a href="/" style="display:flex;align-items:center;gap:11px;cursor:pointer;text-decoration:none;color:#251D14;margin-right:auto">
+      <span style="width:34px;height:34px;border-radius:50%;background:#2C3A2A;display:flex;align-items:center;justify-content:center;flex:none">
+        <span style="width:13px;height:13px;border-radius:50% 50% 50% 0;transform:rotate(45deg);background:#C8964A"></span>
+      </span>
+      <span style="font-family:'Bricolage Grotesque';font-weight:800;font-size:21px;letter-spacing:-.02em">Boquete</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <nav style="display:flex;gap:4px;align-items:center" class="desktop-nav">
+      {NAV.map(item => {
+        const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
+        return (
+          <a
+            href={item.href}
+            style={`position:relative;cursor:pointer;padding:9px 13px;font-size:14.5px;font-weight:600;color:#3D3328;text-decoration:none`}
+          >
+            <span class="lang-es">{item.label.es}</span>
+            <span class="lang-en" hidden>{item.label.en}</span>
+            <span style={`position:absolute;left:13px;right:13px;bottom:4px;height:2px;border-radius:2px;background:${isActive ? '#B95C36' : 'transparent'};transition:background .2s`}></span>
+          </a>
+        );
+      })}
+    </nav>
+
+    <div style="display:flex;align-items:center;gap:10px">
+      <!-- Language toggle -->
+      <div style="display:flex;border:1px solid rgba(37,29,20,.18);border-radius:999px;overflow:hidden;font-size:12.5px;font-weight:700">
+        <span
+          data-lang-btn="es"
+          style="cursor:pointer;padding:6px 11px;background:#2C3A2A;color:#F7F1E6;user-select:none"
+        >ES</span>
+        <span
+          data-lang-btn="en"
+          style="cursor:pointer;padding:6px 11px;background:transparent;color:#3D3328;user-select:none"
+        >EN</span>
+      </div>
+
+      <!-- CTA -->
+      <a href="/contacto" style="cursor:pointer;background:#B95C36;color:#F7F1E6;font-weight:700;font-size:14px;padding:10px 17px;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px -8px rgba(185,92,54,.8)" class="desktop-cta">
+        <span class="lang-es">Contacto</span>
+        <span class="lang-en" hidden>Contact</span>
+      </a>
+
+      <!-- Mobile burger -->
+      <button
+        id="mobile-burger"
+        class="mobile-burger"
+        style="display:none;border:1px solid rgba(37,29,20,.18);background:transparent;border-radius:10px;width:42px;height:42px;cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:4px"
+        aria-label="Menu"
+      >
+        <span style="width:18px;height:2px;background:#251D14;border-radius:2px"></span>
+        <span style="width:18px;height:2px;background:#251D14;border-radius:2px"></span>
+        <span style="width:18px;height:2px;background:#251D14;border-radius:2px"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile overlay -->
+<div id="mobile-overlay" class="hidden" style="position:fixed;inset:0;z-index:70;background:rgba(20,15,10,.4)">
+  <div
+    id="mobile-menu"
+    style="position:absolute;top:0;right:0;bottom:0;width:min(82vw,330px);background:#F7F1E6;padding:24px;animation:fadein .2s both;display:flex;flex-direction:column;gap:6px"
+    onclick="event.stopPropagation()"
+  >
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <button
+        id="mobile-close"
+        style="border:none;background:transparent;font-size:26px;cursor:pointer;color:#251D14;line-height:1"
+        aria-label="Close"
+      >×</button>
+    </div>
+    {NAV.map(item => (
+      <a
+        href={item.href}
+        class="mobile-nav-link"
+        style="cursor:pointer;padding:13px 8px;font-family:'Bricolage Grotesque';font-weight:700;font-size:22px;color:#251D14;text-decoration:none;border-bottom:1px solid rgba(37,29,20,.08)"
+      >
+        <span class="lang-es">{item.label.es}</span>
+        <span class="lang-en" hidden>{item.label.en}</span>
+      </a>
+    ))}
+    <a href="/contacto" class="mobile-nav-link" style="margin-top:16px;text-align:center;cursor:pointer;background:#B95C36;color:#F7F1E6;font-weight:700;padding:14px;border-radius:14px;text-decoration:none">
+      <span class="lang-es">Contacto</span>
+      <span class="lang-en" hidden>Contact</span>
+    </a>
+  </div>
+</div>
+
+<style>
+  .hidden { display: none !important; }
+  #mobile-overlay.hidden { display: none !important; }
+  #mobile-menu { display: flex; }
+  /* When overlay is visible, it's a block */
+  #mobile-overlay:not(.hidden) { display: block !important; }
+</style>
+
+<script>
+  // Close button inside mobile menu
+  document.getElementById('mobile-close')?.addEventListener('click', () => {
+    document.getElementById('mobile-overlay')?.classList.add('hidden');
+  });
+</script>

@@ -1,0 +1,190 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { RENTALS, TYPE_LABELS, AMEN_LABELS } from '../../data/data';
+---
+
+<Layout activeKey="stays" title="Alquiler · Boquete" titleEn="Stays · Boquete">
+
+  <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding:70px 26px 0">
+    <div style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:14px">
+      <span class="lang-es">Alojamientos</span><span class="lang-en" hidden>Accommodation</span>
+    </div>
+    <h1 style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(40px,6vw,72px);line-height:.98;letter-spacing:-.025em;margin:0 0 14px;color:#251D14">
+      <span class="lang-es">Dónde quedarse en Boquete</span>
+      <span class="lang-en" hidden>Where to stay in Boquete</span>
+    </h1>
+    <p style="font-size:18px;color:#5A4F42;max-width:560px;margin:0 0 40px">
+      <span class="lang-es">Cabañas, B&Bs y apartamentos seleccionados por la comunidad.</span>
+      <span class="lang-en" hidden>Cabins, B&Bs and apartments selected by the community.</span>
+    </p>
+  </section>
+
+  <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding:0 26px 96px">
+    <div class="split-2" style="display:grid;grid-template-columns:288px 1fr;gap:36px;align-items:start">
+
+      <!-- Filters sidebar -->
+      <aside style="position:sticky;top:92px;background:#fff;border:1px solid rgba(37,29,20,.1);border-radius:18px;padding:24px">
+        <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:17px;margin-bottom:20px;color:#251D14">
+          <span class="lang-es">Filtros</span><span class="lang-en" hidden>Filters</span>
+        </div>
+
+        <!-- Type filter -->
+        <div style="margin-bottom:22px">
+          <div style="font-size:13px;font-weight:700;color:#3D3328;margin-bottom:10px">
+            <span class="lang-es">Tipo</span><span class="lang-en" hidden>Type</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            {(['all','casa','bnb','apto'] as const).map(type => (
+              <button
+                data-type={type}
+                class="type-filter"
+                style="cursor:pointer;font-size:13px;font-weight:700;padding:8px 14px;border-radius:999px;border:1px solid rgba(37,29,20,.14);background:transparent;color:#251D14"
+              >
+                {type === 'all'
+                  ? <><span class="lang-es">Todos</span><span class="lang-en" hidden>All</span></>
+                  : <><span class="lang-es">{TYPE_LABELS[type].es}</span><span class="lang-en" hidden>{TYPE_LABELS[type].en}</span></>
+                }
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <!-- Price range -->
+        <div style="margin-bottom:22px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <span style="font-size:13px;font-weight:700;color:#3D3328">
+              <span class="lang-es">Precio máximo</span><span class="lang-en" hidden>Max price</span>
+            </span>
+            <span id="price-display" style="font-size:14px;font-weight:800;color:#B95C36">$400</span>
+          </div>
+          <input type="range" id="price-range" min="40" max="400" step="10" value="400" style="width:100%;accent-color:#B95C36;cursor:pointer" />
+        </div>
+
+        <!-- Guests -->
+        <div style="margin-bottom:22px">
+          <div style="font-size:13px;font-weight:700;color:#3D3328;margin-bottom:10px">
+            <span class="lang-es">Huéspedes</span><span class="lang-en" hidden>Guests</span>
+          </div>
+          <select id="guests-select" style="width:100%;background:#F7F1E6;border:1px solid rgba(37,29,20,.14);border-radius:11px;padding:11px 13px;font-size:14px;color:#251D14;outline:none">
+            {[1,2,3,4,5,6,7,8].map(n => <option value={n}>{n}+</option>)}
+          </select>
+        </div>
+      </aside>
+
+      <!-- Results -->
+      <div>
+        <div style="margin-bottom:20px;font-size:15px;color:#5A4F42">
+          <b id="results-count" style="color:#251D14;font-weight:800">{RENTALS.length}</b>&nbsp;
+          <span class="lang-es">alojamientos disponibles</span><span class="lang-en" hidden>stays available</span>
+        </div>
+        <div class="cols-2" style="display:grid;grid-template-columns:1fr 1fr;gap:26px" id="rentals-grid">
+          {RENTALS.map(p => (
+            <a
+              href={`/alquiler/${p.id}`}
+              class="rental-card rv"
+              data-type={p.type}
+              data-price={p.price}
+              data-guests={p.guests}
+              style="cursor:pointer;background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;display:block"
+            >
+              <div style="position:relative;aspect-ratio:16/10;overflow:hidden">
+                <img src={p.img} alt={p.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+                <span style="position:absolute;top:13px;left:13px;background:rgba(20,28,18,.62);backdrop-filter:blur(4px);color:#F7F1E6;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px">
+                  <span class="lang-es">{TYPE_LABELS[p.type].es}</span><span class="lang-en" hidden>{TYPE_LABELS[p.type].en}</span>
+                </span>
+                <span style="position:absolute;top:13px;right:13px;background:#fff;color:#251D14;font-size:12.5px;font-weight:800;padding:6px 11px;border-radius:999px;display:flex;align-items:center;gap:4px">
+                  <span style="color:#C8964A">★</span>{p.rating.toFixed(1)}
+                </span>
+              </div>
+              <div style="padding:18px 20px 20px">
+                <div style="font-size:12.5px;color:#8A7D69;margin-bottom:4px">
+                  <span class="lang-es">{p.loc.es}</span><span class="lang-en" hidden>{p.loc.en}</span>
+                </div>
+                <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:20px;margin:0 0 10px;color:#251D14;line-height:1.15">
+                  <span class="lang-es">{p.name.es}</span><span class="lang-en" hidden>{p.name.en}</span>
+                </h3>
+                <div style="font-size:13.5px;color:#5A4F42;margin-bottom:14px">
+                  {p.guests} <span class="lang-es">huéspedes</span><span class="lang-en" hidden>guests</span> · {p.beds} <span class="lang-es">hab.</span><span class="lang-en" hidden>beds</span> · {p.baths} <span class="lang-es">baños</span><span class="lang-en" hidden>baths</span>
+                </div>
+                <div style="display:flex;align-items:baseline;justify-content:space-between">
+                  <div>
+                    <span style="font-family:'Bricolage Grotesque';font-weight:800;font-size:21px;color:#251D14">${p.price}</span>
+                    <span style="font-size:13.5px;color:#8A7D69"> / <span class="lang-es">noche</span><span class="lang-en" hidden>night</span></span>
+                  </div>
+                  <span style="color:#B95C36;font-weight:700;font-size:13.5px">
+                    <span class="lang-es">Ver más</span><span class="lang-en" hidden>See more</span> →
+                  </span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div id="no-results" style="display:none;background:#fff;border:1px dashed rgba(37,29,20,.2);border-radius:18px;padding:54px 30px;text-align:center;color:#8A7D69;font-size:15.5px">
+          <span class="lang-es">Sin resultados para estos filtros.</span><span class="lang-en" hidden>No results for these filters.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .rental-card { transition: transform .25s, box-shadow .25s; }
+  .rental-card:hover { transform: translateY(-5px); box-shadow: 0 22px 40px -22px rgba(37,29,20,.4); }
+</style>
+
+<script>
+  const cards = document.querySelectorAll<HTMLElement>('.rental-card');
+  const countEl = document.getElementById('results-count')!;
+  const noResults = document.getElementById('no-results')!;
+  const typeFilters = document.querySelectorAll<HTMLElement>('.type-filter');
+  const priceRange = document.getElementById('price-range') as HTMLInputElement;
+  const priceDisplay = document.getElementById('price-display')!;
+  const guestsSelect = document.getElementById('guests-select') as HTMLSelectElement;
+
+  let activeType = 'all';
+  let maxPrice = 400;
+  let minGuests = 1;
+
+  function applyFilters() {
+    let count = 0;
+    cards.forEach(card => {
+      const type = card.dataset.type ?? '';
+      const price = parseInt(card.dataset.price ?? '0');
+      const guests = parseInt(card.dataset.guests ?? '0');
+      const show = (activeType === 'all' || type === activeType) && price <= maxPrice && guests >= minGuests;
+      card.style.display = show ? 'block' : 'none';
+      if (show) count++;
+    });
+    countEl.textContent = String(count);
+    noResults.style.display = count === 0 ? 'block' : 'none';
+  }
+
+  typeFilters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeType = btn.dataset.type ?? 'all';
+      typeFilters.forEach(f => {
+        const active = f.dataset.type === activeType;
+        f.style.background = active ? '#B95C36' : 'transparent';
+        f.style.color = active ? '#F7F1E6' : '#251D14';
+        f.style.borderColor = active ? '#B95C36' : 'rgba(37,29,20,.14)';
+      });
+      applyFilters();
+    });
+  });
+
+  // Init first type filter
+  const firstType = document.querySelector<HTMLElement>('.type-filter');
+  if (firstType) { firstType.style.background = '#B95C36'; firstType.style.color = '#F7F1E6'; firstType.style.borderColor = '#B95C36'; }
+
+  priceRange.addEventListener('input', () => {
+    maxPrice = parseInt(priceRange.value);
+    priceDisplay.textContent = `$${maxPrice}`;
+    applyFilters();
+  });
+
+  guestsSelect.addEventListener('change', () => {
+    minGuests = parseInt(guestsSelect.value);
+    applyFilters();
+  });
+</script>

@@ -1,0 +1,88 @@
+---
+import { NAV } from '../data/data';
+---
+
+<footer style="background:#221C13;color:#D8CDBA;margin-top:0">
+  <div
+    style="max-width:1240px;margin:0 auto;padding:64px 26px 30px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1.4fr;gap:40px"
+    class="footer-grid"
+  >
+    <!-- Brand -->
+    <div>
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px">
+        <span style="width:34px;height:34px;border-radius:50%;background:#C8964A;display:flex;align-items:center;justify-content:center;flex:none">
+          <span style="width:13px;height:13px;border-radius:50% 50% 50% 0;transform:rotate(45deg);background:#2C3A2A"></span>
+        </span>
+        <span style="font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;color:#F7F1E6">Boquete</span>
+      </div>
+      <p style="font-size:14.5px;line-height:1.65;color:#A99C86;max-width:300px;margin:0">
+        <span class="lang-es">Guía de la comunidad de Boquete: un pueblo de montaña en las tierras altas de Chiriquí, Panamá.</span>
+        <span class="lang-en" hidden>Community guide for Boquete: a mountain town in the highlands of Chiriquí, Panama.</span>
+      </p>
+    </div>
+
+    <!-- Explore links -->
+    <div>
+      <h4 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8A7D69;margin:0 0 14px">
+        <span class="lang-es">Explorar</span>
+        <span class="lang-en" hidden>Explore</span>
+      </h4>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        {NAV.map(item => (
+          <a href={item.href} style="color:#D8CDBA;text-decoration:none;font-size:14.5px">
+            <span class="lang-es">{item.label.es}</span>
+            <span class="lang-en" hidden>{item.label.en}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Contact info -->
+    <div>
+      <h4 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8A7D69;margin:0 0 14px">
+        <span class="lang-es">Contacto</span>
+        <span class="lang-en" hidden>Contact</span>
+      </h4>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:14.5px;color:#A99C86">
+        <span>Av. Central, Boquete</span>
+        <span>Chiriquí, Panamá</span>
+        <span>+507 720 0000</span>
+        <span>hola@visitboquete.pa</span>
+      </div>
+    </div>
+
+    <!-- Newsletter -->
+    <div>
+      <h4 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8A7D69;margin:0 0 14px">
+        <span class="lang-es">Boletín</span>
+        <span class="lang-en" hidden>Newsletter</span>
+      </h4>
+      <p style="font-size:14px;color:#A99C86;margin:0 0 14px">
+        <span class="lang-es">Recibe novedades de la comunidad cada mes.</span>
+        <span class="lang-en" hidden>Receive community updates every month.</span>
+      </p>
+      <div style="display:flex;gap:8px">
+        <input
+          placeholder="tu@email.com"
+          style="flex:1;min-width:0;background:#2E2618;border:1px solid #463A26;border-radius:10px;padding:11px 13px;color:#F7F1E6;font-size:14px;outline:none"
+          aria-label="Email"
+        />
+        <button style="background:#B95C36;border:none;color:#F7F1E6;font-weight:700;padding:0 16px;border-radius:10px;cursor:pointer">→</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top:1px solid #352B1C">
+    <div style="max-width:1240px;margin:0 auto;padding:20px 26px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:13px;color:#7E725F">
+      <span>
+        © 2026
+        <span class="lang-es">Comunidad de Boquete · Todos los derechos reservados</span>
+        <span class="lang-en" hidden>Boquete Community · All rights reserved</span>
+      </span>
+      <span>
+        <span class="lang-es">Panamá · Tierras altas de Chiriquí</span>
+        <span class="lang-en" hidden>Panama · Chiriquí Highlands</span>
+      </span>
+    </div>
+  </div>
+</footer>

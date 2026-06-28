@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Spectral:ital,wght@1,400;1,500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: #F7F1E6;
+  color: #251D14;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: #B95C36; color: #F7F1E6; }
+
+img { display: block; max-width: 100%; }
+
+input, textarea, select, button { font-family: inherit; }
+
+a { color: inherit; }
+
+/* Animations */
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes slowzoom {
+  from { transform: scale(1.08); }
+  to   { transform: scale(1); }
+}
+@keyframes fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.rv {
+  animation: reveal .9s cubic-bezier(.2,.7,.2,1) both;
+  animation-timeline: view();
+  animation-range: entry 2% cover 30%;
+}
+
+/* Layout helpers */
+.pad-sec { padding-left: 26px; padding-right: 26px; }
+
+/* Language */
+[data-lang="en"] .lang-es { display: none !important; }
+[data-lang="en"] .lang-en { display: inline !important; }
+[data-lang="es"] .lang-en { display: none !important; }
+
+/* Responsive */
+@media (max-width: 880px) {
+  .desktop-nav { display: none !important; }
+  .desktop-cta { display: none !important; }
+  .mobile-burger { display: flex !important; }
+  .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 30px !important; }
+  .hero-h1 { font-size: clamp(64px, 20vw, 120px) !important; }
+  .split-2 { grid-template-columns: 1fr !important; }
+  .cols-3, .cols-2 { grid-template-columns: 1fr !important; }
+  .gal-grid { grid-template-columns: 1fr 1fr !important; }
+  .pad-sec { padding-left: 20px !important; padding-right: 20px !important; }
+}
+@media (max-width: 560px) {
+  .footer-grid { grid-template-columns: 1fr !important; }
+  .gal-grid { grid-template-columns: 1fr !important; }
+  .ev-row { flex-direction: column !important; align-items: flex-start !important; }
+}
