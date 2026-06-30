@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { ClientRouter } from 'astro:transitions';
 
 interface Props {
   title?: string;
@@ -32,6 +33,7 @@ const {
   <meta name="desc-en" content={descriptionEn} />
   <meta name="desc-es" content={description} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <ClientRouter />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -101,6 +103,28 @@ const {
     mobileOverlay?.addEventListener('click', closeMobile);
     document.querySelectorAll('.mobile-nav-link').forEach(link => {
       link.addEventListener('click', closeMobile);
+    });
+
+    // Scroll to hash, centering within the visible area below the sticky header
+    function scrollToHash() {
+      const hash = window.location.hash;
+      if (!hash) return;
+      const target = document.querySelector<HTMLElement>(hash);
+      if (!target) return;
+      const HEADER = 88;
+      const rect = target.getBoundingClientRect();
+      const sectionCenterDoc = rect.top + window.scrollY + rect.height / 2;
+      const visibleCenter = HEADER + (window.innerHeight - HEADER) / 2;
+      const desiredScroll = sectionCenterDoc - visibleCenter;
+      window.scrollTo({ top: Math.max(0, desiredScroll), behavior: 'smooth' });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.location.hash) setTimeout(scrollToHash, 200);
+    });
+
+    document.addEventListener('astro:page-load', () => {
+      if (window.location.hash) setTimeout(scrollToHash, 200);
     });
   </script>
 </body>

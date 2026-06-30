@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
 import { RENTALS, TYPE_LABELS, AMEN_LABELS } from '../../data/data';
 
@@ -75,6 +76,14 @@ const { stay } = Astro.props;
               <span class="lang-es">{stay.host.line.es}</span><span class="lang-en" hidden>{stay.host.line.en}</span>
             </div>
           </div>
+        </div>
+
+        <!-- Map -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px">
+          <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
+            <span class="lang-es">Ubicación</span><span class="lang-en" hidden>Location</span>
+          </h3>
+          <div id="map" style="width:100%;height:300px;border-radius:16px;overflow:hidden;border:1px solid rgba(37,29,20,.1)"></div>
         </div>
 
         <!-- Reviews -->
@@ -167,9 +176,10 @@ const { stay } = Astro.props;
     </div>
   </section>
 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </Layout>
 
-<script define:vars={{ price: stay.price }}>
+<script define:vars={{ price: stay.price, lat: stay.lat, lng: stay.lng, stayName: stay.name.es }}>
   const bookIn = document.getElementById('book-in');
   const bookOut = document.getElementById('book-out');
   const totalDiv = document.getElementById('book-total');
@@ -208,4 +218,19 @@ const { stay } = Astro.props;
     bookIn.value = '';
     bookOut.value = '';
   });
+
+  // Leaflet map
+  if (lat && lng) {
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = () => {
+      const map = L.map('map', { scrollWheelZoom: false }).setView([lat, lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 18,
+      }).addTo(map);
+      L.marker([lat, lng]).addTo(map).bindPopup(`<strong>${stayName}</strong>`).openPopup();
+    };
+    document.head.appendChild(script);
+  }
 </script>

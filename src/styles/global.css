@@ -47,6 +47,8 @@ a { color: inherit; }
 [data-lang="en"] .lang-es { display: none !important; }
 [data-lang="en"] .lang-en { display: inline !important; }
 [data-lang="es"] .lang-en { display: none !important; }
+[data-lang="en"] select.lang-en,
+[data-lang="es"] select.lang-es { display: block !important; }
 
 /* Responsive */
 @media (max-width: 880px) {

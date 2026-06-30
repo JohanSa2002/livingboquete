@@ -45,9 +45,9 @@ const currentPath = Astro.url.pathname;
       </div>
 
       <!-- CTA -->
-      <a href="/contacto" style="cursor:pointer;background:#B95C36;color:#F7F1E6;font-weight:700;font-size:14px;padding:10px 17px;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px -8px rgba(185,92,54,.8)" class="desktop-cta">
-        <span class="lang-es">Contacto</span>
-        <span class="lang-en" hidden>Contact</span>
+      <a href="/#contacto" style="cursor:pointer;background:#B95C36;color:#F7F1E6;font-weight:700;font-size:14px;padding:10px 17px;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px -8px rgba(185,92,54,.8)" class="desktop-cta">
+        <span class="lang-es">Empieza aquí</span>
+        <span class="lang-en" hidden>Start here</span>
       </a>
 
       <!-- Mobile burger -->
@@ -89,9 +89,9 @@ const currentPath = Astro.url.pathname;
         <span class="lang-en" hidden>{item.label.en}</span>
       </a>
     ))}
-    <a href="/contacto" class="mobile-nav-link" style="margin-top:16px;text-align:center;cursor:pointer;background:#B95C36;color:#F7F1E6;font-weight:700;padding:14px;border-radius:14px;text-decoration:none">
-      <span class="lang-es">Contacto</span>
-      <span class="lang-en" hidden>Contact</span>
+    <a href="/#contacto" class="mobile-nav-link" style="margin-top:16px;text-align:center;cursor:pointer;background:#B95C36;color:#F7F1E6;font-weight:700;padding:14px;border-radius:14px;text-decoration:none">
+      <span class="lang-es">Empieza aquí</span>
+      <span class="lang-en" hidden>Start here</span>
     </a>
   </div>
 </div>
@@ -109,4 +109,38 @@ const currentPath = Astro.url.pathname;
   document.getElementById('mobile-close')?.addEventListener('click', () => {
     document.getElementById('mobile-overlay')?.classList.add('hidden');
   });
+
+  // Centra #contacto en el área visible (descontando el header sticky)
+  const scrollToContacto = (smooth = true) => {
+    const target = document.getElementById('contacto');
+    if (!target) return;
+    const HEADER = 88;
+    const rect = target.getBoundingClientRect();
+    const sectionCenterDoc = rect.top + window.scrollY + rect.height / 2;
+    const visibleCenter = HEADER + (window.innerHeight - HEADER) / 2;
+    const desiredScroll = sectionCenterDoc - visibleCenter;
+    window.scrollTo({ top: Math.max(0, desiredScroll), behavior: smooth ? 'smooth' : 'auto' });
+  };
+
+  // Manejador de clics en la página
+  document.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement).closest('a[href="/#contacto"], a[href="#contacto"]');
+    if (!link) return;
+    const target = document.getElementById('contacto');
+    if (!target) return;
+    e.preventDefault();
+    document.getElementById('mobile-overlay')?.classList.add('hidden');
+    scrollToContacto(true);
+  });
+
+  // Si la página se carga directamente con el hash #contacto (por ejemplo, desde el blog)
+  if (window.location.hash === '#contacto') {
+    // Pequeño retardo para asegurar que la página y fuentes se hayan renderizado
+    // y la altura total de scroll (scrollHeight) sea exacta.
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        scrollToContacto(true);
+      }, 150);
+    });
+  }
 </script>

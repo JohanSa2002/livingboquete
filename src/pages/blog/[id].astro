@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
 import { POSTS } from '../../data/data';
 
@@ -59,6 +60,26 @@ const related = POSTS.filter(p => p.id !== post.id).slice(0, 3);
       ))}
     </div>
   </article>
+
+  <!-- CTA GUIDE -->
+  <section class="pad-sec" style="max-width:760px;margin:0 auto;padding:20px 26px 0">
+    <div style="background:#2C3A2A;border-radius:20px;padding:clamp(32px,4vw,48px) clamp(28px,4vw,44px);display:flex;align-items:center;gap:clamp(24px,3vw,40px);flex-wrap:wrap">
+      <div style="flex:1;min-width:260px">
+        <h3 style="font-family:'Spectral';font-weight:700;font-size:clamp(22px,3vw,30px);line-height:1.15;color:#F7F1E6;margin:0 0 12px">
+          <span class="lang-es">¿Aún explorando Panamá?</span>
+          <span class="lang-en" hidden>Still exploring Panama?</span>
+        </h3>
+        <p style="font-size:15px;line-height:1.6;color:#A99C86;margin:0">
+          <span class="lang-es">Recibe la guía gratuita de Boquete: preguntas de reubicación, residencia, costo de vida y checklist para planear tu visita.</span>
+          <span class="lang-en" hidden>Get the free guide to Boquete, including relocation questions, residency basics and a visit-planning checklist.</span>
+        </p>
+      </div>
+      <a href="/#contacto" style="display:inline-block;background:#F7F1E6;color:#2C3A2A;font-weight:700;font-size:15px;padding:14px 28px;border-radius:12px;text-decoration:none;white-space:nowrap;transition:background .2s,transform .15s;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+        <span class="lang-es">Recibe la guía gratis →</span>
+        <span class="lang-en" hidden>Get the free guide →</span>
+      </a>
+    </div>
+  </section>
 
   <!-- RELATED -->
   <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:60px 26px 96px">

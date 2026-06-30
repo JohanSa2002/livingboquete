@@ -53,6 +53,8 @@ export interface Rental {
   amen: string[];
   reviewsList: { name: string; rating: number; date: Bilingual; text: Bilingual }[];
   img: string;
+  lat: number;
+  lng: number;
 }
 
 export interface GalleryItem {
@@ -370,6 +372,7 @@ export const RENTALS: Rental[] = [
       { name: 'Sophie Müller', rating: 5, date: { es: 'Mayo 2026', en: 'May 2026' }, text: { es: 'La cabaña es acogedora y la chimenea, perfecta para las noches frescas de montaña.', en: 'The cabin is cosy and the fireplace is perfect for cool mountain nights.' } },
     ],
     img: img('cabin-coffee-farm', 800, 560),
+    lat: 8.7942, lng: -82.4467,
   },
   {
     id: 'niebla',
@@ -389,6 +392,7 @@ export const RENTALS: Rental[] = [
       { name: 'Liam O\'Brien', rating: 4, date: { es: 'Abril 2026', en: 'April 2026' }, text: { es: 'Habitación impecable y un jardín de ensueño. Volvería sin dudarlo.', en: 'Spotless room and a dreamy garden. I would return without hesitation.' } },
     ],
     img: img('bnb-orchid-valley', 800, 560),
+    lat: 8.7835, lng: -82.4389,
   },
   {
     id: 'caldera',
@@ -408,6 +412,7 @@ export const RENTALS: Rental[] = [
       { name: 'Valentina Cruz', rating: 4, date: { es: 'Marzo 2026', en: 'March 2026' }, text: { es: 'Apartamento muy completo y limpio. La piscina fue un plus para los niños.', en: 'Very complete and clean apartment. The pool was a plus for the kids.' } },
     ],
     img: img('apartment-river', 800, 560),
+    lat: 8.7761, lng: -82.4312,
   },
   {
     id: 'mirador',
@@ -427,6 +432,7 @@ export const RENTALS: Rental[] = [
       { name: 'Marta Quirós', rating: 5, date: { es: 'Abril 2026', en: 'April 2026' }, text: { es: 'Ideal para nuestro grupo de ocho. La piscina y la chimenea fueron lo mejor.', en: 'Ideal for our group of eight. The pool and fireplace were the best part.' } },
     ],
     img: img('volcano-view-house', 800, 560),
+    lat: 8.8015, lng: -82.4521,
   },
 ];
 
@@ -476,12 +482,7 @@ export const TYPE_LABELS: Record<string, Bilingual> = {
 
 // --- NAV ---
 export const NAV = [
-  { key: 'home',   href: '/',                label: { es: 'Inicio',        en: 'Home' } },
-  { key: 'about',  href: '/sobre-boquete',   label: { es: 'La comunidad',  en: 'The community' } },
-  { key: 'places', href: '/lugares',         label: { es: 'Lugares',       en: 'Places' } },
-  { key: 'events', href: '/eventos',         label: { es: 'Eventos',       en: 'Events' } },
-  { key: 'blog',   href: '/blog',            label: { es: 'Blog',          en: 'Blog' } },
-  { key: 'gallery',href: '/galeria',         label: { es: 'Galería',       en: 'Gallery' } },
-  { key: 'stays',  href: '/alquiler',        label: { es: 'Alquiler',      en: 'Stays' } },
-  { key: 'contact',href: '/contacto',        label: { es: 'Contacto',      en: 'Contact' } },
+  { key: 'home',   href: '/',          label: { es: 'Inicio',   en: 'Home' } },
+  { key: 'blog',   href: '/blog',      label: { es: 'Blog',     en: 'Blog' } },
+  { key: 'stays',  href: '/alquiler',  label: { es: 'Alquiler', en: 'Stays' } },
 ];

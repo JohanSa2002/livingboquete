@@ -1,0 +1,110 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { isAuthenticated } from '../../lib/auth';
+import { getDb, initDb } from '../../lib/db';
+
+if (!isAuthenticated(Astro.cookies)) return Astro.redirect('/admin/login');
+
+initDb();
+const db = getDb();
+const counts = {
+  leads: (db.prepare('SELECT COUNT(*) as c FROM leads').get() as any).c,
+  places: (db.prepare('SELECT COUNT(*) as c FROM places').get() as any).c,
+  events: (db.prepare('SELECT COUNT(*) as c FROM events').get() as any).c,
+  posts: (db.prepare('SELECT COUNT(*) as c FROM posts').get() as any).c,
+  rentals: (db.prepare('SELECT COUNT(*) as c FROM rentals').get() as any).c,
+  gallery: (db.prepare('SELECT COUNT(*) as c FROM gallery').get() as any).c,
+};
+const recentLeads = db.prepare('SELECT * FROM leads ORDER BY created_at DESC LIMIT 5').all() as any[];
+---
+<AdminLayout title="Dashboard" active="dashboard">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Vista general del sitio</p>
+    </div>
+  </div>
+
+  <div class="help-box">
+    <svg class="help-box-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div class="help-box-content">
+      <div class="help-box-title">Bienvenido al panel de administración</div>
+      <div class="help-box-text">
+        Desde aquí puedes gestionar todo el contenido del sitio. Usa el menú lateral para navegar entre secciones:
+        <ul>
+          <li><strong>Leads</strong> — Contactos capturados desde el formulario del sitio. Se generan automáticamente.</li>
+          <li><strong>Lugares</strong> — Atractivos turísticos que aparecen en la página de inicio.</li>
+          <li><strong>Eventos</strong> — Ferias, festivales y actividades con fecha.</li>
+          <li><strong>Blog</strong> — Artículos y guías para visitantes.</li>
+          <li><strong>Alquiler</strong> — Propiedades disponibles (casas, B&B, apartamentos).</li>
+          <li><strong>Galería</strong> — Fotos que aparecen en la galería del inicio.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Leads</div>
+      <div class="stat-value">{counts.leads}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Lugares</div>
+      <div class="stat-value">{counts.places}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Eventos</div>
+      <div class="stat-value">{counts.events}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Blog</div>
+      <div class="stat-value">{counts.posts}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Alquileres</div>
+      <div class="stat-value">{counts.rentals}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Galeria</div>
+      <div class="stat-value">{counts.gallery}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Ultimos leads</h2>
+      <a href="/admin/leads" class="btn btn-secondary btn-sm">Ver todos</a>
+    </div>
+    {recentLeads.length === 0 ? (
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <p>No hay leads aun</p>
+      </div>
+    ) : (
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Pais</th>
+            <th>Interes</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentLeads.map(l => (
+            <tr>
+              <td style="font-weight:600;color:#1a1918">{l.nombre}</td>
+              <td>{l.email}</td>
+              <td>{l.pais || <span style="color:#b5b5b0">--</span>}</td>
+              <td>{l.interes ? <span class="badge badge-blue">{l.interes}</span> : <span style="color:#b5b5b0">--</span>}</td>
+              <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{l.created_at}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+</AdminLayout>

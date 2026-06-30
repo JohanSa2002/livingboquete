@@ -1,0 +1,104 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { isAuthenticated } from '../../lib/auth';
+import { getDb, initDb } from '../../lib/db';
+
+if (!isAuthenticated(Astro.cookies)) return Astro.redirect('/admin/login');
+
+initDb();
+const db = getDb();
+const leads = db.prepare('SELECT * FROM leads ORDER BY created_at DESC').all() as any[];
+---
+<AdminLayout title="Leads" active="leads">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Leads</h1>
+      <p class="page-subtitle">{leads.length} contactos registrados</p>
+    </div>
+  </div>
+
+  <div class="help-box">
+    <svg class="help-box-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div class="help-box-content">
+      <div class="help-box-title">¿Cómo funcionan los leads?</div>
+      <div class="help-box-text">
+        Los leads se generan automáticamente cuando un visitante completa el formulario <strong>"Recibe la guía gratis"</strong> en la página de inicio. No necesitas crear leads manualmente.
+        <ul>
+          <li><strong>Retiro</strong> — Si planean retirarse: <code>si</code>, <code>talvez</code> o <code>investigando</code>.</li>
+          <li><strong>Timeline</strong> — Horizonte de tiempo: <code>0-6</code>, <code>6-12</code>, <code>1ano</code> o <code>2anos</code>.</li>
+          <li><strong>Interés</strong> — Motivación principal: <code>retiro</code>, <code>estilo</code>, <code>casa</code>, <code>inversiones</code> o <code>info</code>.</li>
+        </ul>
+        Puedes eliminar leads que no sean relevantes. Esta acción es permanente.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    {leads.length === 0 ? (
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <p>No hay leads aun. Llegaran desde el formulario del sitio.</p>
+      </div>
+    ) : (
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Celular</th>
+              <th>Pais</th>
+              <th>Retiro</th>
+              <th>Timeline</th>
+              <th>Interes</th>
+              <th>Fecha</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {leads.map(l => (
+              <tr data-id={l.id}>
+                <td style="color:#b5b5b0;font-size:12px;font-variant-numeric:tabular-nums">{l.id}</td>
+                <td style="font-weight:600;color:#1a1918">{l.nombre}</td>
+                <td>{l.email}</td>
+                <td>{l.celular || <span style="color:#b5b5b0">--</span>}</td>
+                <td>{l.pais || <span style="color:#b5b5b0">--</span>}</td>
+                <td>{l.retiro ? <span class="badge badge-green">{l.retiro}</span> : <span style="color:#b5b5b0">--</span>}</td>
+                <td>{l.timeline ? <span class="badge badge-amber">{l.timeline}</span> : <span style="color:#b5b5b0">--</span>}</td>
+                <td>{l.interes ? <span class="badge badge-blue">{l.interes}</span> : <span style="color:#b5b5b0">--</span>}</td>
+                <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{l.created_at}</td>
+                <td>
+                  <button class="btn btn-danger btn-sm delete-lead" data-id={l.id}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll('.delete-lead').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = Number((btn as HTMLElement).dataset.id);
+      if (!confirm('¿Eliminar este lead?')) return;
+      await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      (btn as HTMLElement).closest('tr')?.remove();
+    });
+  });
+</script>

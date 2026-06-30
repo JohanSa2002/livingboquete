@@ -1,0 +1,201 @@
+---
+import { isAuthenticated } from '../../lib/auth';
+
+if (isAuthenticated(Astro.cookies)) {
+  return Astro.redirect('/admin');
+}
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login · Boquete Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #111110;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle background gradient */
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,150,74,.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(185,92,54,.04) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .login-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 400px;
+      padding: 0 20px;
+    }
+
+    .login-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 44px 40px 40px;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.04),
+        0 24px 68px rgba(0,0,0,.12),
+        0 8px 20px rgba(0,0,0,.06);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      justify-content: center;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #C8964A 0%, #B95C36 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; color: #fff;
+      box-shadow: 0 2px 8px rgba(200,150,74,.3);
+    }
+    .logo-text {
+      font-weight: 800; font-size: 22px;
+      color: #1a1918; letter-spacing: -.03em;
+    }
+
+    .login-subtitle {
+      font-size: 14px; font-weight: 500;
+      color: #8c8c87;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .form-group { margin-bottom: 4px; }
+
+    label {
+      display: block;
+      font-size: 13px; font-weight: 600;
+      color: #3d3d39;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #dddcdb;
+      border-radius: 11px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      color: #1a1918;
+      background: #fafaf9;
+      transition: all .15s ease;
+    }
+    input::placeholder { color: #b5b5b0; }
+    input:focus {
+      border-color: #C8964A;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(200,150,74,.12);
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 13px 20px;
+      background: #1a1918;
+      color: #fafaf9;
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      border-radius: 11px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .12s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1);
+      letter-spacing: -.01em;
+    }
+    .submit-btn:hover { background: #2c2c28; }
+    .submit-btn:active { transform: scale(.99); }
+
+    .error {
+      color: #dc2626;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      margin-top: 16px;
+      display: none;
+      padding: 10px 14px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 9px;
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #4a4a45;
+    }
+    .login-footer a {
+      color: #6e6e69;
+      text-decoration: none;
+      transition: color .12s;
+    }
+    .login-footer a:hover { color: #C8964A; }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="logo">
+        <div class="logo-icon">B</div>
+        <span class="logo-text">Boquete</span>
+      </div>
+      <p class="login-subtitle">Panel de administracion</p>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="password">Contrasena</label>
+          <input type="password" id="password" name="password" placeholder="Ingresa tu contrasena" autofocus required />
+        </div>
+        <button type="submit" class="submit-btn">Ingresar</button>
+        <p class="error" id="error">Contrasena incorrecta</p>
+      </form>
+    </div>
+    <div class="login-footer">
+      <a href="/">Volver al sitio</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target as HTMLFormElement;
+      const password = new FormData(form).get('password');
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        window.location.href = '/admin';
+      } else {
+        document.getElementById('error')!.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
