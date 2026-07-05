@@ -1,6 +1,7 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
 import GalleryMasonry from '../components/GalleryMasonry';
 import { PLACES, EVENTS, POSTS, GALLERY, GALLERY_CATS } from '../data/data';
 
@@ -10,7 +11,7 @@ const homePosts = POSTS.slice(0, 3);
 <Layout activeKey="home">
 
   <!-- HERO -->
-  <section style="position:relative;min-height:94vh;display:flex;align-items:flex-end;overflow:hidden">
+  <section style="position:relative;min-height:92vh;display:flex;align-items:flex-end;overflow:hidden">
     <img
       id="hero-poster"
       src="/hero-poster.webp"
@@ -25,34 +26,66 @@ const homePosts = POSTS.slice(0, 3);
     >
       <source src="/hero-boquete.webm" type="video/webm" />
     </video>
-    <div style="position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(20,28,18,.34) 0%,rgba(20,28,18,.06) 32%,rgba(18,20,12,.62) 78%,rgba(18,20,12,.86) 100%)"></div>
+    <div style="position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(20,28,18,.4) 0%,rgba(34,61,38,.08) 30%,rgba(18,22,15,.6) 76%,rgba(15,17,12,.88) 100%)"></div>
 
     <!-- Replay button -->
-    <button id="hero-replay" style="display:none;position:absolute;bottom:24px;right:24px;z-index:5;background:rgba(247,241,230,.12);backdrop-filter:blur(8px);border:1px solid rgba(247,241,230,.25);color:#F7F1E6;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:none;align-items:center;gap:7px;transition:background .2s">
+    <button id="hero-replay" style="display:none;position:absolute;bottom:24px;right:24px;z-index:5;background:rgba(245,240,232,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(245,240,232,.3);color:var(--color-sand);padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;align-items:center;gap:7px;transition:background-color .2s">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       <span class="lang-es">Reproducir</span><span class="lang-en" hidden>Replay</span>
     </button>
 
-    <div class="pad-sec" style="position:relative;z-index:4;max-width:1240px;margin:0 auto;padding:0 26px 76px;width:100%;color:#F7F1E6">
-      <div style="display:inline-flex;align-items:center;gap:9px;background:rgba(247,241,230,.14);backdrop-filter:blur(6px);border:1px solid rgba(247,241,230,.28);padding:8px 15px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;margin-bottom:22px;animation:fadein 1s both">
-        <span style="width:7px;height:7px;border-radius:50%;background:#C8964A"></span>
+    <div class="pad-sec" style="position:relative;z-index:4;max-width:1240px;margin:0 auto;padding:0 26px 64px;width:100%;color:var(--color-sand)">
+      <div style="display:inline-flex;align-items:center;gap:9px;background:rgba(245,240,232,.14);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(245,240,232,.28);padding:8px 15px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;margin-bottom:24px;animation:fadein 1s both">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--color-wood)"></span>
         <span class="lang-es">Tierras altas de Chiriquí · Panamá</span>
         <span class="lang-en" hidden>Chiriquí Highlands · Panama</span>
       </div>
-      <h1 class="hero-h1" style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(80px,12vw,180px);line-height:.86;letter-spacing:-.03em;margin:0 0 18px;text-shadow:0 4px 40px rgba(0,0,0,.3)">Boquete</h1>
-      <p style="font-family:'Spectral';font-style:italic;font-size:clamp(20px,2.6vw,30px);max-width:620px;line-height:1.32;margin:0 0 34px;color:#F0E7D6">
-        <span class="lang-es">Donde la montaña respira café, niebla y aventura.</span>
-        <span class="lang-en" hidden>Where the mountains breathe coffee, mist and adventure.</span>
+      <h1 style="font-family:var(--font-display);font-weight:800;font-size:var(--text-hero);line-height:1.05;letter-spacing:-.025em;margin:0 0 20px;max-width:820px;text-shadow:0 4px 30px rgba(0,0,0,.25)">
+        <span class="lang-es">Encuentra tu próximo hogar entre montañas.</span>
+        <span class="lang-en" hidden>Find your next home among the mountains.</span>
+      </h1>
+      <p style="font-family:var(--font-body);font-size:clamp(17px,1.6vw,20px);max-width:560px;line-height:1.5;margin:0 0 36px;color:#E7E2D6">
+        <span class="lang-es">Alquileres mensuales en Boquete para nómadas digitales, profesionales y familias que buscan naturaleza, clima fresco y una vida más tranquila.</span>
+        <span class="lang-en" hidden>Monthly rentals in Boquete for digital nomads, professionals and families looking for nature, cool weather and a quieter pace of life.</span>
       </p>
       <div style="display:flex;gap:14px;flex-wrap:wrap">
-        <a href="#atractivos" style="background:#B95C36;color:#F7F1E6;font-weight:700;font-size:16px;padding:16px 28px;border-radius:999px;text-decoration:none;box-shadow:0 14px 34px -12px rgba(185,92,54,.9)">
+        <a href="/alquiler" class="btn btn-primary" style="font-size:16px;padding:17px 30px">
+          <Icon name="search" size={18} />
+          <span class="lang-es">Buscar alquileres</span>
+          <span class="lang-en" hidden>Search rentals</span>
+        </a>
+        <a href="#atractivos" class="btn btn-ghost" style="font-size:16px;padding:17px 30px">
           <span class="lang-es">Explorar la comunidad</span>
           <span class="lang-en" hidden>Explore the community</span>
         </a>
-        <a href="/alquiler" style="background:rgba(247,241,230,.12);backdrop-filter:blur(6px);border:1px solid rgba(247,241,230,.5);color:#F7F1E6;font-weight:700;font-size:16px;padding:16px 28px;border-radius:999px;text-decoration:none">
-          <span class="lang-es">Ver alquileres</span>
-          <span class="lang-en" hidden>View stays</span>
-        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST STATS -->
+  <section class="pad-sec" style="max-width:1240px;margin:-34px auto 0;padding:0 26px;position:relative;z-index:5">
+    <div class="hero-stats" style="background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:space-around;padding:28px 20px;gap:20px">
+      <div style="text-align:center">
+        <div style="font-family:var(--font-display);font-weight:800;font-size:clamp(24px,3vw,32px);color:var(--color-forest)">120+</div>
+        <div style="font-size:var(--text-meta);color:var(--color-ink-soft);font-weight:600">
+          <span class="lang-es">propiedades</span><span class="lang-en" hidden>properties</span>
+        </div>
+      </div>
+      <div style="width:1px;height:38px;background:var(--color-border)"></div>
+      <div style="text-align:center">
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--font-display);font-weight:800;font-size:clamp(24px,3vw,32px);color:var(--color-forest)">
+          4.9 <span style="color:var(--color-wood)"><Icon name="star" size={20} /></span>
+        </div>
+        <div style="font-size:var(--text-meta);color:var(--color-ink-soft);font-weight:600">
+          <span class="lang-es">calificación promedio</span><span class="lang-en" hidden>average rating</span>
+        </div>
+      </div>
+      <div style="width:1px;height:38px;background:var(--color-border)"></div>
+      <div style="text-align:center">
+        <div style="font-family:var(--font-display);font-weight:800;font-size:clamp(24px,3vw,32px);color:var(--color-forest)">500+</div>
+        <div style="font-size:var(--text-meta);color:var(--color-ink-soft);font-weight:600">
+          <span class="lang-es">residentes felices</span><span class="lang-en" hidden>happy residents</span>
+        </div>
       </div>
     </div>
   </section>
@@ -65,7 +98,7 @@ const homePosts = POSTS.slice(0, 3);
           <span class="lang-es">Principales atractivos</span>
           <span class="lang-en" hidden>Top attractions</span>
         </div>
-        <h2 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:clamp(34px,4.4vw,52px);line-height:1.02;letter-spacing:-.02em;margin:0;color:#251D14">
+        <h2 style="font-family:'Manrope';font-weight:700;font-size:clamp(34px,4.4vw,52px);line-height:1.02;letter-spacing:-.02em;margin:0;color:#251D14">
           <span class="lang-es">Seis razones para perderse —y reencontrarse— en las montañas de Boquete.</span>
           <span class="lang-en" hidden>Six reasons to get lost — and find yourself — in the mountains of Boquete.</span>
         </h2>
@@ -81,7 +114,7 @@ const homePosts = POSTS.slice(0, 3);
             </span>
           </div>
           <div style="padding:20px 21px 23px">
-            <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:22px;margin:0 0 9px;color:#251D14">
+            <h3 style="font-family:'Manrope';font-weight:700;font-size:22px;margin:0 0 9px;color:#251D14">
               <span class="lang-es">{p.name.es}</span><span class="lang-en" hidden>{p.name.en}</span>
             </h3>
             <p style="font-size:14.5px;line-height:1.55;color:#5A4F42;margin:0 0 14px">
@@ -100,7 +133,7 @@ const homePosts = POSTS.slice(0, 3);
         <div style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:12px">
           <span class="lang-es">Próximos eventos</span><span class="lang-en" hidden>Upcoming events</span>
         </div>
-        <h2 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:clamp(30px,3.6vw,42px);margin:0;color:#251D14;letter-spacing:-.02em">
+        <h2 style="font-family:'Manrope';font-weight:700;font-size:clamp(30px,3.6vw,42px);margin:0;color:#251D14;letter-spacing:-.02em">
           <span class="lang-es">Ferias, música y tradición durante todo el año.</span>
           <span class="lang-en" hidden>Fairs, music and tradition throughout the year.</span>
         </h2>
@@ -112,7 +145,7 @@ const homePosts = POSTS.slice(0, 3);
           <img src={e.img} alt={e.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
           <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,28,18,.12),rgba(18,20,12,.85))"></div>
           <div style="position:absolute;top:15px;left:15px;background:#F7F1E6;border-radius:13px;text-align:center;padding:9px 13px;line-height:1">
-            <div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:25px;color:#B95C36">{e.d}</div>
+            <div style="font-family:'Manrope';font-weight:800;font-size:25px;color:#B95C36">{e.d}</div>
             <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#5A4F42;margin-top:2px">
               <span class="lang-es">{e.m.es}</span><span class="lang-en" hidden>{e.m.en}</span>
             </div>
@@ -121,7 +154,7 @@ const homePosts = POSTS.slice(0, 3);
             <span style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#E7C98C">
               <span class="lang-es">{e.cat.es}</span><span class="lang-en" hidden>{e.cat.en}</span>
             </span>
-            <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;margin:7px 0 6px;line-height:1.1">
+            <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:7px 0 6px;line-height:1.1">
               <span class="lang-es">{e.name.es}</span><span class="lang-en" hidden>{e.name.en}</span>
             </h3>
             <p style="font-size:13.5px;color:#D8CDBA;margin:0">
@@ -142,7 +175,7 @@ const homePosts = POSTS.slice(0, 3);
           <div style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:12px">
             <span class="lang-es">Del blog</span><span class="lang-en" hidden>From the blog</span>
           </div>
-          <h2 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:clamp(30px,3.6vw,42px);margin:0;color:#251D14;letter-spacing:-.02em">
+          <h2 style="font-family:'Manrope';font-weight:700;font-size:clamp(30px,3.6vw,42px);margin:0;color:#251D14;letter-spacing:-.02em">
             <span class="lang-es">Historias, guías y consejos para tu viaje.</span>
             <span class="lang-en" hidden>Stories, guides and tips for your trip.</span>
           </h2>
@@ -164,7 +197,7 @@ const homePosts = POSTS.slice(0, 3);
               <span>·</span>
               <span><span class="lang-es">{b.date.es}</span><span class="lang-en" hidden>{b.date.en}</span></span>
             </div>
-            <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;line-height:1.18;margin:0 0 9px;color:#251D14">
+            <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;line-height:1.18;margin:0 0 9px;color:#251D14">
               <span class="lang-es">{b.title.es}</span><span class="lang-en" hidden>{b.title.en}</span>
             </h3>
             <p style="font-size:14.5px;line-height:1.55;color:#5A4F42;margin:0">
@@ -183,7 +216,7 @@ const homePosts = POSTS.slice(0, 3);
         <div style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:12px">
           <span class="lang-es">Galería</span><span class="lang-en" hidden>Gallery</span>
         </div>
-        <h2 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:clamp(30px,3.6vw,42px);margin:0;color:#251D14;letter-spacing:-.02em">
+        <h2 style="font-family:'Manrope';font-weight:700;font-size:clamp(30px,3.6vw,42px);margin:0;color:#251D14;letter-spacing:-.02em">
           <span class="lang-es">Un vistazo a la vida en las tierras altas.</span>
           <span class="lang-en" hidden>A glimpse of life in the highlands.</span>
         </h2>
@@ -239,7 +272,7 @@ const homePosts = POSTS.slice(0, 3);
       <!-- Right: Form card -->
       <div style="padding:clamp(32px,4vw,60px) clamp(26px,4vw,56px);display:flex;align-items:center">
         <div id="lead-card" style="background:#F7F1E6;border-radius:20px;padding:clamp(28px,3.4vw,44px);width:100%;box-shadow:0 30px 60px -20px rgba(0,0,0,.25)">
-          <h3 style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(22px,2.6vw,30px);color:#251D14;margin:0 0 6px">
+          <h3 style="font-family:'Manrope';font-weight:800;font-size:clamp(22px,2.6vw,30px);color:#251D14;margin:0 0 6px">
             <span class="lang-es">Recibe la guía gratis</span>
             <span class="lang-en" hidden>Send me the free guide</span>
           </h3>
@@ -359,7 +392,7 @@ const homePosts = POSTS.slice(0, 3);
           <!-- Success message -->
           <div id="lead-success" style="display:none;text-align:center;padding:32px 10px">
             <div style="width:52px;height:52px;border-radius:50%;background:#2C3A2A;color:#C8964A;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;margin-bottom:16px">✓</div>
-            <h3 style="font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;color:#251D14;margin:0 0 8px">
+            <h3 style="font-family:'Manrope';font-weight:800;font-size:24px;color:#251D14;margin:0 0 8px">
               <span class="lang-es">¡Gracias!</span>
               <span class="lang-en" hidden>Thank you!</span>
             </h3>

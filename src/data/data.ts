@@ -38,7 +38,7 @@ export interface Post {
 
 export interface Rental {
   id: string;
-  type: 'casa' | 'bnb' | 'apto';
+  type: 'casa' | 'habitacion' | 'apto';
   price: number;
   guests: number;
   beds: number;
@@ -357,16 +357,16 @@ export const RENTALS: Rental[] = [
   {
     id: 'cafetal',
     type: 'casa',
-    price: 120, guests: 6, beds: 3, baths: 2, rating: 4.9, reviews: 128,
+    price: 650, guests: 6, beds: 3, baths: 2, rating: 4.9, reviews: 128,
     name: { es: 'Cabaña El Cafetal', en: 'El Cafetal Cabin' },
     loc: { es: 'Bajo Mono, Boquete', en: 'Bajo Mono, Boquete' },
-    short: { es: 'Cabaña de madera rodeada de cafetales, con chimenea y vistas al bosque nuboso.', en: 'Wooden cabin surrounded by coffee farms, with a fireplace and cloud-forest views.' },
+    short: { es: 'Cabaña de madera amueblada, rodeada de cafetales, con chimenea y vistas al bosque nuboso. Acepta mascotas.', en: 'Furnished wooden cabin surrounded by coffee farms, with a fireplace and cloud-forest views. Pet friendly.' },
     desc: {
-      es: 'A diez minutos del pueblo, esta cabaña de madera se levanta en medio de una finca de café en producción. Las mañanas empiezan con niebla entre los cafetos y el canto de los pájaros; las noches, frente a la chimenea. Cuenta con cocina completa, tres habitaciones y una terraza amplia para contemplar el bosque nuboso.',
-      en: 'Ten minutes from town, this wooden cabin sits in the middle of a working coffee farm. Mornings begin with mist among the coffee plants and birdsong; evenings, by the fireplace. It has a full kitchen, three bedrooms and a wide deck to take in the cloud forest.',
+      es: 'A diez minutos del pueblo, esta cabaña de madera se levanta en medio de una finca de café en producción, ideal para quienes buscan alquilar por meses y vivir cerca de la naturaleza. Las mañanas empiezan con niebla entre los cafetos y el canto de los pájaros; las noches, frente a la chimenea. Cuenta con cocina completa y amueblada, tres habitaciones y una terraza amplia para contemplar el bosque nuboso.',
+      en: 'Ten minutes from town, this wooden cabin sits in the middle of a working coffee farm, ideal for those looking for a monthly rental to live close to nature. Mornings begin with mist among the coffee plants and birdsong; evenings, by the fireplace. It has a full furnished kitchen, three bedrooms and a wide deck to take in the cloud forest.',
     },
-    host: { name: 'Roberto Achú', line: { es: 'Caficultor y anfitrión desde 2018', en: 'Coffee grower and host since 2018' } },
-    amen: ['wifi', 'kitchen', 'view', 'parking', 'fireplace'],
+    host: { name: 'Roberto Achú', line: { es: 'Caficultor y propietario desde 2018', en: 'Coffee grower and owner since 2018' } },
+    amen: ['wifi', 'kitchen', 'view', 'parking', 'fireplace', 'furnished', 'pets'],
     reviewsList: [
       { name: 'James Carter', rating: 5, date: { es: 'Junio 2026', en: 'June 2026' }, text: { es: 'Despertar entre cafetales no tiene precio. Roberto nos preparó un café de su propia cosecha.', en: 'Waking up among coffee plants is priceless. Roberto made us coffee from his own harvest.' } },
       { name: 'Sophie Müller', rating: 5, date: { es: 'Mayo 2026', en: 'May 2026' }, text: { es: 'La cabaña es acogedora y la chimenea, perfecta para las noches frescas de montaña.', en: 'The cabin is cosy and the fireplace is perfect for cool mountain nights.' } },
@@ -376,20 +376,20 @@ export const RENTALS: Rental[] = [
   },
   {
     id: 'niebla',
-    type: 'bnb',
-    price: 65, guests: 2, beds: 1, baths: 1, rating: 4.8, reviews: 94,
-    name: { es: 'B&B Jardín de Niebla', en: 'Jardín de Niebla B&B' },
+    type: 'habitacion',
+    price: 380, guests: 2, beds: 1, baths: 1, rating: 4.8, reviews: 94,
+    name: { es: 'Habitación Jardín de Niebla', en: 'Jardín de Niebla Room' },
     loc: { es: 'Alto Boquete', en: 'Alto Boquete' },
-    short: { es: 'Habitación privada con desayuno casero y un jardín de orquídeas con vista al valle.', en: 'Private room with homemade breakfast and an orchid garden overlooking the valley.' },
+    short: { es: 'Habitación privada amueblada en casa familiar, con jardín de orquídeas y vista al valle.', en: 'Furnished private room in a family home, with an orchid garden and valley views.' },
     desc: {
-      es: 'Un bed & breakfast familiar en una casa rodeada de jardines de orquídeas. La habitación privada tiene baño propio y un balcón con vista al valle de Boquete. Cada mañana se sirve un desayuno casero con frutas de altura, hojaldres y café recién molido.',
-      en: 'A family-run bed & breakfast in a house surrounded by orchid gardens. The private room has its own bathroom and a balcony overlooking the Boquete valley. Each morning a homemade breakfast is served with highland fruit, hojaldres and freshly ground coffee.',
+      es: 'Habitación privada dentro de una casa familiar rodeada de jardines de orquídeas, ideal para quienes llegan a vivir en Boquete por temporadas largas. Incluye baño propio, balcón con vista al valle y acceso a la cocina compartida. Elena, la propietaria, vive en la misma casa y conoce cada rincón del pueblo.',
+      en: 'A private room inside a family home surrounded by orchid gardens, ideal for those settling in Boquete for extended stays. It includes a private bathroom, a balcony overlooking the valley and access to the shared kitchen. Elena, the owner, lives in the same house and knows every corner of town.',
     },
-    host: { name: 'Elena Caballero', line: { es: 'Anfitriona y jardinera', en: 'Host and gardener' } },
-    amen: ['wifi', 'breakfast', 'view', 'parking'],
+    host: { name: 'Elena Caballero', line: { es: 'Propietaria y jardinera', en: 'Owner and gardener' } },
+    amen: ['wifi', 'kitchen', 'furnished', 'parking'],
     reviewsList: [
-      { name: 'Ana Lucía Rivas', rating: 5, date: { es: 'Junio 2026', en: 'June 2026' }, text: { es: 'El desayuno es espectacular y Elena conoce todos los rincones de Boquete.', en: 'Breakfast is spectacular and Elena knows every corner of Boquete.' } },
-      { name: 'Liam O\'Brien', rating: 4, date: { es: 'Abril 2026', en: 'April 2026' }, text: { es: 'Habitación impecable y un jardín de ensueño. Volvería sin dudarlo.', en: 'Spotless room and a dreamy garden. I would return without hesitation.' } },
+      { name: 'Ana Lucía Rivas', rating: 5, date: { es: 'Junio 2026', en: 'June 2026' }, text: { es: 'Llevo tres meses viviendo aquí y Elena se siente como familia. El jardín es mi lugar favorito para trabajar remoto.', en: 'I have lived here for three months and Elena feels like family. The garden is my favourite spot to work remotely.' } },
+      { name: 'Liam O\'Brien', rating: 4, date: { es: 'Abril 2026', en: 'April 2026' }, text: { es: 'Habitación impecable y bien amueblada, muy cómoda para una estadía larga.', en: 'Spotless, well-furnished room, very comfortable for a long stay.' } },
     ],
     img: img('bnb-orchid-valley', 800, 560),
     lat: 8.7835, lng: -82.4389,
@@ -397,15 +397,15 @@ export const RENTALS: Rental[] = [
   {
     id: 'caldera',
     type: 'apto',
-    price: 90, guests: 4, beds: 2, baths: 1, rating: 4.7, reviews: 76,
+    price: 550, guests: 4, beds: 2, baths: 1, rating: 4.7, reviews: 76,
     name: { es: 'Apartamento Río Caldera', en: 'Río Caldera Apartment' },
     loc: { es: 'Centro de Boquete', en: 'Downtown Boquete' },
-    short: { es: 'Apartamento moderno junto al río, a pasos del parque y las cafeterías del pueblo.', en: 'Modern apartment by the river, steps from the park and the town cafés.' },
+    short: { es: 'Apartamento moderno sin amueblar, junto al río, a pasos del parque y las cafeterías del pueblo.', en: 'Modern unfurnished apartment by the river, steps from the park and the town cafés.' },
     desc: {
-      es: 'Un apartamento luminoso y moderno a orillas del río Caldera, en pleno centro de Boquete. Tiene dos habitaciones, cocina equipada y acceso a una piscina compartida. Perfecto para quienes quieren explorar el pueblo a pie y volver a relajarse junto al agua.',
-      en: 'A bright, modern apartment on the banks of the Caldera river, right in the centre of Boquete. It has two bedrooms, an equipped kitchen and access to a shared pool. Perfect for those who want to explore the town on foot and unwind by the water.',
+      es: 'Un apartamento luminoso y moderno a orillas del río Caldera, en pleno centro de Boquete, disponible para alquiler mensual sin amueblar. Tiene dos habitaciones, cocina equipada y acceso a una piscina compartida. Perfecto para quienes se mudan a vivir al pueblo y quieren llegar caminando a todas partes.',
+      en: 'A bright, modern apartment on the banks of the Caldera river, right in the centre of Boquete, available as an unfurnished monthly rental. It has two bedrooms, an equipped kitchen and access to a shared pool. Perfect for those moving to live in town who want to walk everywhere.',
     },
-    host: { name: 'Lucía Samudio', line: { es: 'Anfitriona Superhost', en: 'Superhost' } },
+    host: { name: 'Lucía Samudio', line: { es: 'Propietaria', en: 'Owner' } },
     amen: ['wifi', 'kitchen', 'parking', 'pool'],
     reviewsList: [
       { name: 'Carlos Méndez', rating: 5, date: { es: 'Junio 2026', en: 'June 2026' }, text: { es: 'Ubicación inmejorable, caminamos a todas partes. El sonido del río de fondo es relajante.', en: 'Unbeatable location, we walked everywhere. The river in the background is so relaxing.' } },
@@ -417,19 +417,19 @@ export const RENTALS: Rental[] = [
   {
     id: 'mirador',
     type: 'casa',
-    price: 180, guests: 8, beds: 4, baths: 3, rating: 5.0, reviews: 61,
+    price: 1300, guests: 8, beds: 4, baths: 3, rating: 5.0, reviews: 61,
     name: { es: 'Casa Mirador del Barú', en: 'Mirador del Barú House' },
     loc: { es: 'Volcancito, Boquete', en: 'Volcancito, Boquete' },
-    short: { es: 'Casa amplia con vista directa al Volcán Barú, piscina y terraza para grupos.', en: 'Spacious house with direct views of Barú Volcano, a pool and a terrace for groups.' },
+    short: { es: 'Casa amplia y amueblada con vista directa al Volcán Barú, piscina y acepta mascotas.', en: 'Spacious furnished house with direct views of Barú Volcano, a pool and pet friendly.' },
     desc: {
-      es: 'Una casa amplia diseñada para grupos y familias, con vista frontal al Volcán Barú. Cuatro habitaciones, piscina privada, chimenea y una gran terraza donde ver el atardecer sobre la montaña. La cocina equipada invita a cocinar en casa con productos del mercado local.',
-      en: 'A spacious house designed for groups and families, with a front view of Barú Volcano. Four bedrooms, a private pool, a fireplace and a large terrace to watch the sunset over the mountain. The equipped kitchen invites you to cook at home with produce from the local market.',
+      es: 'Una casa amplia pensada para familias que se mudan a vivir a Boquete, con vista frontal al Volcán Barú. Cuatro habitaciones, piscina privada, chimenea y una gran terraza donde ver el atardecer sobre la montaña. La cocina equipada y el patio cercado hacen que mascotas y niños se sientan como en casa desde el primer mes.',
+      en: 'A spacious house designed for families relocating to live in Boquete, with a front view of Barú Volcano. Four bedrooms, a private pool, a fireplace and a large terrace to watch the sunset over the mountain. The equipped kitchen and fenced yard make it easy for pets and kids to settle in from month one.',
     },
-    host: { name: 'Diego Pittí', line: { es: 'Anfitrión local', en: 'Local host' } },
-    amen: ['wifi', 'kitchen', 'view', 'parking', 'pool', 'fireplace'],
+    host: { name: 'Diego Pittí', line: { es: 'Propietario local', en: 'Local owner' } },
+    amen: ['wifi', 'kitchen', 'view', 'parking', 'pool', 'fireplace', 'furnished', 'pets'],
     reviewsList: [
-      { name: 'Thomas Dubois', rating: 5, date: { es: 'Mayo 2026', en: 'May 2026' }, text: { es: 'La vista al volcán desde la terraza es de otro mundo. Casa enorme y bien equipada.', en: 'The volcano view from the terrace is out of this world. Huge, well-equipped house.' } },
-      { name: 'Marta Quirós', rating: 5, date: { es: 'Abril 2026', en: 'April 2026' }, text: { es: 'Ideal para nuestro grupo de ocho. La piscina y la chimenea fueron lo mejor.', en: 'Ideal for our group of eight. The pool and fireplace were the best part.' } },
+      { name: 'Thomas Dubois', rating: 5, date: { es: 'Mayo 2026', en: 'May 2026' }, text: { es: 'La vista al volcán desde la terraza es de otro mundo. Nos mudamos hace seis meses y no queremos irnos.', en: 'The volcano view from the terrace is out of this world. We moved in six months ago and never want to leave.' } },
+      { name: 'Marta Quirós', rating: 5, date: { es: 'Abril 2026', en: 'April 2026' }, text: { es: 'Perfecta para vivir en familia. La piscina, la chimenea y que acepten a nuestro perro fueron un gran plus.', en: 'Perfect for family living. The pool, the fireplace and that they accept our dog were a big plus.' } },
     ],
     img: img('volcano-view-house', 800, 560),
     lat: 8.8015, lng: -82.4521,
@@ -468,15 +468,15 @@ export const AMEN_LABELS: Record<string, { icon: string; es: string; en: string 
   view:      { icon: '🏔️', es: 'Vista panorámica', en: 'Panoramic view' },
   parking:   { icon: '🚗', es: 'Parqueo', en: 'Parking' },
   fireplace: { icon: '🔥', es: 'Chimenea', en: 'Fireplace' },
-  breakfast: { icon: '☕', es: 'Desayuno incluido', en: 'Breakfast included' },
   pool:      { icon: '🏊', es: 'Piscina', en: 'Pool' },
   pets:      { icon: '🐾', es: 'Acepta mascotas', en: 'Pet friendly' },
+  furnished: { icon: '🛋️', es: 'Amueblado', en: 'Furnished' },
 };
 
 // --- TYPE LABELS ---
 export const TYPE_LABELS: Record<string, Bilingual> = {
   casa: { es: 'Casa', en: 'House' },
-  bnb:  { es: 'B&B', en: 'B&B' },
+  habitacion: { es: 'Habitación', en: 'Room' },
   apto: { es: 'Apartamento', en: 'Apartment' },
 };
 

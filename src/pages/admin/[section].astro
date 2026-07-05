@@ -60,11 +60,11 @@ const helpTexts: Record<string, { title: string; lines: string[] }> = {
   rentals: {
     title: 'Gestión de Alquileres',
     lines: [
-      'Las propiedades aparecen en <strong>/alquiler</strong> y cada una tiene su página de detalle con mapa.',
-      '<strong>Tipo</strong> — Selecciona entre Casa, B&B o Apartamento.',
-      '<strong>Precio</strong> — Precio por noche en dólares, solo el número (ej: <code>120</code>).',
+      'Las propiedades son alquileres mensuales para vivir en Boquete (no por noche). Aparecen en <strong>/alquiler</strong> y cada una tiene su página de detalle con mapa.',
+      '<strong>Tipo</strong> — Selecciona entre Casa, Habitación o Apartamento.',
+      '<strong>Precio</strong> — Precio mensual en dólares, solo el número (ej: <code>650</code>).',
       '<strong>Rating</strong> — Calificación de 1.0 a 5.0 (ej: <code>4.9</code>).',
-      '<strong>Amenidades</strong> — Lista separada por comas. Valores válidos: <code>wifi</code>, <code>kitchen</code>, <code>view</code>, <code>parking</code>, <code>pool</code>, <code>fireplace</code>, <code>breakfast</code>, <code>pets</code>.',
+      '<strong>Amenidades</strong> — Lista separada por comas. Valores válidos: <code>wifi</code>, <code>kitchen</code>, <code>view</code>, <code>parking</code>, <code>pool</code>, <code>fireplace</code>, <code>furnished</code>, <code>pets</code>.',
       '<strong>Latitud / Longitud</strong> — Coordenadas para el mapa. Boquete está aprox. en <code>8.78</code>, <code>-82.43</code>. Puedes obtener coordenadas desde Google Maps (click derecho → copiar coordenadas).',
     ],
   },
@@ -136,7 +136,7 @@ const help = helpTexts[section!];
                   <td style="font-weight:600;color:#1a1918">{typeof nameObj === 'object' ? nameObj.es : nameObj}</td>
                   <td>{typeof nameObj === 'object' ? nameObj.en : '--'}</td>
                   {section === 'posts' && <td>{item.author}</td>}
-                  {section === 'rentals' && <td style="font-weight:600">${item.price}/noche</td>}
+                  {section === 'rentals' && <td style="font-weight:600">${item.price}/mes</td>}
                   <td>
                     {item.img && <img src={item.img} alt="" style="width:56px;height:38px;object-fit:cover;border-radius:8px;border:1px solid #ebebea" />}
                   </td>
@@ -249,9 +249,9 @@ const help = helpTexts[section!];
     rentals: [
       { key: 'id', label: 'ID (slug)', type: 'text' },
       { key: 'name', label: 'Nombre', type: 'bilingual' },
-      { key: 'type', label: 'Tipo', type: 'select', options: [['casa','Casa'],['bnb','B&B'],['apto','Apartamento']] },
-      { key: 'price', label: 'Precio por noche ($)', type: 'number' },
-      { key: 'guests', label: 'Huéspedes', type: 'number' },
+      { key: 'type', label: 'Tipo', type: 'select', options: [['casa','Casa'],['habitacion','Habitación'],['apto','Apartamento']] },
+      { key: 'price', label: 'Precio mensual ($)', type: 'number' },
+      { key: 'guests', label: 'Personas', type: 'number' },
       { key: 'beds', label: 'Camas', type: 'number' },
       { key: 'baths', label: 'Baños', type: 'number' },
       { key: 'rating', label: 'Rating', type: 'number' },
@@ -259,7 +259,7 @@ const help = helpTexts[section!];
       { key: 'loc', label: 'Ubicación', type: 'bilingual' },
       { key: 'short', label: 'Descripción corta', type: 'bilingual-area' },
       { key: 'desc', label: 'Descripción larga', type: 'bilingual-area' },
-      { key: 'amen', label: 'Amenidades (separadas por coma)', type: 'text', hint: 'wifi, kitchen, view, parking, pool, fireplace, breakfast, pets' },
+      { key: 'amen', label: 'Amenidades (separadas por coma)', type: 'text', hint: 'wifi, kitchen, view, parking, pool, fireplace, furnished, pets' },
       { key: 'lat', label: 'Latitud', type: 'number' },
       { key: 'lng', label: 'Longitud', type: 'number' },
       { key: 'img', label: 'URL de imagen', type: 'text' },

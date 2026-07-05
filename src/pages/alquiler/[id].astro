@@ -12,12 +12,18 @@ const { stay } = Astro.props;
 
 <Layout activeKey="stays" title={`${stay.name.es} · Boquete`} titleEn={`${stay.name.en} · Boquete`}>
 
+  <div class="rental-bg">
+
+  <div class="rental-bg-canvas" aria-hidden="true"></div>
+
+  <div class="rental-bg-content">
+
   <!-- GALLERY HERO -->
   <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:54px 26px 0">
     <a href="/alquiler" style="display:inline-flex;align-items:center;gap:7px;color:#B95C36;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:18px">
       ← <span class="lang-es">Volver a alojamientos</span><span class="lang-en" hidden>Back to stays</span>
     </a>
-    <h1 style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(32px,4.6vw,52px);line-height:1.02;letter-spacing:-.02em;margin:0 0 12px;color:#251D14">
+    <h1 style="font-family:'Manrope';font-weight:800;font-size:clamp(32px,4.6vw,52px);line-height:1.02;letter-spacing:-.02em;margin:0 0 12px;color:#251D14">
       <span class="lang-es">{stay.name.es}</span><span class="lang-en" hidden>{stay.name.en}</span>
     </h1>
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;font-size:15px;color:#5A4F42">
@@ -46,14 +52,14 @@ const { stay } = Astro.props;
     <div class="split-2" style="display:grid;grid-template-columns:1.5fr 1fr;gap:48px;align-items:start">
 
       <!-- Left: description + amenities + reviews -->
-      <div>
+      <div style="background:#F7F1E6;border:1px solid rgba(37,29,20,.09);border-radius:20px;padding:32px;box-shadow:0 12px 30px -22px rgba(37,29,20,.35)">
         <p style="font-size:17px;line-height:1.72;color:#3D3328;margin:0 0 30px">
           <span class="lang-es">{stay.desc.es}</span><span class="lang-en" hidden>{stay.desc.en}</span>
         </p>
 
         <!-- Amenities -->
         <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px">
-          <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
+          <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
             <span class="lang-es">Lo que incluye</span><span class="lang-en" hidden>What's included</span>
           </h3>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -69,9 +75,9 @@ const { stay } = Astro.props;
 
         <!-- Host -->
         <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px;display:flex;align-items:center;gap:16px">
-          <div style="width:54px;height:54px;border-radius:50%;background:#2C3A2A;color:#C8964A;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;flex:none">{stay.host.name[0]}</div>
+          <div style="width:54px;height:54px;border-radius:50%;background:#2C3A2A;color:#C8964A;display:flex;align-items:center;justify-content:center;font-family:'Manrope';font-weight:800;font-size:22px;flex:none">{stay.host.name[0]}</div>
           <div>
-            <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:18px;color:#251D14">{stay.host.name}</div>
+            <div style="font-family:'Manrope';font-weight:700;font-size:18px;color:#251D14">{stay.host.name}</div>
             <div style="font-size:14px;color:#8A7D69">
               <span class="lang-es">{stay.host.line.es}</span><span class="lang-en" hidden>{stay.host.line.en}</span>
             </div>
@@ -80,7 +86,7 @@ const { stay } = Astro.props;
 
         <!-- Map -->
         <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px">
-          <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
+          <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
             <span class="lang-es">Ubicación</span><span class="lang-en" hidden>Location</span>
           </h3>
           <div id="map" style="width:100%;height:300px;border-radius:16px;overflow:hidden;border:1px solid rgba(37,29,20,.1)"></div>
@@ -88,7 +94,7 @@ const { stay } = Astro.props;
 
         <!-- Reviews -->
         <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px">
-          <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;margin:0 0 18px;color:#251D14">
+          <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:0 0 18px;color:#251D14">
             <span class="lang-es">Reseñas</span><span class="lang-en" hidden>Reviews</span>
           </h3>
           <div style="display:flex;flex-direction:column;gap:18px">
@@ -119,37 +125,37 @@ const { stay } = Astro.props;
       <div style="position:sticky;top:92px">
         <div style="background:#fff;border:1px solid rgba(37,29,20,.1);border-radius:20px;padding:28px;box-shadow:0 12px 30px -22px rgba(37,29,20,.5)">
           <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:20px">
-            <span style="font-family:'Bricolage Grotesque';font-weight:800;font-size:28px;color:#251D14">${stay.price}</span>
-            <span style="font-size:15px;color:#8A7D69">/ <span class="lang-es">noche</span><span class="lang-en" hidden>night</span></span>
+            <span style="font-family:'Manrope';font-weight:800;font-size:28px;color:#251D14">${stay.price}</span>
+            <span style="font-size:15px;color:#8A7D69">/ <span class="lang-es">mes</span><span class="lang-en" hidden>month</span></span>
           </div>
 
           <div id="book-form" style="display:flex;flex-direction:column;gap:14px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(37,29,20,.18);border-radius:12px;overflow:hidden">
-              <label style="padding:12px;border-right:1px solid rgba(37,29,20,.18)">
-                <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
-                  <span class="lang-es">Llegada</span><span class="lang-en" hidden>Check-in</span>
-                </div>
-                <input id="book-in" type="date" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%" />
-              </label>
-              <label style="padding:12px">
-                <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
-                  <span class="lang-es">Salida</span><span class="lang-en" hidden>Check-out</span>
-                </div>
-                <input id="book-out" type="date" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%" />
-              </label>
+            <div style="border:1px solid rgba(37,29,20,.18);border-radius:12px;padding:12px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
+                <span class="lang-es">Fecha de mudanza</span><span class="lang-en" hidden>Move-in date</span>
+              </div>
+              <input id="book-in" type="date" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%" />
             </div>
             <div style="border:1px solid rgba(37,29,20,.18);border-radius:12px;padding:12px">
               <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
-                <span class="lang-es">Huéspedes</span><span class="lang-en" hidden>Guests</span>
+                <span class="lang-es">Duración (meses)</span><span class="lang-en" hidden>Duration (months)</span>
+              </div>
+              <select id="book-months" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%">
+                {Array.from({length: 12}, (_, i) => <option value={i+1} selected={i === 0}>{i+1}</option>)}
+              </select>
+            </div>
+            <div style="border:1px solid rgba(37,29,20,.18);border-radius:12px;padding:12px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
+                <span class="lang-es">Personas</span><span class="lang-en" hidden>Occupants</span>
               </div>
               <select id="book-guests" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%">
                 {Array.from({length: stay.guests}, (_, i) => <option value={i+1}>{i+1}</option>)}
               </select>
             </div>
 
-            <div id="book-total" style="display:none;background:#F7F1E6;border-radius:12px;padding:16px">
+            <div id="book-total" style="background:#F7F1E6;border-radius:12px;padding:16px">
               <div style="display:flex;justify-content:space-between;font-size:15px;color:#5A4F42;margin-bottom:8px">
-                <span id="nights-line"></span>
+                <span id="months-line"></span>
                 <span id="total-price"></span>
               </div>
             </div>
@@ -161,7 +167,7 @@ const { stay } = Astro.props;
 
           <div id="book-confirm" style="display:none;text-align:center;padding:20px 0;animation:fadein .4s both">
             <div style="font-size:32px;margin-bottom:12px">✓</div>
-            <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:20px;color:#251D14;margin-bottom:8px">
+            <div style="font-family:'Manrope';font-weight:700;font-size:20px;color:#251D14;margin-bottom:8px">
               <span class="lang-es">¡Solicitud enviada!</span><span class="lang-en" hidden>Request sent!</span>
             </div>
             <p style="font-size:14px;color:#5A4F42;margin:0 0 16px">
@@ -177,13 +183,17 @@ const { stay } = Astro.props;
   </section>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  </div>
+
+  </div>
+
 </Layout>
 
 <script define:vars={{ price: stay.price, lat: stay.lat, lng: stay.lng, stayName: stay.name.es }}>
   const bookIn = document.getElementById('book-in');
-  const bookOut = document.getElementById('book-out');
-  const totalDiv = document.getElementById('book-total');
-  const nightsLine = document.getElementById('nights-line');
+  const bookMonths = document.getElementById('book-months');
+  const monthsLine = document.getElementById('months-line');
   const totalPrice = document.getElementById('total-price');
   const bookBtn = document.getElementById('book-btn');
   const bookForm = document.getElementById('book-form');
@@ -191,20 +201,17 @@ const { stay } = Astro.props;
   const bookReset = document.getElementById('book-reset');
 
   function updateTotal() {
-    if (!bookIn.value || !bookOut.value) { totalDiv.style.display = 'none'; return; }
-    const nights = Math.round((new Date(bookOut.value) - new Date(bookIn.value)) / 86400000);
-    if (nights <= 0) { totalDiv.style.display = 'none'; return; }
-    totalDiv.style.display = 'block';
+    const months = parseInt(bookMonths.value) || 1;
     const lang = document.documentElement.getAttribute('data-lang') || 'es';
-    const nightLabel = lang === 'en'
-      ? (nights > 1 ? 'nights' : 'night')
-      : (nights > 1 ? 'noches' : 'noche');
-    nightsLine.textContent = `${nights} ${nightLabel} × $${price}`;
-    totalPrice.textContent = `$${nights * price}`;
+    const monthLabel = lang === 'en'
+      ? (months > 1 ? 'months' : 'month')
+      : (months > 1 ? 'meses' : 'mes');
+    monthsLine.textContent = `${months} ${monthLabel} × $${price}`;
+    totalPrice.textContent = `$${months * price}`;
   }
 
-  bookIn?.addEventListener('change', updateTotal);
-  bookOut?.addEventListener('change', updateTotal);
+  bookMonths?.addEventListener('change', updateTotal);
+  updateTotal();
 
   bookBtn?.addEventListener('click', () => {
     bookForm.style.display = 'none';
@@ -214,9 +221,9 @@ const { stay } = Astro.props;
   bookReset?.addEventListener('click', () => {
     bookConfirm.style.display = 'none';
     bookForm.style.display = 'flex';
-    totalDiv.style.display = 'none';
     bookIn.value = '';
-    bookOut.value = '';
+    bookMonths.value = '1';
+    updateTotal();
   });
 
   // Leaflet map
@@ -233,4 +240,45 @@ const { stay } = Astro.props;
     };
     document.head.appendChild(script);
   }
+</script>
+
+<style>
+  .rental-bg {
+    position: relative;
+  }
+  .rental-bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url('/fondoalquiler.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .rental-bg-content {
+    position: relative;
+    z-index: 1;
+  }
+</style>
+
+<script>
+  // Keeps the house background pinned to the viewport while scrolling,
+  // fading it out before the footer so it never overlaps it (same
+  // approach used for the blog article background).
+  const FADE_ZONE_PX = 220;
+
+  function updateRentalBgVisibility() {
+    const wrap = document.querySelector('.rental-bg');
+    const canvas = document.querySelector<HTMLElement>('.rental-bg-canvas');
+    if (!wrap || !canvas) return;
+    const distanceToFooter = wrap.getBoundingClientRect().bottom - window.innerHeight;
+    const opacity = Math.max(0, Math.min(1, distanceToFooter / FADE_ZONE_PX));
+    canvas.style.opacity = String(opacity);
+  }
+
+  window.addEventListener('scroll', updateRentalBgVisibility, { passive: true });
+  window.addEventListener('resize', updateRentalBgVisibility);
+  document.addEventListener('DOMContentLoaded', updateRentalBgVisibility);
+  document.addEventListener('astro:page-load', updateRentalBgVisibility);
 </script>

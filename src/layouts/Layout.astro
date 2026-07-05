@@ -37,7 +37,7 @@ const {
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Spectral:ital,wght@1,400;1,500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@1,400;1,500&display=swap"
     rel="stylesheet"
   />
 </head>
@@ -62,8 +62,8 @@ const {
       // Update toggle buttons
       document.querySelectorAll<HTMLElement>('[data-lang-btn]').forEach(btn => {
         const isActive = btn.dataset.langBtn === lang;
-        btn.style.background = isActive ? '#2C3A2A' : 'transparent';
-        btn.style.color = isActive ? '#F7F1E6' : '#3D3328';
+        btn.style.background = isActive ? 'var(--color-forest)' : 'transparent';
+        btn.style.color = isActive ? 'var(--color-sand)' : 'var(--color-ink-soft)';
       });
 
       // Update page title and meta description
@@ -87,16 +87,13 @@ const {
 
     // Mobile menu toggle
     const burger = document.getElementById('mobile-burger');
-    const mobileMenu = document.getElementById('mobile-menu');
     const mobileOverlay = document.getElementById('mobile-overlay');
 
     function closeMobile() {
-      mobileMenu?.classList.add('hidden');
       mobileOverlay?.classList.add('hidden');
     }
 
     burger?.addEventListener('click', () => {
-      mobileMenu?.classList.toggle('hidden');
       mobileOverlay?.classList.toggle('hidden');
     });
 
