@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { gsap } from 'gsap';
+import gsap from 'gsap';
 import './Masonry.css';
 
 const useMedia = (queries: string[], values: number[], defaultValue: number) => {
