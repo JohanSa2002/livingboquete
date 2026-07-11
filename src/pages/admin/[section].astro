@@ -413,12 +413,13 @@ const help = helpTexts[section!];
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('¿Eliminar este elemento?')) return;
-      await fetch(`/api/content/${table}`, {
+      const res = await fetch(`/api/content/${table}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: btn.dataset.id }),
       });
-      btn.closest('tr')?.remove();
+      if (res.ok) { btn.closest('tr')?.remove(); }
+      else { alert('Error al eliminar'); }
     });
   });
 
