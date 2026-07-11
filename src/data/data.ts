@@ -44,6 +44,9 @@ export interface Rental {
   beds: number;
   baths: number;
   parking: number;
+  sqmBuilt: number;
+  sqmLot: number;
+  minMonths: number;
   verified: boolean;
   availableFrom: string;
   rating: number;
@@ -52,7 +55,7 @@ export interface Rental {
   loc: Bilingual;
   short: Bilingual;
   desc: Bilingual;
-  host: { name: string; line: Bilingual };
+  host: { name: string; line: Bilingual; phone: string; email: string };
   amen: string[];
   reviewsList: { name: string; rating: number; date: Bilingual; text: Bilingual }[];
   img: string;
@@ -360,7 +363,7 @@ export const RENTALS: Rental[] = [
   {
     id: 'cafetal',
     type: 'casa',
-    price: 650, guests: 6, beds: 3, baths: 2, parking: 2, verified: true, availableFrom: '',
+    price: 650, guests: 6, beds: 3, baths: 2, parking: 2, sqmBuilt: 140, sqmLot: 800, minMonths: 3, verified: true, availableFrom: '',
     rating: 4.9, reviews: 128,
     name: { es: 'Cabaña El Cafetal', en: 'El Cafetal Cabin' },
     loc: { es: 'Bajo Mono, Boquete', en: 'Bajo Mono, Boquete' },
@@ -369,7 +372,7 @@ export const RENTALS: Rental[] = [
       es: 'A diez minutos del pueblo, esta cabaña de madera se levanta en medio de una finca de café en producción, ideal para quienes buscan alquilar por meses y vivir cerca de la naturaleza. Las mañanas empiezan con niebla entre los cafetos y el canto de los pájaros; las noches, frente a la chimenea. Cuenta con cocina completa y amueblada, tres habitaciones y una terraza amplia para contemplar el bosque nuboso.',
       en: 'Ten minutes from town, this wooden cabin sits in the middle of a working coffee farm, ideal for those looking for a monthly rental to live close to nature. Mornings begin with mist among the coffee plants and birdsong; evenings, by the fireplace. It has a full furnished kitchen, three bedrooms and a wide deck to take in the cloud forest.',
     },
-    host: { name: 'Roberto Achú', line: { es: 'Caficultor y propietario desde 2018', en: 'Coffee grower and owner since 2018' } },
+    host: { name: 'Roberto Achú', line: { es: 'Caficultor y propietario desde 2018', en: 'Coffee grower and owner since 2018' }, phone: '+507 6234-5678', email: 'roberto@livingboquete.com' },
     amen: ['wifi', 'kitchen', 'view', 'parking', 'fireplace', 'furnished', 'pets'],
     reviewsList: [
       { name: 'James Carter', rating: 5, date: { es: 'Junio 2026', en: 'June 2026' }, text: { es: 'Despertar entre cafetales no tiene precio. Roberto nos preparó un café de su propia cosecha.', en: 'Waking up among coffee plants is priceless. Roberto made us coffee from his own harvest.' } },
@@ -381,7 +384,7 @@ export const RENTALS: Rental[] = [
   {
     id: 'niebla',
     type: 'habitacion',
-    price: 380, guests: 2, beds: 1, baths: 1, parking: 1, verified: true, availableFrom: '',
+    price: 380, guests: 2, beds: 1, baths: 1, parking: 1, sqmBuilt: 32, sqmLot: 0, minMonths: 1, verified: true, availableFrom: '',
     rating: 4.8, reviews: 94,
     name: { es: 'Habitación Jardín de Niebla', en: 'Jardín de Niebla Room' },
     loc: { es: 'Alto Boquete', en: 'Alto Boquete' },
@@ -390,7 +393,7 @@ export const RENTALS: Rental[] = [
       es: 'Habitación privada dentro de una casa familiar rodeada de jardines de orquídeas, ideal para quienes llegan a vivir en Boquete por temporadas largas. Incluye baño propio, balcón con vista al valle y acceso a la cocina compartida. Elena, la propietaria, vive en la misma casa y conoce cada rincón del pueblo.',
       en: 'A private room inside a family home surrounded by orchid gardens, ideal for those settling in Boquete for extended stays. It includes a private bathroom, a balcony overlooking the valley and access to the shared kitchen. Elena, the owner, lives in the same house and knows every corner of town.',
     },
-    host: { name: 'Elena Caballero', line: { es: 'Propietaria y jardinera', en: 'Owner and gardener' } },
+    host: { name: 'Elena Caballero', line: { es: 'Propietaria y jardinera', en: 'Owner and gardener' }, phone: '+507 6345-6789', email: 'elena@livingboquete.com' },
     amen: ['wifi', 'kitchen', 'furnished', 'parking'],
     reviewsList: [
       { name: 'Ana Lucía Rivas', rating: 5, date: { es: 'Junio 2026', en: 'June 2026' }, text: { es: 'Llevo tres meses viviendo aquí y Elena se siente como familia. El jardín es mi lugar favorito para trabajar remoto.', en: 'I have lived here for three months and Elena feels like family. The garden is my favourite spot to work remotely.' } },
@@ -402,7 +405,7 @@ export const RENTALS: Rental[] = [
   {
     id: 'caldera',
     type: 'apto',
-    price: 550, guests: 4, beds: 2, baths: 1, parking: 1, verified: false, availableFrom: '2026-08-15',
+    price: 550, guests: 4, beds: 2, baths: 1, parking: 1, sqmBuilt: 88, sqmLot: 0, minMonths: 6, verified: false, availableFrom: '2026-08-15',
     rating: 4.7, reviews: 76,
     name: { es: 'Apartamento Río Caldera', en: 'Río Caldera Apartment' },
     loc: { es: 'Centro de Boquete', en: 'Downtown Boquete' },
@@ -411,7 +414,7 @@ export const RENTALS: Rental[] = [
       es: 'Un apartamento luminoso y moderno a orillas del río Caldera, en pleno centro de Boquete, disponible para alquiler mensual sin amueblar. Tiene dos habitaciones, cocina equipada y acceso a una piscina compartida. Perfecto para quienes se mudan a vivir al pueblo y quieren llegar caminando a todas partes.',
       en: 'A bright, modern apartment on the banks of the Caldera river, right in the centre of Boquete, available as an unfurnished monthly rental. It has two bedrooms, an equipped kitchen and access to a shared pool. Perfect for those moving to live in town who want to walk everywhere.',
     },
-    host: { name: 'Lucía Samudio', line: { es: 'Propietaria', en: 'Owner' } },
+    host: { name: 'Lucía Samudio', line: { es: 'Propietaria', en: 'Owner' }, phone: '+507 6456-7890', email: 'lucia@livingboquete.com' },
     amen: ['wifi', 'kitchen', 'parking', 'pool'],
     reviewsList: [
       { name: 'Carlos Méndez', rating: 5, date: { es: 'Junio 2026', en: 'June 2026' }, text: { es: 'Ubicación inmejorable, caminamos a todas partes. El sonido del río de fondo es relajante.', en: 'Unbeatable location, we walked everywhere. The river in the background is so relaxing.' } },
@@ -423,7 +426,7 @@ export const RENTALS: Rental[] = [
   {
     id: 'mirador',
     type: 'casa',
-    price: 1300, guests: 8, beds: 4, baths: 3, parking: 3, verified: true, availableFrom: '',
+    price: 1300, guests: 8, beds: 4, baths: 3, parking: 3, sqmBuilt: 220, sqmLot: 1200, minMonths: 3, verified: true, availableFrom: '',
     rating: 5.0, reviews: 61,
     name: { es: 'Casa Mirador del Barú', en: 'Mirador del Barú House' },
     loc: { es: 'Volcancito, Boquete', en: 'Volcancito, Boquete' },
@@ -432,7 +435,7 @@ export const RENTALS: Rental[] = [
       es: 'Una casa amplia pensada para familias que se mudan a vivir a Boquete, con vista frontal al Volcán Barú. Cuatro habitaciones, piscina privada, chimenea y una gran terraza donde ver el atardecer sobre la montaña. La cocina equipada y el patio cercado hacen que mascotas y niños se sientan como en casa desde el primer mes.',
       en: 'A spacious house designed for families relocating to live in Boquete, with a front view of Barú Volcano. Four bedrooms, a private pool, a fireplace and a large terrace to watch the sunset over the mountain. The equipped kitchen and fenced yard make it easy for pets and kids to settle in from month one.',
     },
-    host: { name: 'Diego Pittí', line: { es: 'Propietario local', en: 'Local owner' } },
+    host: { name: 'Diego Pittí', line: { es: 'Propietario local', en: 'Local owner' }, phone: '+507 6567-8901', email: 'diego@livingboquete.com' },
     amen: ['wifi', 'kitchen', 'view', 'parking', 'pool', 'fireplace', 'furnished', 'pets'],
     reviewsList: [
       { name: 'Thomas Dubois', rating: 5, date: { es: 'Mayo 2026', en: 'May 2026' }, text: { es: 'La vista al volcán desde la terraza es de otro mundo. Nos mudamos hace seis meses y no queremos irnos.', en: 'The volcano view from the terrace is out of this world. We moved in six months ago and never want to leave.' } },

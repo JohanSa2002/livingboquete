@@ -19,7 +19,7 @@
   --color-wood: #A26A42;
   --color-ink: #2B2B2B;
   --color-ink-soft: #5B5650;
-  --color-ink-faint: #8A8578;
+  --color-ink-faint: #6C6659;
   --color-white: #FFFFFF;
   --color-border: rgba(43,43,43,.12);
   --color-border-soft: rgba(43,43,43,.08);
@@ -60,6 +60,7 @@
   --shadow-focus: 0 0 0 3px rgba(93,138,90,.45);
 
   --ease-out: cubic-bezier(.2,.7,.2,1);
+  --ease-drawer: cubic-bezier(.32,.72,0,1);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -153,6 +154,7 @@ a { color: inherit; }
   transition: background-color .16s var(--ease-out), color .16s var(--ease-out), border-color .16s var(--ease-out), transform .16s var(--ease-out);
 }
 .chip:hover { border-color: var(--color-leaf); transform: translateY(-1px); }
+.chip:active { transform: scale(.96); }
 .chip.is-active {
   background: var(--color-forest);
   border-color: var(--color-forest);

@@ -256,6 +256,9 @@ const help = helpTexts[section!];
       { key: 'beds', label: 'Camas', type: 'number' },
       { key: 'baths', label: 'Baños', type: 'number' },
       { key: 'parking', label: 'Parqueos', type: 'number' },
+      { key: 'sqmBuilt', label: 'M² de construcción', type: 'number' },
+      { key: 'sqmLot', label: 'M² de terreno', type: 'number', hint: '0 si no aplica (apartamento, habitación)' },
+      { key: 'minMonths', label: 'Estadía mínima (meses)', type: 'number' },
       { key: 'verified', label: 'Propiedad verificada', type: 'select', options: [['true','Sí, verificada'],['false','No verificada']] },
       { key: 'availableFrom', label: 'Disponible desde', type: 'text', hint: 'Formato AAAA-MM-DD. Vacío = disponible ahora' },
       { key: 'rating', label: 'Rating', type: 'number' },
@@ -264,6 +267,10 @@ const help = helpTexts[section!];
       { key: 'short', label: 'Descripción corta', type: 'bilingual-area' },
       { key: 'desc', label: 'Descripción larga', type: 'bilingual-area' },
       { key: 'amen', label: 'Amenidades (separadas por coma)', type: 'text', hint: 'wifi, kitchen, view, parking, pool, fireplace, furnished, pets' },
+      { key: 'host.name', label: 'Nombre del anfitrión', type: 'text' },
+      { key: 'host.phone', label: 'Celular del anfitrión', type: 'text' },
+      { key: 'host.email', label: 'Correo del anfitrión', type: 'text' },
+      { key: 'host.line', label: 'Descripción del anfitrión', type: 'bilingual', hint: 'Ej: Propietario local / Local owner' },
       { key: 'lat', label: 'Latitud', type: 'number' },
       { key: 'lng', label: 'Longitud', type: 'number' },
       { key: 'img', label: 'URL de imagen', type: 'text' },
@@ -278,10 +285,14 @@ const help = helpTexts[section!];
 
   const schema = SCHEMAS[table] || [];
 
+  function getPath(obj, path) {
+    return path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+  }
+
   function buildForm(data) {
     let html = '';
     for (const field of schema) {
-      const val = data[field.key];
+      const val = getPath(data, field.key);
       const placeholders = {
         id: 'ej: mi-nuevo-lugar',
         img: 'https://ejemplo.com/imagen.jpg',
@@ -292,10 +303,16 @@ const help = helpTexts[section!];
         beds: 'ej: 3',
         baths: 'ej: 2',
         parking: 'ej: 1',
+        sqmBuilt: 'ej: 140',
+        sqmLot: 'ej: 800',
+        minMonths: 'ej: 3',
         availableFrom: 'ej: 2026-08-15',
         rating: 'ej: 4.9',
         reviews: 'ej: 128',
         amen: 'wifi, kitchen, view, parking',
+        'host.name': 'ej: Roberto Achú',
+        'host.phone': 'ej: +507 6234-5678',
+        'host.email': 'ej: roberto@livingboquete.com',
         lat: 'ej: 8.7835',
         lng: 'ej: -82.4389',
       };
@@ -359,23 +376,34 @@ const help = helpTexts[section!];
 
   function collectForm() {
     const data = {};
+    function pathTarget(key) {
+      const parts = key.split('.');
+      let o = data;
+      for (let i = 0; i < parts.length - 1; i++) {
+        o[parts[i]] = o[parts[i]] || {};
+        o = o[parts[i]];
+      }
+      return { parent: o, leaf: parts[parts.length - 1] };
+    }
+
     modalBody.querySelectorAll('[data-key]').forEach(el => {
       const key = el.dataset.key;
       const lang = el.dataset.lang;
       const isList = el.dataset.list === 'true';
       let val = el.value;
+      const { parent, leaf } = pathTarget(key);
 
       if (lang) {
-        if (!data[key]) data[key] = {};
-        data[key][lang] = isList ? val.split('\n').filter(l => l.trim()) : val;
+        if (!parent[leaf]) parent[leaf] = {};
+        parent[leaf][lang] = isList ? val.split('\n').filter(l => l.trim()) : val;
       } else if (el.type === 'number') {
-        data[key] = val ? Number(val) : 0;
+        parent[leaf] = val ? Number(val) : 0;
       } else if (key === 'amen') {
-        data[key] = val.split(',').map(s => s.trim()).filter(Boolean);
+        parent[leaf] = val.split(',').map(s => s.trim()).filter(Boolean);
       } else if (key === 'verified') {
-        data[key] = val === 'true';
+        parent[leaf] = val === 'true';
       } else {
-        data[key] = val;
+        parent[leaf] = val;
       }
     });
     return data;

@@ -176,28 +176,50 @@ if (!isAvailableNow) {
             <span style="font-size:15px;color:#8A7D69">/ <span class="lang-es">mes</span><span class="lang-en" hidden>month</span></span>
           </div>
 
-          <div style={`display:flex;align-items:center;gap:7px;margin-bottom:24px;font-size:14px;font-weight:700;color:${isAvailableNow ? '#2F7A3D' : '#B9822E'}`}>
+          <div style={`display:flex;align-items:center;gap:7px;margin-bottom:20px;font-size:14px;font-weight:700;color:${isAvailableNow ? '#2F7A3D' : '#B9822E'}`}>
             <span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex:none"></span>
             <span class="lang-es">{availability.es}</span><span class="lang-en" hidden>{availability.en}</span>
           </div>
 
-          <div id="book-form" style="display:flex;flex-direction:column;gap:14px">
-            <button id="book-btn" style="cursor:pointer;background:#B95C36;color:#F7F1E6;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:13px;box-shadow:0 14px 30px -14px rgba(185,92,54,.9)">
-              <span class="lang-es">Solicitar reserva</span><span class="lang-en" hidden>Request booking</span>
-            </button>
+          <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:18px;display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+            {stay.verified && (
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5A4F42">
+                <span style="display:flex;align-items:center;gap:7px"><Icon name="check" size={15} /><span class="lang-es">Propiedad verificada</span><span class="lang-en" hidden>Verified property</span></span>
+              </div>
+            )}
+            {stay.minMonths > 1 && (
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5A4F42">
+                <span class="lang-es">Estadía mínima</span><span class="lang-en" hidden>Minimum stay</span>
+                <span style="font-weight:700;color:#251D14">{stay.minMonths} <span class="lang-es">meses</span><span class="lang-en" hidden>months</span></span>
+              </div>
+            )}
+            {stay.sqmBuilt > 0 && (
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5A4F42">
+                <span style="display:flex;align-items:center;gap:7px"><Icon name="ruler" size={15} /><span class="lang-es">Construcción</span><span class="lang-en" hidden>Built area</span></span>
+                <span style="font-weight:700;color:#251D14">{stay.sqmBuilt} m²</span>
+              </div>
+            )}
+            {stay.sqmLot > 0 && (
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5A4F42">
+                <span class="lang-es">Terreno</span><span class="lang-en" hidden>Lot size</span>
+                <span style="font-weight:700;color:#251D14">{stay.sqmLot} m²</span>
+              </div>
+            )}
           </div>
 
-          <div id="book-confirm" style="display:none;text-align:center;padding:20px 0;animation:fadein .4s both">
-            <div style="font-size:32px;margin-bottom:12px">✓</div>
-            <div style="font-family:'Manrope';font-weight:700;font-size:20px;color:#251D14;margin-bottom:8px">
-              <span class="lang-es">¡Solicitud enviada!</span><span class="lang-en" hidden>Request sent!</span>
+          <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:18px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:10px">
+              <span class="lang-es">Contactar al anfitrión</span><span class="lang-en" hidden>Contact the host</span>
             </div>
-            <p style="font-size:14px;color:#5A4F42;margin:0 0 16px">
-              <span class="lang-es">El anfitrión te contactará pronto.</span><span class="lang-en" hidden>The host will contact you soon.</span>
-            </p>
-            <button id="book-reset" style="cursor:pointer;background:#EFE7D6;border:none;color:#251D14;font-weight:700;font-size:14px;padding:10px 18px;border-radius:10px">
-              <span class="lang-es">Nueva consulta</span><span class="lang-en" hidden>New inquiry</span>
-            </button>
+            <div style="font-weight:700;font-size:15px;color:#251D14;margin-bottom:10px">{stay.host.name}</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <a href={`tel:${stay.host.phone.replace(/[^+\d]/g, '')}`} style="display:flex;align-items:center;gap:9px;color:#3D3328;text-decoration:none;font-size:14.5px;font-weight:600">
+                <Icon name="phone" size={16} />{stay.host.phone}
+              </a>
+              <a href={`mailto:${stay.host.email}`} style="display:flex;align-items:center;gap:9px;color:#3D3328;text-decoration:none;font-size:14.5px;font-weight:600">
+                <Icon name="mail" size={16} />{stay.host.email}
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -209,24 +231,6 @@ if (!isAvailableNow) {
   </div>
 
 </Layout>
-
-<script>
-  const bookBtn = document.getElementById('book-btn');
-  const bookForm = document.getElementById('book-form');
-  const bookConfirm = document.getElementById('book-confirm');
-  const bookReset = document.getElementById('book-reset');
-
-  bookBtn?.addEventListener('click', () => {
-    bookForm.style.display = 'none';
-    bookConfirm.style.display = 'block';
-  });
-
-  bookReset?.addEventListener('click', () => {
-    bookConfirm.style.display = 'none';
-    bookForm.style.display = 'flex';
-  });
-
-</script>
 
 <script>
   import L from 'leaflet';

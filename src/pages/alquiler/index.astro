@@ -377,7 +377,7 @@ const VOICES = RENTALS
                   )}
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-                  {p.amen.slice(0, 4).map(key => (
+                  {p.amen.filter(key => key !== 'parking').slice(0, 4).map(key => (
                     <span title={AMEN_LABELS[key]?.es} style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--color-sand);color:var(--color-forest)">
                       <Icon name={AMEN_ICON[key]} size={15} />
                     </span>

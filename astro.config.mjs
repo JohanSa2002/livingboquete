@@ -11,6 +11,7 @@ const adapter = process.env.VERCEL ? vercel() : node({ mode: 'standalone' });
 export default defineConfig({
   output: 'server',
   adapter,
+  prefetch: { defaultStrategy: 'hover' },
   integrations: [react()],
   vite: {
     ssr: {

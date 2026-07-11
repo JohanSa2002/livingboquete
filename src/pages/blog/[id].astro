@@ -5,16 +5,12 @@ import { getSupabase } from '../../lib/supabase';
 const { id } = Astro.params;
 const supabase = getSupabase();
 
-const { data: postRow } = await supabase.from('posts').select('data').eq('id', id).maybeSingle();
+const [{ data: postRow }, { data: otherRows }] = await Promise.all([
+  supabase.from('posts').select('data').eq('id', id).maybeSingle(),
+  supabase.from('posts').select('data').neq('id', id).order('created_at', { ascending: true }).limit(3),
+]);
 if (!postRow) return Astro.redirect('/blog');
 const post = postRow.data;
-
-const { data: otherRows } = await supabase
-  .from('posts')
-  .select('data')
-  .neq('id', id)
-  .order('created_at', { ascending: true })
-  .limit(3);
 const related = (otherRows ?? []).map((r: any) => r.data);
 ---
 

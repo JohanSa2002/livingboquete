@@ -9,11 +9,11 @@ const currentPath = Astro.url.pathname;
   <div style="max-width:1240px;margin:0 auto;padding:0 26px;height:76px;display:flex;align-items:center;gap:28px">
     <!-- Logo -->
     <a href="/" style="display:flex;align-items:center;cursor:pointer;text-decoration:none;color:var(--color-ink);margin-right:auto">
-      <span style="width:141px;height:40px;overflow:hidden;position:relative;display:block;flex:none">
+      <span style="--s:0.16528925619834712;width:calc(811px * var(--s));height:40px;overflow:hidden;position:relative;display:block;flex:none">
         <img
           src="/logo-mika-dark.png"
           alt="Mika Homes"
-          style="position:absolute;top:-83px;left:-27px;width:195px;height:195px;max-width:none"
+          style="position:absolute;top:calc(-452px * var(--s));left:calc(-134px * var(--s));width:calc(1080px * var(--s));height:calc(1080px * var(--s));max-width:none"
         />
       </span>
     </a>
@@ -37,14 +37,20 @@ const currentPath = Astro.url.pathname;
     <div style="display:flex;align-items:center;gap:12px">
       <!-- Language toggle -->
       <div style="display:flex;border:1px solid var(--color-border);border-radius:var(--radius-pill);overflow:hidden;font-size:12px;font-weight:700">
-        <span
+        <button
+          type="button"
           data-lang-btn="es"
-          style="cursor:pointer;padding:7px 12px;background:var(--color-forest);color:var(--color-sand);user-select:none;transition:background-color .16s ease"
-        >ES</span>
-        <span
+          aria-label="Español"
+          class="lang-toggle-btn"
+          style="border:none;cursor:pointer;padding:7px 12px;background:var(--color-forest);color:var(--color-sand);user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
+        >ES</button>
+        <button
+          type="button"
           data-lang-btn="en"
-          style="cursor:pointer;padding:7px 12px;background:transparent;color:var(--color-ink-soft);user-select:none;transition:background-color .16s ease"
-        >EN</span>
+          aria-label="English"
+          class="lang-toggle-btn"
+          style="border:none;cursor:pointer;padding:7px 12px;background:transparent;color:var(--color-ink-soft);user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
+        >EN</button>
       </div>
 
       <!-- CTA -->
@@ -72,15 +78,15 @@ const currentPath = Astro.url.pathname;
 <div id="mobile-overlay" class="hidden" style="position:fixed;inset:0;z-index:70;background:rgba(20,15,10,.45)">
   <div
     id="mobile-menu"
-    style="position:absolute;top:0;right:0;bottom:0;width:min(82vw,330px);background:var(--color-sand);padding:24px;animation:fadein .2s both;display:flex;flex-direction:column;gap:6px"
+    style="position:absolute;top:0;right:0;bottom:0;width:min(82vw,330px);background:var(--color-sand);padding:24px;display:flex;flex-direction:column;gap:6px"
     onclick="event.stopPropagation()"
   >
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <span style="width:113px;height:32px;overflow:hidden;position:relative;display:block;flex:none">
+      <span style="--s:0.13223140495867769;width:calc(811px * var(--s));height:32px;overflow:hidden;position:relative;display:block;flex:none">
         <img
           src="/logo-mika-dark.png"
           alt="Mika Homes"
-          style="position:absolute;top:-67px;left:-21px;width:156px;height:156px;max-width:none"
+          style="position:absolute;top:calc(-452px * var(--s));left:calc(-134px * var(--s));width:calc(1080px * var(--s));height:calc(1080px * var(--s));max-width:none"
         />
       </span>
       <button
@@ -118,11 +124,32 @@ const currentPath = Astro.url.pathname;
     background: linear-gradient(to bottom, rgba(245,240,232,.85), rgba(245,240,232,0));
     pointer-events: none;
   }
-  .hidden { display: none !important; }
-  #mobile-overlay.hidden { display: none !important; }
-  #mobile-menu { display: flex; }
-  /* When overlay is visible, it's a block */
-  #mobile-overlay:not(.hidden) { display: block !important; }
+  .lang-toggle-btn { font-family: inherit; line-height: 1; }
+  .lang-toggle-btn:active { transform: scale(.94); }
+
+  /* Backdrop + drawer animate via opacity/transform (interruptible transitions,
+     not keyframes) so rapid open/close toggles never restart mid-flight.
+     Specificity (#id.class) is needed to beat the global .hidden{display:none!important}. */
+  #mobile-overlay {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .25s ease, visibility 0s linear 0s;
+  }
+  #mobile-overlay.hidden {
+    display: block !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: opacity .25s ease, visibility 0s linear .25s;
+  }
+  #mobile-menu {
+    display: flex;
+    transform: translateX(0);
+    transition: transform .32s var(--ease-drawer);
+  }
+  #mobile-overlay.hidden #mobile-menu {
+    transform: translateX(100%);
+  }
 </style>
 
 <script>
