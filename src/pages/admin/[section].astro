@@ -255,6 +255,9 @@ const help = helpTexts[section!];
       { key: 'guests', label: 'Personas', type: 'number' },
       { key: 'beds', label: 'Camas', type: 'number' },
       { key: 'baths', label: 'Baños', type: 'number' },
+      { key: 'parking', label: 'Parqueos', type: 'number' },
+      { key: 'verified', label: 'Propiedad verificada', type: 'select', options: [['true','Sí, verificada'],['false','No verificada']] },
+      { key: 'availableFrom', label: 'Disponible desde', type: 'text', hint: 'Formato AAAA-MM-DD. Vacío = disponible ahora' },
       { key: 'rating', label: 'Rating', type: 'number' },
       { key: 'reviews', label: 'Num. reseñas', type: 'number' },
       { key: 'loc', label: 'Ubicación', type: 'bilingual' },
@@ -288,6 +291,8 @@ const help = helpTexts[section!];
         guests: 'ej: 6',
         beds: 'ej: 3',
         baths: 'ej: 2',
+        parking: 'ej: 1',
+        availableFrom: 'ej: 2026-08-15',
         rating: 'ej: 4.9',
         reviews: 'ej: 128',
         amen: 'wifi, kitchen, view, parking',
@@ -308,7 +313,7 @@ const help = helpTexts[section!];
           <input class="f-input" type="number" step="any" data-key="${field.key}" value="${val ?? ''}" placeholder="${ph}" />
         </div>`;
       } else if (field.type === 'select') {
-        const opts = field.options.map(([v, l]) => `<option value="${v}" ${val === v ? 'selected' : ''}>${l}</option>`).join('');
+        const opts = field.options.map(([v, l]) => `<option value="${v}" ${String(val) === v ? 'selected' : ''}>${l}</option>`).join('');
         html += `<div class="f-group">
           <label class="f-label">${field.label}</label>
           <select class="f-select" data-key="${field.key}">${opts}</select>
@@ -367,6 +372,8 @@ const help = helpTexts[section!];
         data[key] = val ? Number(val) : 0;
       } else if (key === 'amen') {
         data[key] = val.split(',').map(s => s.trim()).filter(Boolean);
+      } else if (key === 'verified') {
+        data[key] = val === 'true';
       } else {
         data[key] = val;
       }

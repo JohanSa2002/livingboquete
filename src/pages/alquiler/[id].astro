@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Icon from '../../components/Icon.astro';
 import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
 import { getSupabase } from '../../lib/supabase';
 import 'leaflet/dist/leaflet.css';
@@ -8,6 +9,28 @@ const { id } = Astro.params;
 const { data: stayRow } = await getSupabase().from('rentals').select('data').eq('id', id).maybeSingle();
 if (!stayRow) return Astro.redirect('/alquiler');
 const stay = stayRow.data;
+
+// Availability text: no move-in date means available right now.
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const availableFromDate = stay.availableFrom ? new Date(stay.availableFrom) : null;
+const isAvailableNow = !availableFromDate || availableFromDate <= today;
+let availability = { es: 'Disponible ahora', en: 'Available now' };
+if (!isAvailableNow) {
+  const diffDays = Math.ceil((availableFromDate.getTime() - today.getTime()) / 86400000);
+  if (diffDays < 30) {
+    availability = {
+      es: `Disponible en ${diffDays} día${diffDays === 1 ? '' : 's'}`,
+      en: `Available in ${diffDays} day${diffDays === 1 ? '' : 's'}`,
+    };
+  } else {
+    const diffMonths = Math.round(diffDays / 30);
+    availability = {
+      es: `Disponible en ${diffMonths} mes${diffMonths === 1 ? '' : 'es'}`,
+      en: `Available in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`,
+    };
+  }
+}
 ---
 
 <Layout activeKey="stays" title={`${stay.name.es} · Boquete`} titleEn={`${stay.name.en} · Boquete`}>
@@ -23,15 +46,31 @@ const stay = stayRow.data;
     <a href="/alquiler" style="display:inline-flex;align-items:center;gap:7px;color:#B95C36;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:18px">
       ← <span class="lang-es">Volver a alojamientos</span><span class="lang-en" hidden>Back to stays</span>
     </a>
-    <h1 style="font-family:'Manrope';font-weight:800;font-size:clamp(32px,4.6vw,52px);line-height:1.02;letter-spacing:-.02em;margin:0 0 12px;color:#251D14">
-      <span class="lang-es">{stay.name.es}</span><span class="lang-en" hidden>{stay.name.en}</span>
-    </h1>
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;font-size:15px;color:#5A4F42">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <h1 style="font-family:'Manrope';font-weight:800;font-size:clamp(32px,4.6vw,52px);line-height:1.02;letter-spacing:-.02em;margin:0;color:#251D14">
+        <span class="lang-es">{stay.name.es}</span><span class="lang-en" hidden>{stay.name.en}</span>
+      </h1>
+      {stay.verified && (
+        <span style="display:inline-flex;align-items:center;gap:5px;background:#2C3A2A;color:#C8964A;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;flex:none" title="Propiedad verificada por Boquete">
+          <Icon name="check" size={13} />
+          <span class="lang-es">Verificada</span><span class="lang-en" hidden>Verified</span>
+        </span>
+      )}
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;font-size:15px;color:#5A4F42">
       <span style="display:flex;align-items:center;gap:5px;font-weight:700;color:#251D14"><span style="color:#C8964A">★</span>{stay.rating.toFixed(1)}</span>
       <span>·</span>
       <span>{stay.reviews} <span class="lang-es">reseñas</span><span class="lang-en" hidden>reviews</span></span>
       <span>·</span>
       <span><span class="lang-es">{stay.loc.es}</span><span class="lang-en" hidden>{stay.loc.en}</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;margin-bottom:24px;font-size:15px;color:#5A4F42">
+      <span style="display:flex;align-items:center;gap:6px"><Icon name="users" size={16} />{stay.guests} <span class="lang-es">huéspedes</span><span class="lang-en" hidden>guests</span></span>
+      <span style="display:flex;align-items:center;gap:6px"><Icon name="bed" size={16} />{stay.beds} <span class="lang-es">habitaciones</span><span class="lang-en" hidden>bedrooms</span></span>
+      <span style="display:flex;align-items:center;gap:6px"><Icon name="bath" size={16} />{stay.baths} <span class="lang-es">baños</span><span class="lang-en" hidden>bathrooms</span></span>
+      {stay.parking > 0 && (
+        <span style="display:flex;align-items:center;gap:6px"><Icon name="car" size={16} />{stay.parking} <span class="lang-es">parqueos</span><span class="lang-en" hidden>parking</span></span>
+      )}
     </div>
 
     <!-- Photo grid -->
@@ -77,7 +116,15 @@ const stay = stayRow.data;
         <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px;display:flex;align-items:center;gap:16px">
           <div style="width:54px;height:54px;border-radius:50%;background:#2C3A2A;color:#C8964A;display:flex;align-items:center;justify-content:center;font-family:'Manrope';font-weight:800;font-size:22px;flex:none">{stay.host.name[0]}</div>
           <div>
-            <div style="font-family:'Manrope';font-weight:700;font-size:18px;color:#251D14">{stay.host.name}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:'Manrope';font-weight:700;font-size:18px;color:#251D14">{stay.host.name}</span>
+              {stay.verified && (
+                <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#2F7A3D" title="Identidad y propiedad verificadas">
+                  <Icon name="check" size={13} />
+                  <span class="lang-es">Anfitrión verificado</span><span class="lang-en" hidden>Verified host</span>
+                </span>
+              )}
+            </div>
             <div style="font-size:14px;color:#8A7D69">
               <span class="lang-es">{stay.host.line.es}</span><span class="lang-en" hidden>{stay.host.line.en}</span>
             </div>
@@ -124,42 +171,17 @@ const stay = stayRow.data;
       <!-- Right: booking card -->
       <div style="position:sticky;top:92px">
         <div style="background:#fff;border:1px solid rgba(37,29,20,.1);border-radius:20px;padding:28px;box-shadow:0 12px 30px -22px rgba(37,29,20,.5)">
-          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:20px">
+          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px">
             <span style="font-family:'Manrope';font-weight:800;font-size:28px;color:#251D14">${stay.price}</span>
             <span style="font-size:15px;color:#8A7D69">/ <span class="lang-es">mes</span><span class="lang-en" hidden>month</span></span>
           </div>
 
+          <div style={`display:flex;align-items:center;gap:7px;margin-bottom:24px;font-size:14px;font-weight:700;color:${isAvailableNow ? '#2F7A3D' : '#B9822E'}`}>
+            <span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex:none"></span>
+            <span class="lang-es">{availability.es}</span><span class="lang-en" hidden>{availability.en}</span>
+          </div>
+
           <div id="book-form" style="display:flex;flex-direction:column;gap:14px">
-            <div style="border:1px solid rgba(37,29,20,.18);border-radius:12px;padding:12px">
-              <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
-                <span class="lang-es">Fecha de mudanza</span><span class="lang-en" hidden>Move-in date</span>
-              </div>
-              <input id="book-in" type="date" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%" />
-            </div>
-            <div style="border:1px solid rgba(37,29,20,.18);border-radius:12px;padding:12px">
-              <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
-                <span class="lang-es">Duración (meses)</span><span class="lang-en" hidden>Duration (months)</span>
-              </div>
-              <select id="book-months" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%">
-                {Array.from({length: 12}, (_, i) => <option value={i+1} selected={i === 0}>{i+1}</option>)}
-              </select>
-            </div>
-            <div style="border:1px solid rgba(37,29,20,.18);border-radius:12px;padding:12px">
-              <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A7D69;margin-bottom:4px">
-                <span class="lang-es">Personas</span><span class="lang-en" hidden>Occupants</span>
-              </div>
-              <select id="book-guests" style="border:none;background:transparent;font-size:14px;font-weight:600;color:#251D14;outline:none;width:100%">
-                {Array.from({length: stay.guests}, (_, i) => <option value={i+1}>{i+1}</option>)}
-              </select>
-            </div>
-
-            <div id="book-total" style="background:#F7F1E6;border-radius:12px;padding:16px">
-              <div style="display:flex;justify-content:space-between;font-size:15px;color:#5A4F42;margin-bottom:8px">
-                <span id="months-line"></span>
-                <span id="total-price"></span>
-              </div>
-            </div>
-
             <button id="book-btn" style="cursor:pointer;background:#B95C36;color:#F7F1E6;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:13px;box-shadow:0 14px 30px -14px rgba(185,92,54,.9)">
               <span class="lang-es">Solicitar reserva</span><span class="lang-en" hidden>Request booking</span>
             </button>
@@ -188,28 +210,11 @@ const stay = stayRow.data;
 
 </Layout>
 
-<script define:vars={{ price: stay.price }}>
-  const bookIn = document.getElementById('book-in');
-  const bookMonths = document.getElementById('book-months');
-  const monthsLine = document.getElementById('months-line');
-  const totalPrice = document.getElementById('total-price');
+<script>
   const bookBtn = document.getElementById('book-btn');
   const bookForm = document.getElementById('book-form');
   const bookConfirm = document.getElementById('book-confirm');
   const bookReset = document.getElementById('book-reset');
-
-  function updateTotal() {
-    const months = parseInt(bookMonths.value) || 1;
-    const lang = document.documentElement.getAttribute('data-lang') || 'es';
-    const monthLabel = lang === 'en'
-      ? (months > 1 ? 'months' : 'month')
-      : (months > 1 ? 'meses' : 'mes');
-    monthsLine.textContent = `${months} ${monthLabel} × $${price}`;
-    totalPrice.textContent = `$${months * price}`;
-  }
-
-  bookMonths?.addEventListener('change', updateTotal);
-  updateTotal();
 
   bookBtn?.addEventListener('click', () => {
     bookForm.style.display = 'none';
@@ -219,9 +224,6 @@ const stay = stayRow.data;
   bookReset?.addEventListener('click', () => {
     bookConfirm.style.display = 'none';
     bookForm.style.display = 'flex';
-    bookIn.value = '';
-    bookMonths.value = '1';
-    updateTotal();
   });
 
 </script>

@@ -43,6 +43,9 @@ export interface Rental {
   guests: number;
   beds: number;
   baths: number;
+  parking: number;
+  verified: boolean;
+  availableFrom: string;
   rating: number;
   reviews: number;
   name: Bilingual;
@@ -357,7 +360,8 @@ export const RENTALS: Rental[] = [
   {
     id: 'cafetal',
     type: 'casa',
-    price: 650, guests: 6, beds: 3, baths: 2, rating: 4.9, reviews: 128,
+    price: 650, guests: 6, beds: 3, baths: 2, parking: 2, verified: true, availableFrom: '',
+    rating: 4.9, reviews: 128,
     name: { es: 'Cabaña El Cafetal', en: 'El Cafetal Cabin' },
     loc: { es: 'Bajo Mono, Boquete', en: 'Bajo Mono, Boquete' },
     short: { es: 'Cabaña de madera amueblada, rodeada de cafetales, con chimenea y vistas al bosque nuboso. Acepta mascotas.', en: 'Furnished wooden cabin surrounded by coffee farms, with a fireplace and cloud-forest views. Pet friendly.' },
@@ -377,7 +381,8 @@ export const RENTALS: Rental[] = [
   {
     id: 'niebla',
     type: 'habitacion',
-    price: 380, guests: 2, beds: 1, baths: 1, rating: 4.8, reviews: 94,
+    price: 380, guests: 2, beds: 1, baths: 1, parking: 1, verified: true, availableFrom: '',
+    rating: 4.8, reviews: 94,
     name: { es: 'Habitación Jardín de Niebla', en: 'Jardín de Niebla Room' },
     loc: { es: 'Alto Boquete', en: 'Alto Boquete' },
     short: { es: 'Habitación privada amueblada en casa familiar, con jardín de orquídeas y vista al valle.', en: 'Furnished private room in a family home, with an orchid garden and valley views.' },
@@ -397,7 +402,8 @@ export const RENTALS: Rental[] = [
   {
     id: 'caldera',
     type: 'apto',
-    price: 550, guests: 4, beds: 2, baths: 1, rating: 4.7, reviews: 76,
+    price: 550, guests: 4, beds: 2, baths: 1, parking: 1, verified: false, availableFrom: '2026-08-15',
+    rating: 4.7, reviews: 76,
     name: { es: 'Apartamento Río Caldera', en: 'Río Caldera Apartment' },
     loc: { es: 'Centro de Boquete', en: 'Downtown Boquete' },
     short: { es: 'Apartamento moderno sin amueblar, junto al río, a pasos del parque y las cafeterías del pueblo.', en: 'Modern unfurnished apartment by the river, steps from the park and the town cafés.' },
@@ -417,7 +423,8 @@ export const RENTALS: Rental[] = [
   {
     id: 'mirador',
     type: 'casa',
-    price: 1300, guests: 8, beds: 4, baths: 3, rating: 5.0, reviews: 61,
+    price: 1300, guests: 8, beds: 4, baths: 3, parking: 3, verified: true, availableFrom: '',
+    rating: 5.0, reviews: 61,
     name: { es: 'Casa Mirador del Barú', en: 'Mirador del Barú House' },
     loc: { es: 'Volcancito, Boquete', en: 'Volcancito, Boquete' },
     short: { es: 'Casa amplia y amueblada con vista directa al Volcán Barú, piscina y acepta mascotas.', en: 'Spacious furnished house with direct views of Barú Volcano, a pool and pet friendly.' },
