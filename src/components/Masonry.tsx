@@ -231,11 +231,21 @@ const Masonry = ({
           key={item.id}
           data-key={item.id}
           className="masonry-item-wrapper"
+          role="button"
+          tabIndex={0}
+          aria-label={item.label}
           onClick={() => onItemClick?.(item)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onItemClick?.(item);
+            }
+          }}
           onMouseEnter={e => handleMouseEnter(e, item)}
           onMouseLeave={e => handleMouseLeave(e, item)}
         >
-          <div className="masonry-item-img" style={{ backgroundImage: `url(${item.img})` }}>
+          <div className="masonry-item-img">
+            <img src={item.img} alt={item.label ?? ''} loading="lazy" />
             {item.label && <div className="masonry-item-label">{item.label}</div>}
             {colorShiftOnHover && (
               <div

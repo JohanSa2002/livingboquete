@@ -127,6 +127,10 @@ const currentPath = Astro.url.pathname;
   .lang-toggle-btn { font-family: inherit; line-height: 1; }
   .lang-toggle-btn:active { transform: scale(.94); }
 
+  @media (max-width: 880px) {
+    .lang-toggle-btn { padding: 11px 14px !important; }
+  }
+
   /* Backdrop + drawer animate via opacity/transform (interruptible transitions,
      not keyframes) so rapid open/close toggles never restart mid-flight.
      Specificity (#id.class) is needed to beat the global .hidden{display:none!important}. */

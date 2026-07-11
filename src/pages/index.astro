@@ -23,7 +23,7 @@ const homePosts = POSTS.slice(0, 3);
 <Layout activeKey="home">
 
   <!-- HERO -->
-  <section style="position:relative;min-height:92vh;display:flex;align-items:flex-end;overflow:hidden">
+  <section style="position:relative;min-height:92dvh;display:flex;align-items:flex-end;overflow:hidden">
     <img
       id="hero-poster"
       src="/hero-poster.webp"
@@ -118,18 +118,18 @@ const homePosts = POSTS.slice(0, 3);
     </div>
     <div class="cols-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:26px">
       {PLACES.map(p => (
-        <div class="place-card" style="border-radius:18px;overflow:hidden;background:#fff;border:1px solid rgba(37,29,20,.09);box-shadow:0 1px 2px rgba(37,29,20,.04);display:block">
+        <div class="place-card" style="border-radius:18px;overflow:hidden;background:#fff;border:1px solid rgba(37,29,20,.09);box-shadow:0 1px 2px rgba(37,29,20,.04);display:flex;flex-direction:column">
           <div style="position:relative;aspect-ratio:4/3.1;overflow:hidden">
             <img src={p.img} alt={p.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
             <span style="position:absolute;top:13px;left:13px;background:rgba(20,28,18,.62);backdrop-filter:blur(4px);color:#F7F1E6;font-size:12px;font-weight:700;letter-spacing:.04em;padding:6px 12px;border-radius:999px">
               <span class="lang-es">{p.cat.es}</span><span class="lang-en" hidden>{p.cat.en}</span>
             </span>
           </div>
-          <div style="padding:20px 21px 23px">
+          <div style="padding:20px 21px 23px;display:flex;flex-direction:column;flex:1">
             <h3 style="font-family:'Manrope';font-weight:700;font-size:22px;margin:0 0 9px;color:#251D14">
               <span class="lang-es">{p.name.es}</span><span class="lang-en" hidden>{p.name.en}</span>
             </h3>
-            <p style="font-size:14.5px;line-height:1.55;color:#5A4F42;margin:0 0 14px">
+            <p style="font-size:14.5px;line-height:1.55;color:#5A4F42;margin:0;flex:1">
               <span class="lang-es">{p.short.es}</span><span class="lang-en" hidden>{p.short.en}</span>
             </p>
           </div>
@@ -466,7 +466,7 @@ const homePosts = POSTS.slice(0, 3);
   </script>
 
   <!-- Spacer so #contacto can scroll to center of viewport -->
-  <div aria-hidden="true" style="height:50vh"></div>
+  <div aria-hidden="true" style="height:50dvh"></div>
 
 </Layout>
 

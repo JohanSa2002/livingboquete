@@ -1,0 +1,36 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<Layout
+  title="Página no encontrada · Boquete"
+  titleEn="Page not found · Boquete"
+  description="La página que buscas no existe o fue movida."
+  descriptionEn="The page you're looking for doesn't exist or was moved."
+>
+  <section style="min-height:70dvh;display:flex;align-items:center;justify-content:center;padding:96px 26px;background:var(--color-sand)">
+    <div style="max-width:520px;text-align:center">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:clamp(64px,12vw,120px);line-height:1;letter-spacing:-.03em;color:var(--color-forest);margin-bottom:8px">404</div>
+      <h1 style="font-family:var(--font-display);font-weight:700;font-size:clamp(24px,3vw,32px);margin:0 0 14px;color:var(--color-ink);text-wrap:balance">
+        <span class="lang-es">Esta página se perdió en la montaña.</span>
+        <span class="lang-en" hidden>This page got lost in the mountains.</span>
+      </h1>
+      <p style="font-size:16px;line-height:1.6;color:var(--color-ink-soft);margin:0 0 32px">
+        <span class="lang-es">No encontramos lo que buscas. Puede que el enlace esté roto o la página haya cambiado de dirección.</span>
+        <span class="lang-en" hidden>We couldn't find what you're looking for. The link may be broken or the page may have moved.</span>
+      </p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <a href="/" class="btn btn-primary">
+          <Icon name="mountain" size={18} />
+          <span class="lang-es">Volver al inicio</span>
+          <span class="lang-en" hidden>Back to home</span>
+        </a>
+        <a href="/alquiler" class="btn btn-secondary">
+          <span class="lang-es">Ver alquileres</span>
+          <span class="lang-en" hidden>See rentals</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>

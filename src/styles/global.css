@@ -67,6 +67,9 @@
 
 html { scroll-behavior: smooth; }
 
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+
 body {
   margin: 0;
   background: var(--color-sand);
