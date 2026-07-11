@@ -12,4 +12,11 @@ export default defineConfig({
   output: 'server',
   adapter,
   integrations: [react()],
+  vite: {
+    ssr: {
+      // gsap ships ESM-only; bundle it so the Vercel serverless
+      // runtime doesn't try to require() it as CommonJS.
+      noExternal: ['gsap'],
+    },
+  },
 });
