@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getDb, initDb } from '../../../lib/db';
+import { getSupabase } from '../../../lib/supabase';
 import { isAuthenticated } from '../../../lib/auth';
 
 const VALID_TABLES = ['places', 'events', 'posts', 'rentals', 'gallery'];
@@ -16,10 +16,14 @@ export const GET: APIRoute = async ({ params, cookies }) => {
   if (!table || !validateTable(table)) {
     return new Response(JSON.stringify({ error: 'Invalid table' }), { status: 400 });
   }
-  initDb();
-  const db = getDb();
-  const rows = db.prepare(`SELECT * FROM ${table} ORDER BY created_at DESC`).all() as any[];
-  const items = rows.map(r => ({ ...JSON.parse(r.data), _created: r.created_at, _updated: r.updated_at }));
+  const { data: rows, error } = await getSupabase()
+    .from(table)
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
+  const items = rows.map((r: any) => ({ ...r.data, _created: r.created_at, _updated: r.updated_at }));
   return new Response(JSON.stringify(items));
 };
 
@@ -31,13 +35,16 @@ export const POST: APIRoute = async ({ params, request, cookies }) => {
   if (!table || !validateTable(table)) {
     return new Response(JSON.stringify({ error: 'Invalid table' }), { status: 400 });
   }
-  initDb();
-  const db = getDb();
   const body = await request.json();
   if (!body.id) {
     return new Response(JSON.stringify({ error: 'id required' }), { status: 400 });
   }
-  db.prepare(`INSERT OR REPLACE INTO ${table} (id, data, updated_at) VALUES (?, ?, datetime('now'))`).run(body.id, JSON.stringify(body));
+  const { error } = await getSupabase()
+    .from(table)
+    .upsert({ id: body.id, data: body, updated_at: new Date().toISOString() });
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
   return new Response(JSON.stringify({ ok: true }));
 };
 
@@ -49,9 +56,10 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
   if (!table || !validateTable(table)) {
     return new Response(JSON.stringify({ error: 'Invalid table' }), { status: 400 });
   }
-  initDb();
-  const db = getDb();
   const { id } = await request.json();
-  db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
+  const { error } = await getSupabase().from(table).delete().eq('id', id);
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
   return new Response(JSON.stringify({ ok: true }));
 };

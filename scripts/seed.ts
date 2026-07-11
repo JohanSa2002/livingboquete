@@ -1,66 +1,15 @@
-import Database from 'better-sqlite3';
-import { mkdirSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import 'dotenv/config';
+import { createClient } from '@supabase/supabase-js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DB_PATH = join(__dirname, '..', 'data', 'livingboquete.db');
-mkdirSync(dirname(DB_PATH), { recursive: true });
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const db = new Database(DB_PATH);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in the environment (.env).');
+  process.exit(1);
+}
 
-// Create tables
-db.exec(`
-  DROP TABLE IF EXISTS places;
-  DROP TABLE IF EXISTS events;
-  DROP TABLE IF EXISTS posts;
-  DROP TABLE IF EXISTS rentals;
-  DROP TABLE IF EXISTS gallery;
-  CREATE TABLE IF NOT EXISTS leads (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    email TEXT NOT NULL,
-    celular TEXT,
-    pais TEXT,
-    retiro TEXT,
-    timeline TEXT,
-    interes TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE places (
-    id TEXT PRIMARY KEY,
-    data TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
-  );
-  CREATE TABLE events (
-    id TEXT PRIMARY KEY,
-    data TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
-  );
-  CREATE TABLE posts (
-    id TEXT PRIMARY KEY,
-    data TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
-  );
-  CREATE TABLE rentals (
-    id TEXT PRIMARY KEY,
-    data TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
-  );
-  CREATE TABLE gallery (
-    id TEXT PRIMARY KEY,
-    data TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
-  );
-`);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const img = (seed: string, w = 800, h = 600) =>
   `https://picsum.photos/seed/${seed}/${w}/${h}`;
@@ -171,23 +120,25 @@ const gallery = [
   { id: 'g-rio', cat: 'naturaleza', label: { es: 'Río Caldera', en: 'Caldera river' }, img: img('caldera-river', 600, 600) },
 ];
 
-// Insert data
-const insertPlace = db.prepare('INSERT OR REPLACE INTO places (id, data) VALUES (?, ?)');
-const insertEvent = db.prepare('INSERT OR REPLACE INTO events (id, data) VALUES (?, ?)');
-const insertPost = db.prepare('INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)');
-const insertRental = db.prepare('INSERT OR REPLACE INTO rentals (id, data) VALUES (?, ?)');
-const insertGallery = db.prepare('INSERT OR REPLACE INTO gallery (id, data) VALUES (?, ?)');
+async function seedTable(table: string, rows: { id: string }[]) {
+  const { error } = await supabase
+    .from(table)
+    .upsert(rows.map(r => ({ id: r.id, data: r })));
+  if (error) throw new Error(`${table}: ${error.message}`);
+}
 
-const seedAll = db.transaction(() => {
-  for (const p of places) insertPlace.run(p.id, JSON.stringify(p));
-  for (const e of events) insertEvent.run(e.id, JSON.stringify(e));
-  for (const p of posts) insertPost.run(p.id, JSON.stringify(p));
-  for (const r of rentals) insertRental.run(r.id, JSON.stringify(r));
-  for (const g of gallery) insertGallery.run(g.id, JSON.stringify(g));
+async function main() {
+  await seedTable('places', places);
+  await seedTable('events', events);
+  await seedTable('posts', posts);
+  await seedTable('rentals', rentals);
+  await seedTable('gallery', gallery);
+
+  console.log('✓ Supabase seeded successfully');
+  console.log(`  Places: ${places.length}, Events: ${events.length}, Posts: ${posts.length}, Rentals: ${rentals.length}, Gallery: ${gallery.length}`);
+}
+
+main().catch(err => {
+  console.error('Seed failed:', err.message);
+  process.exit(1);
 });
-
-seedAll();
-db.close();
-
-console.log('✓ Database seeded successfully at', DB_PATH);
-console.log(`  Places: ${places.length}, Events: ${events.length}, Posts: ${posts.length}, Rentals: ${rentals.length}, Gallery: ${gallery.length}`);

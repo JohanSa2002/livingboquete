@@ -1,7 +1,7 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { isAuthenticated } from '../../lib/auth';
-import { getDb, initDb } from '../../lib/db';
+import { getSupabase } from '../../lib/supabase';
 
 if (!isAuthenticated(Astro.cookies)) return Astro.redirect('/admin/login');
 
@@ -17,10 +17,11 @@ const config: Record<string, { table: string; title: string; key: string; nameFi
 const cfg = config[section!];
 if (!cfg) return Astro.redirect('/admin');
 
-initDb();
-const db = getDb();
-const rows = db.prepare(`SELECT * FROM ${cfg.table} ORDER BY created_at DESC`).all() as any[];
-const items = rows.map(r => ({ ...JSON.parse(r.data), _created: r.created_at }));
+const { data: rows } = await getSupabase()
+  .from(cfg.table)
+  .select('*')
+  .order('created_at', { ascending: false });
+const items = (rows ?? []).map((r: any) => ({ ...r.data, _created: r.created_at }));
 
 const helpTexts: Record<string, { title: string; lines: string[] }> = {
   places: {

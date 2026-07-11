@@ -1,21 +1,25 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { isAuthenticated } from '../../lib/auth';
-import { getDb, initDb } from '../../lib/db';
+import { getSupabase } from '../../lib/supabase';
 
 if (!isAuthenticated(Astro.cookies)) return Astro.redirect('/admin/login');
 
-initDb();
-const db = getDb();
-const counts = {
-  leads: (db.prepare('SELECT COUNT(*) as c FROM leads').get() as any).c,
-  places: (db.prepare('SELECT COUNT(*) as c FROM places').get() as any).c,
-  events: (db.prepare('SELECT COUNT(*) as c FROM events').get() as any).c,
-  posts: (db.prepare('SELECT COUNT(*) as c FROM posts').get() as any).c,
-  rentals: (db.prepare('SELECT COUNT(*) as c FROM rentals').get() as any).c,
-  gallery: (db.prepare('SELECT COUNT(*) as c FROM gallery').get() as any).c,
+const supabase = getSupabase();
+const tableCount = async (table: string) => {
+  const { count } = await supabase.from(table).select('*', { count: 'exact', head: true });
+  return count ?? 0;
 };
-const recentLeads = db.prepare('SELECT * FROM leads ORDER BY created_at DESC LIMIT 5').all() as any[];
+const [leads, places, events, posts, rentals, gallery] = await Promise.all(
+  ['leads', 'places', 'events', 'posts', 'rentals', 'gallery'].map(tableCount)
+);
+const counts = { leads, places, events, posts, rentals, gallery };
+const { data } = await supabase
+  .from('leads')
+  .select('*')
+  .order('created_at', { ascending: false })
+  .limit(5);
+const recentLeads = data ?? [];
 ---
 <AdminLayout title="Dashboard" active="dashboard">
   <div class="page-header">

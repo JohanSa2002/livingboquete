@@ -2,6 +2,7 @@
 export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
 import { RENTALS, TYPE_LABELS, AMEN_LABELS } from '../../data/data';
+import 'leaflet/dist/leaflet.css';
 
 export function getStaticPaths() {
   return RENTALS.map(p => ({ params: { id: p.id }, props: { stay: p } }));
@@ -89,7 +90,7 @@ const { stay } = Astro.props;
           <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
             <span class="lang-es">Ubicación</span><span class="lang-en" hidden>Location</span>
           </h3>
-          <div id="map" style="width:100%;height:300px;border-radius:16px;overflow:hidden;border:1px solid rgba(37,29,20,.1)"></div>
+          <div id="map" data-lat={stay.lat} data-lng={stay.lng} data-name={stay.name.es} style="width:100%;height:300px;border-radius:16px;overflow:hidden;border:1px solid rgba(37,29,20,.1)"></div>
         </div>
 
         <!-- Reviews -->
@@ -182,15 +183,13 @@ const { stay } = Astro.props;
     </div>
   </section>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
   </div>
 
   </div>
 
 </Layout>
 
-<script define:vars={{ price: stay.price, lat: stay.lat, lng: stay.lng, stayName: stay.name.es }}>
+<script define:vars={{ price: stay.price }}>
   const bookIn = document.getElementById('book-in');
   const bookMonths = document.getElementById('book-months');
   const monthsLine = document.getElementById('months-line');
@@ -226,19 +225,31 @@ const { stay } = Astro.props;
     updateTotal();
   });
 
-  // Leaflet map
-  if (lat && lng) {
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onload = () => {
-      const map = L.map('map', { scrollWheelZoom: false }).setView([lat, lng], 15);
+</script>
+
+<script>
+  import L from 'leaflet';
+
+  const mapEl = document.getElementById('map');
+  const lat = parseFloat(mapEl?.dataset.lat ?? '');
+  const lng = parseFloat(mapEl?.dataset.lng ?? '');
+  const stayName = mapEl?.dataset.name ?? '';
+
+  if (mapEl && Number.isFinite(lat) && Number.isFinite(lng)) {
+    try {
+      const map = L.map(mapEl, { scrollWheelZoom: false }).setView([lat, lng], 15);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap',
         maxZoom: 18,
       }).addTo(map);
       L.marker([lat, lng]).addTo(map).bindPopup(`<strong>${stayName}</strong>`).openPopup();
-    };
-    document.head.appendChild(script);
+    } catch (err) {
+      console.error('No se pudo cargar el mapa:', err);
+      mapEl.style.display = 'flex';
+      mapEl.style.alignItems = 'center';
+      mapEl.style.justifyContent = 'center';
+      mapEl.innerHTML = `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener" style="color:#B95C36;font-weight:700;font-size:14px;text-decoration:none">Ver ubicación en Google Maps →</a>`;
+    }
   }
 </script>
 
