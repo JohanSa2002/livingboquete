@@ -31,6 +31,7 @@ function getBadges(p: any) {
 
 // --- Editorial data derived from the live listings -------------------
 const minPrice = RENTALS.length ? Math.min(...RENTALS.map((r: any) => r.price)) : 0;
+const verifiedCount = RENTALS.filter((r: any) => r.verified).length;
 
 // Featured: the most-reviewed listing, presented as "the community's pick".
 const featured = RENTALS.length
@@ -109,7 +110,7 @@ const VOICES = RENTALS
 
       <div class="stays-hero-stats rv-once" style="animation-delay:.32s">
         <div class="stays-stat">
-          <div class="stays-stat-n">{RENTALS.length}</div>
+          <div class="stays-stat-n">{verifiedCount}</div>
           <div class="stays-stat-l"><span class="lang-es">propiedades verificadas</span><span class="lang-en" hidden>verified listings</span></div>
         </div>
         <div class="stays-stat">
@@ -335,9 +336,17 @@ const VOICES = RENTALS
                 <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,20,15,.02) 0%,rgba(20,20,15,0) 30%,rgba(15,15,10,.55) 100%)"></div>
 
                 <div style="position:absolute;top:13px;left:13px;right:13px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-                  <span class="badge badge-dark">
-                    <span class="lang-es">{TYPE_LABELS[p.type].es}</span><span class="lang-en" hidden>{TYPE_LABELS[p.type].en}</span>
-                  </span>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <span class="badge badge-dark">
+                      <span class="lang-es">{TYPE_LABELS[p.type].es}</span><span class="lang-en" hidden>{TYPE_LABELS[p.type].en}</span>
+                    </span>
+                    {p.verified && (
+                      <span class="badge badge-forest" title="Propiedad verificada">
+                        <Icon name="check" size={12} />
+                        <span class="lang-es">Verificada</span><span class="lang-en" hidden>Verified</span>
+                      </span>
+                    )}
+                  </div>
                   <span class="badge badge-light">
                     <Icon name="star" size={12} />{p.rating.toFixed(1)}
                   </span>
@@ -363,6 +372,9 @@ const VOICES = RENTALS
                   <span style="display:flex;align-items:center;gap:5px"><Icon name="users" size={15} />{p.guests}</span>
                   <span style="display:flex;align-items:center;gap:5px"><Icon name="bed" size={15} />{p.beds}</span>
                   <span style="display:flex;align-items:center;gap:5px"><Icon name="bath" size={15} />{p.baths}</span>
+                  {p.parking > 0 && (
+                    <span style="display:flex;align-items:center;gap:5px"><Icon name="car" size={15} />{p.parking}</span>
+                  )}
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
                   {p.amen.slice(0, 4).map(key => (
@@ -509,11 +521,14 @@ const VOICES = RENTALS
   }
   .stays-hero-img {
     position: absolute;
-    inset: 0;
+    top: -9%;
+    left: 0;
     width: 100%;
-    height: 100%;
+    /* Overscan so the parallax scrub never reveals an edge. The load-zoom
+       and scroll movement are driven by GSAP (see the parallax script). */
+    height: 118%;
     object-fit: cover;
-    animation: slowzoom 14s var(--ease-out) both;
+    will-change: transform;
   }
   .stays-hero-veil {
     position: absolute;
@@ -1094,4 +1109,43 @@ const VOICES = RENTALS
   openBtn?.addEventListener('click', openDrawer);
   closeBtn?.addEventListener('click', closeDrawer);
   backdrop?.addEventListener('click', closeDrawer);
+</script>
+
+<script>
+  // Hero parallax: the background photo settles in with a soft zoom on load
+  // and then scrubs slower than the page as you scroll, adding depth. Uses
+  // ScrollTrigger, which ships free with the already-installed GSAP.
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initHeroParallax() {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const img = document.querySelector<HTMLElement>('.stays-hero-img');
+    if (!img) return;
+
+    // Clear anything left over from a previous client-side visit to this page.
+    ScrollTrigger.getById('stays-hero-parallax')?.kill();
+    gsap.killTweensOf(img);
+    gsap.set(img, { clearProps: 'transform' });
+
+    // Settle-in zoom.
+    gsap.from(img, { scale: 1.14, duration: 1.9, ease: 'power2.out' });
+
+    // Depth scrub, tied to the hero's own scroll range.
+    gsap.to(img, {
+      yPercent: 14,
+      ease: 'none',
+      scrollTrigger: {
+        id: 'stays-hero-parallax',
+        trigger: '.stays-hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+      },
+    });
+  }
+
+  // Fires on the initial load and after every client-side navigation.
+  document.addEventListener('astro:page-load', initHeroParallax);
 </script>

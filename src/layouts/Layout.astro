@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import 'lenis/dist/lenis.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { ClientRouter } from 'astro:transitions';
@@ -47,6 +48,38 @@ const {
     <slot />
   </main>
   <Footer />
+
+  <script>
+    // Smooth scroll (Lenis) driven by the GSAP ticker, so Lenis and any
+    // ScrollTrigger animations stay on a single clock. Native scroll is
+    // preserved, so position:sticky and scroll-driven CSS keep working.
+    import Lenis from 'lenis';
+    import { gsap } from 'gsap';
+    import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const win = window as unknown as { __lenis?: Lenis };
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ClientRouter keeps <html> alive across navigations, so a single Lenis
+    // instance lives for the whole session — never re-create it.
+    if (!win.__lenis && !reduceMotion) {
+      const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+      win.__lenis = lenis;
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    // After each view transition: jump to top and recompute trigger positions.
+    document.addEventListener('astro:after-swap', () => {
+      win.__lenis?.scrollTo(0, { immediate: true });
+    });
+    document.addEventListener('astro:page-load', () => {
+      ScrollTrigger.refresh();
+    });
+  </script>
 
   <script>
     // Language switcher
