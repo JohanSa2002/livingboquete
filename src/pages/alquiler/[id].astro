@@ -1,14 +1,13 @@
 ---
-export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
-import { RENTALS, TYPE_LABELS, AMEN_LABELS } from '../../data/data';
+import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
+import { getSupabase } from '../../lib/supabase';
 import 'leaflet/dist/leaflet.css';
 
-export function getStaticPaths() {
-  return RENTALS.map(p => ({ params: { id: p.id }, props: { stay: p } }));
-}
-
-const { stay } = Astro.props;
+const { id } = Astro.params;
+const { data: stayRow } = await getSupabase().from('rentals').select('data').eq('id', id).maybeSingle();
+if (!stayRow) return Astro.redirect('/alquiler');
+const stay = stayRow.data;
 ---
 
 <Layout activeKey="stays" title={`${stay.name.es} · Boquete`} titleEn={`${stay.name.en} · Boquete`}>

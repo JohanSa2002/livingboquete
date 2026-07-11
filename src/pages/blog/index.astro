@@ -1,7 +1,12 @@
 ---
-export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
-import { POSTS } from '../../data/data';
+import { getSupabase } from '../../lib/supabase';
+
+const { data } = await getSupabase()
+  .from('posts')
+  .select('data')
+  .order('created_at', { ascending: true });
+const POSTS = (data ?? []).map((r: any) => r.data);
 ---
 
 <Layout activeKey="blog" title="Blog · Boquete" titleEn="Blog · Boquete">

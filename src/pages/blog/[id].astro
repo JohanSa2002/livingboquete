@@ -1,14 +1,21 @@
 ---
-export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
-import { POSTS } from '../../data/data';
+import { getSupabase } from '../../lib/supabase';
 
-export function getStaticPaths() {
-  return POSTS.map(p => ({ params: { id: p.id }, props: { post: p } }));
-}
+const { id } = Astro.params;
+const supabase = getSupabase();
 
-const { post } = Astro.props;
-const related = POSTS.filter(p => p.id !== post.id).slice(0, 3);
+const { data: postRow } = await supabase.from('posts').select('data').eq('id', id).maybeSingle();
+if (!postRow) return Astro.redirect('/blog');
+const post = postRow.data;
+
+const { data: otherRows } = await supabase
+  .from('posts')
+  .select('data')
+  .neq('id', id)
+  .order('created_at', { ascending: true })
+  .limit(3);
+const related = (otherRows ?? []).map((r: any) => r.data);
 ---
 
 <Layout activeKey="blog" title={`${post.title.es} · Boquete`} titleEn={`${post.title.en} · Boquete`}>

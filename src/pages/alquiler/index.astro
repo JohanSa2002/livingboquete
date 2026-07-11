@@ -1,8 +1,14 @@
 ---
-export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
-import { RENTALS, TYPE_LABELS, AMEN_LABELS } from '../../data/data';
+import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
+import { getSupabase } from '../../lib/supabase';
+
+const { data: rentalRows } = await getSupabase()
+  .from('rentals')
+  .select('data')
+  .order('created_at', { ascending: true });
+const RENTALS = (rentalRows ?? []).map((r: any) => r.data);
 
 // Presentational only — derives trust badges from existing data fields.
 // Nothing here touches RENTALS or the client-side filtering logic below.
@@ -13,8 +19,8 @@ const AMEN_ICON: Record<string, IconName> = {
   wifi: 'wifi', kitchen: 'kitchen', view: 'mountain', parking: 'car',
   fireplace: 'flame', pool: 'waves', pets: 'paw', furnished: 'sofa',
 };
-const maxReviews = Math.max(...RENTALS.map(r => r.reviews));
-function getBadges(p: typeof RENTALS[number]) {
+const maxReviews = RENTALS.length ? Math.max(...RENTALS.map((r: any) => r.reviews)) : 0;
+function getBadges(p: any) {
   const badges: { es: string; en: string }[] = [];
   if (p.reviews === maxReviews) badges.push({ es: 'Más reservado', en: 'Most booked' });
   if (p.amen.includes('view')) badges.push({ es: 'Vista al volcán', en: 'Volcano view' });

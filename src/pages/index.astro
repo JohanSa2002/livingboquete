@@ -1,9 +1,21 @@
 ---
-export const prerender = true;
 import Layout from '../layouts/Layout.astro';
 import Icon from '../components/Icon.astro';
 import GalleryMasonry from '../components/GalleryMasonry';
-import { PLACES, EVENTS, POSTS, GALLERY, GALLERY_CATS } from '../data/data';
+import { GALLERY_CATS } from '../data/data';
+import { getSupabase } from '../lib/supabase';
+
+async function fetchAll(table: string) {
+  const { data } = await getSupabase()
+    .from(table)
+    .select('data')
+    .order('created_at', { ascending: true });
+  return (data ?? []).map((r: any) => r.data);
+}
+
+const [PLACES, EVENTS, POSTS, GALLERY] = await Promise.all(
+  ['places', 'events', 'posts', 'gallery'].map(fetchAll)
+);
 
 const homePosts = POSTS.slice(0, 3);
 ---
