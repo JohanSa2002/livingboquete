@@ -1,17 +1,21 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getSupabase } from '../../lib/supabase';
+import { getSupabase, cachedQuery } from '../../lib/supabase';
 
 const { id } = Astro.params;
-const supabase = getSupabase();
 
-const [{ data: postRow }, { data: otherRows }] = await Promise.all([
-  supabase.from('posts').select('data').eq('id', id).maybeSingle(),
-  supabase.from('posts').select('data').neq('id', id).order('created_at', { ascending: true }).limit(3),
-]);
-if (!postRow) return Astro.redirect('/blog');
-const post = postRow.data;
-const related = (otherRows ?? []).map((r: any) => r.data);
+// Shares the 'posts' cache entry with /blog, so arriving here from the blog
+// index (the common path) costs zero extra Supabase round-trips.
+const POSTS = await cachedQuery('posts', async () => {
+  const { data } = await getSupabase()
+    .from('posts')
+    .select('data')
+    .order('created_at', { ascending: true });
+  return (data ?? []).map((r: any) => r.data);
+});
+const post = POSTS.find((p: any) => p.id === id);
+if (!post) return Astro.redirect('/blog');
+const related = POSTS.filter((p: any) => p.id !== id).slice(0, 3);
 ---
 
 <Layout activeKey="blog" title={`${post.title.es} · Boquete`} titleEn={`${post.title.en} · Boquete`}>

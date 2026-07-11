@@ -11,7 +11,9 @@ const adapter = process.env.VERCEL ? vercel() : node({ mode: 'standalone' });
 export default defineConfig({
   output: 'server',
   adapter,
-  prefetch: { defaultStrategy: 'hover' },
+  // prefetchAll is required so every link gets the hover strategy — without it,
+  // only links with an explicit data-astro-prefetch attribute are prefetched.
+  prefetch: { defaultStrategy: 'hover', prefetchAll: true },
   integrations: [react()],
   vite: {
     ssr: {

@@ -2,11 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
-import { getSupabase } from '../../lib/supabase';
+import { getSupabase, cachedQuery } from '../../lib/supabase';
 import 'leaflet/dist/leaflet.css';
 
 const { id } = Astro.params;
-const { data: stayRow } = await getSupabase().from('rentals').select('data').eq('id', id).maybeSingle();
+const stayRow = await cachedQuery(`rentals:${id}`, async () => {
+  const { data } = await getSupabase().from('rentals').select('data').eq('id', id).maybeSingle();
+  return data;
+});
 if (!stayRow) return Astro.redirect('/alquiler');
 const stay = stayRow.data;
 

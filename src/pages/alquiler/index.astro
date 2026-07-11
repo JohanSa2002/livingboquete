@@ -2,13 +2,15 @@
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
-import { getSupabase } from '../../lib/supabase';
+import { getSupabase, cachedQuery } from '../../lib/supabase';
 
-const { data: rentalRows } = await getSupabase()
-  .from('rentals')
-  .select('data')
-  .order('created_at', { ascending: true });
-const RENTALS = (rentalRows ?? []).map((r: any) => r.data);
+const RENTALS = await cachedQuery('rentals', async () => {
+  const { data } = await getSupabase()
+    .from('rentals')
+    .select('data')
+    .order('created_at', { ascending: true });
+  return (data ?? []).map((r: any) => r.data);
+});
 
 // Presentational only — derives trust badges from existing data fields.
 // Nothing here touches RENTALS or the client-side filtering logic below.
@@ -376,9 +378,9 @@ const VOICES = RENTALS
                     <span style="display:flex;align-items:center;gap:5px"><Icon name="car" size={15} />{p.parking}</span>
                   )}
                 </div>
-                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+                <div style="display:flex;align-items:center;gap:14px;font-size:13px;color:var(--color-ink-soft);margin-bottom:16px">
                   {p.amen.filter(key => key !== 'parking').slice(0, 4).map(key => (
-                    <span title={AMEN_LABELS[key]?.es} style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--color-sand);color:var(--color-forest)">
+                    <span title={AMEN_LABELS[key]?.es} style="display:flex;align-items:center;gap:5px">
                       <Icon name={AMEN_ICON[key]} size={15} />
                     </span>
                   ))}

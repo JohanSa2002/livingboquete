@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getSupabase } from '../../../lib/supabase';
+import { getSupabase, invalidateCache } from '../../../lib/supabase';
 import { isAuthenticated } from '../../../lib/auth';
 
 const VALID_TABLES = ['places', 'events', 'posts', 'rentals', 'gallery'];
@@ -45,6 +45,7 @@ export const POST: APIRoute = async ({ params, request, cookies }) => {
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
+  invalidateCache(table);
   return new Response(JSON.stringify({ ok: true }));
 };
 
@@ -61,5 +62,6 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
+  invalidateCache(table);
   return new Response(JSON.stringify({ ok: true }));
 };

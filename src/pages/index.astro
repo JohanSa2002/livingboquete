@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Icon from '../components/Icon.astro';
 import GalleryMasonry from '../components/GalleryMasonry';
 import { GALLERY_CATS } from '../data/data';
-import { getSupabase } from '../lib/supabase';
+import { getSupabase, cachedQuery } from '../lib/supabase';
 
 async function fetchAll(table: string) {
   const { data } = await getSupabase()
@@ -14,7 +14,7 @@ async function fetchAll(table: string) {
 }
 
 const [PLACES, EVENTS, POSTS, GALLERY] = await Promise.all(
-  ['places', 'events', 'posts', 'gallery'].map(fetchAll)
+  ['places', 'events', 'posts', 'gallery'].map((table) => cachedQuery(table, () => fetchAll(table)))
 );
 
 const homePosts = POSTS.slice(0, 3);
