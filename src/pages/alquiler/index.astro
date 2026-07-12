@@ -35,13 +35,20 @@ function getBadges(p: any) {
 const minPrice = RENTALS.length ? Math.min(...RENTALS.map((r: any) => r.price)) : 0;
 const verifiedCount = RENTALS.filter((r: any) => r.verified).length;
 
-// Featured: the most-reviewed listing, presented as "the community's pick".
-const featured = RENTALS.length
-  ? RENTALS.reduce((a: any, b: any) => (b.reviews > a.reviews ? b : a), RENTALS[0])
-  : null;
-const featuredQuote = featured?.reviewsList?.length
-  ? featured.reviewsList.reduce((a: any, b: any) => (b.rating > a.rating ? b : a), featured.reviewsList[0])
-  : null;
+// Spotlight: properties manually marked "featured" in the admin. Falls back
+// to the most-reviewed listing when nothing has been marked yet.
+const manuallyFeatured = RENTALS.filter((r: any) => r.featured);
+const spotlightSource = manuallyFeatured.length
+  ? manuallyFeatured
+  : RENTALS.length
+    ? [RENTALS.reduce((a: any, b: any) => (b.reviews > a.reviews ? b : a), RENTALS[0])]
+    : [];
+const spotlightItems = spotlightSource.map((r: any) => ({
+  ...r,
+  quote: r.reviewsList?.length
+    ? r.reviewsList.reduce((a: any, b: any) => (b.rating > a.rating ? b : a), r.reviewsList[0])
+    : null,
+}));
 
 // Lifestyle shortcuts: count + representative photo pulled from real listings.
 type Lifestyle = {
@@ -170,48 +177,97 @@ const VOICES = RENTALS
     </div>
   </section>
 
-  <!-- ============ SPOTLIGHT: the community's pick ============ -->
-  {featured && (
+  <!-- ============ SPOTLIGHT: the community's pick(s) ============ -->
+  {spotlightItems.length > 0 && (
     <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding-top:84px">
-      <div class="stays-spot rv">
-        <a href={`/alquiler/${featured.id}`} class="stays-spot-media" aria-label={featured.name.es}>
-          <img src={featured.img} alt={featured.name.es} loading="lazy" />
-          <span class="badge badge-wood stays-spot-flag">
-            <Icon name="star" size={12} />
-            <span class="lang-es">La elección de la comunidad</span><span class="lang-en" hidden>The community's pick</span>
-          </span>
-        </a>
-        <div class="stays-spot-body">
-          <div class="eyebrow" style="margin-bottom:14px">
-            <span class="lang-es">Destacado del mes</span><span class="lang-en" hidden>Featured this month</span>
-          </div>
-          <h2 class="stays-h2" style="margin-bottom:10px">
-            <span class="lang-es">{featured.name.es}</span><span class="lang-en" hidden>{featured.name.en}</span>
-          </h2>
-          <div class="stays-spot-meta">
-            <span style="display:flex;align-items:center;gap:5px"><Icon name="star" size={14} /><b>{featured.rating.toFixed(1)}</b> · {featured.reviews} <span class="lang-es">reseñas</span><span class="lang-en" hidden>reviews</span></span>
-            <span style="display:flex;align-items:center;gap:5px"><Icon name="location" size={14} /><span class="lang-es">{featured.loc.es}</span><span class="lang-en" hidden>{featured.loc.en}</span></span>
-          </div>
-          {featuredQuote && (
-            <blockquote class="stays-quote">
-              <span class="lang-es">“{featuredQuote.text.es}”</span>
-              <span class="lang-en" hidden>“{featuredQuote.text.en}”</span>
-              <footer>— {featuredQuote.name}</footer>
-            </blockquote>
-          )}
-          <div class="stays-spot-foot">
-            <div>
-              <span class="stays-spot-price">${featured.price}</span>
-              <span class="stays-spot-per">/ <span class="lang-es">mes</span><span class="lang-en" hidden>month</span></span>
+      <div class="stays-spot-wrap rv">
+        <div class="stays-spot-track" id="spot-track">
+          {spotlightItems.map(item => (
+            <div class="stays-spot">
+              <a href={`/alquiler/${item.id}`} class="stays-spot-media" aria-label={item.name.es}>
+                <img src={item.img} alt={item.name.es} loading="lazy" />
+                <span class="badge badge-wood stays-spot-flag">
+                  <Icon name="star" size={12} />
+                  <span class="lang-es">La elección de la comunidad</span><span class="lang-en" hidden>The community's pick</span>
+                </span>
+              </a>
+              <div class="stays-spot-body">
+                <div class="eyebrow" style="margin-bottom:14px">
+                  <span class="lang-es">Destacado del mes</span><span class="lang-en" hidden>Featured this month</span>
+                </div>
+                <h2 class="stays-h2" style="margin-bottom:10px">
+                  <span class="lang-es">{item.name.es}</span><span class="lang-en" hidden>{item.name.en}</span>
+                </h2>
+                <div class="stays-spot-meta">
+                  <span style="display:flex;align-items:center;gap:5px"><Icon name="star" size={14} /><b>{item.rating.toFixed(1)}</b> · {item.reviews} <span class="lang-es">reseñas</span><span class="lang-en" hidden>reviews</span></span>
+                  <span style="display:flex;align-items:center;gap:5px"><Icon name="location" size={14} /><span class="lang-es">{item.loc.es}</span><span class="lang-en" hidden>{item.loc.en}</span></span>
+                </div>
+                {item.quote && (
+                  <blockquote class="stays-quote">
+                    <span class="lang-es">“{item.quote.text.es}”</span>
+                    <span class="lang-en" hidden>“{item.quote.text.en}”</span>
+                    <footer>— {item.quote.name}</footer>
+                  </blockquote>
+                )}
+                <div class="stays-spot-foot">
+                  <div>
+                    <span class="stays-spot-price">${item.price}</span>
+                    <span class="stays-spot-per">/ <span class="lang-es">mes</span><span class="lang-en" hidden>month</span></span>
+                  </div>
+                  <a href={`/alquiler/${item.id}`} class="btn btn-primary">
+                    <span class="lang-es">Conocer esta casa</span><span class="lang-en" hidden>See this home</span>
+                    <Icon name="chevron-right" size={16} />
+                  </a>
+                </div>
+              </div>
             </div>
-            <a href={`/alquiler/${featured.id}`} class="btn btn-primary">
-              <span class="lang-es">Conocer esta casa</span><span class="lang-en" hidden>See this home</span>
-              <Icon name="chevron-right" size={16} />
-            </a>
-          </div>
+          ))}
         </div>
+
+        {spotlightItems.length > 1 && (
+          <div class="stays-spot-nav">
+            <button type="button" class="stays-spot-arrow" id="spot-prev" aria-label="Anterior">
+              <Icon name="chevron-right" size={17} class="stays-spot-arrow-icon" />
+            </button>
+            <div class="stays-spot-dots" id="spot-dots">
+              {spotlightItems.map((_, i) => (
+                <button type="button" class="stays-spot-dot" data-dot={i} aria-label={`Ir al destacado ${i + 1}`}></button>
+              ))}
+            </div>
+            <button type="button" class="stays-spot-arrow" id="spot-next" aria-label="Siguiente">
+              <Icon name="chevron-right" size={17} />
+            </button>
+          </div>
+        )}
       </div>
     </section>
+  )}
+
+  {spotlightItems.length > 1 && (
+    <script>
+      const track = document.getElementById('spot-track');
+      const prevBtn = document.getElementById('spot-prev');
+      const nextBtn = document.getElementById('spot-next');
+      const dots = Array.from(document.querySelectorAll<HTMLButtonElement>('.stays-spot-dot'));
+      if (track) {
+        const goTo = (i: number) => {
+          const slide = track.children[i] as HTMLElement | undefined;
+          if (slide) track.scrollTo({ left: slide.offsetLeft, behavior: 'smooth' });
+        };
+        const currentIndex = () => Math.round(track.scrollLeft / track.clientWidth);
+
+        prevBtn?.addEventListener('click', () => goTo(Math.max(0, currentIndex() - 1)));
+        nextBtn?.addEventListener('click', () => goTo(Math.min(track.children.length - 1, currentIndex() + 1)));
+        dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+
+        const syncDots = () => {
+          const i = currentIndex();
+          dots.forEach((dot, di) => dot.classList.toggle('is-active', di === i));
+        };
+        track.addEventListener('scroll', () => requestAnimationFrame(syncDots), { passive: true });
+        syncDots();
+      }
+    </script>
   )}
 
   <!-- ============ EXPLORE: filters + grid (anchor target) ============ -->
@@ -658,7 +714,7 @@ const VOICES = RENTALS
   }
   .stays-life-card {
     position: relative;
-    aspect-ratio: 3/4;
+    aspect-ratio: 4/3;
     border: none;
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -682,52 +738,65 @@ const VOICES = RENTALS
   }
   .stays-life-body {
     position: absolute;
-    left: 18px; right: 18px; bottom: 18px;
+    left: 16px; right: 16px; bottom: 16px;
     color: var(--color-white);
   }
   .stays-life-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px; height: 38px;
-    border-radius: 12px;
+    width: 32px; height: 32px;
+    border-radius: 10px;
     background: rgba(255,255,255,.14);
     border: 1px solid rgba(255,255,255,.3);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .stays-life-name {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 21px;
+    font-size: 18px;
     letter-spacing: -.01em;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
   .stays-life-tag {
     font-family: var(--font-accent);
     font-style: italic;
-    font-size: 14.5px;
+    font-size: 13.5px;
     color: rgba(245,240,232,.85);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .stays-life-count {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--color-white);
     background: rgba(255,255,255,.13);
     border: 1px solid rgba(255,255,255,.26);
     border-radius: var(--radius-pill);
-    padding: 6px 12px;
+    padding: 5px 11px;
     transition: background-color .2s var(--ease-out), gap .2s var(--ease-out);
   }
   .stays-life-card:hover .stays-life-count { background: var(--color-forest); gap: 8px; }
 
   /* ---------- Spotlight ---------- */
+  .stays-spot-wrap { position: relative; }
+  .stays-spot-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-radius: 26px;
+  }
+  .stays-spot-track::-webkit-scrollbar { display: none; }
   .stays-spot {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
     display: grid;
     grid-template-columns: 1.25fr 1fr;
     background: var(--color-white);
@@ -736,6 +805,38 @@ const VOICES = RENTALS
     overflow: hidden;
     box-shadow: var(--shadow-md);
   }
+  .stays-spot-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 22px;
+  }
+  .stays-spot-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-white);
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: background-color .2s var(--ease-out), border-color .2s var(--ease-out);
+  }
+  .stays-spot-arrow:hover { background: var(--color-sand-deep); border-color: var(--color-wood); }
+  .stays-spot-arrow-icon { transform: scaleX(-1); }
+  .stays-spot-dots { display: flex; align-items: center; gap: 8px; }
+  .stays-spot-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: var(--color-border-soft);
+    cursor: pointer;
+    transition: background-color .2s var(--ease-out), transform .2s var(--ease-out);
+  }
+  .stays-spot-dot.is-active { background: var(--color-wood); transform: scale(1.3); }
   .stays-spot-media { position: relative; min-height: 420px; display: block; overflow: hidden; }
   .stays-spot-media img {
     position: absolute; inset: 0;
@@ -992,7 +1093,6 @@ const VOICES = RENTALS
   }
   @media (max-width: 560px) {
     .stays-life-grid { grid-template-columns: 1fr; }
-    .stays-life-card { aspect-ratio: 4/3; }
   }
 </style>
 

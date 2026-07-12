@@ -66,6 +66,7 @@ const helpTexts: Record<string, { title: string; lines: string[] }> = {
       '<strong>Precio</strong> — Precio mensual en dólares, solo el número (ej: <code>650</code>).',
       '<strong>Rating</strong> — Calificación de 1.0 a 5.0 (ej: <code>4.9</code>).',
       '<strong>Amenidades</strong> — Lista separada por comas. Valores válidos: <code>wifi</code>, <code>kitchen</code>, <code>view</code>, <code>parking</code>, <code>pool</code>, <code>fireplace</code>, <code>furnished</code>, <code>pets</code>.',
+      '<strong>Destacado</strong> — Marca "Sí" para que la propiedad aparezca en la portada de <code>/alquiler</code>. Si marcas varias, se muestran en un carrusel; si no marcas ninguna, se destaca automáticamente la más reseñada.',
       '<strong>Latitud / Longitud</strong> — Coordenadas para el mapa. Boquete está aprox. en <code>8.78</code>, <code>-82.43</code>. Puedes obtener coordenadas desde Google Maps (click derecho → copiar coordenadas).',
     ],
   },
@@ -134,7 +135,10 @@ const help = helpTexts[section!];
               return (
                 <tr>
                   <td style="font-size:12px;color:#8c8c87">{item.id}</td>
-                  <td style="font-weight:600;color:#1a1918">{typeof nameObj === 'object' ? nameObj.es : nameObj}</td>
+                  <td style="font-weight:600;color:#1a1918">
+                    {section === 'rentals' && item.featured && <span title="Destacado" style="color:#c8964a">★ </span>}
+                    {typeof nameObj === 'object' ? nameObj.es : nameObj}
+                  </td>
                   <td>{typeof nameObj === 'object' ? nameObj.en : '--'}</td>
                   {section === 'posts' && <td>{item.author}</td>}
                   {section === 'rentals' && <td style="font-weight:600">${item.price}/mes</td>}
@@ -260,6 +264,7 @@ const help = helpTexts[section!];
       { key: 'sqmLot', label: 'M² de terreno', type: 'number', hint: '0 si no aplica (apartamento, habitación)' },
       { key: 'minMonths', label: 'Estadía mínima (meses)', type: 'number' },
       { key: 'verified', label: 'Propiedad verificada', type: 'select', options: [['true','Sí, verificada'],['false','No verificada']] },
+      { key: 'featured', label: 'Destacado (portada de /alquiler)', type: 'select', options: [['false','No'],['true','Sí, destacado']] },
       { key: 'availableFrom', label: 'Disponible desde', type: 'text', hint: 'Formato AAAA-MM-DD. Vacío = disponible ahora' },
       { key: 'rating', label: 'Rating', type: 'number' },
       { key: 'reviews', label: 'Num. reseñas', type: 'number' },
@@ -400,7 +405,7 @@ const help = helpTexts[section!];
         parent[leaf] = val ? Number(val) : 0;
       } else if (key === 'amen') {
         parent[leaf] = val.split(',').map(s => s.trim()).filter(Boolean);
-      } else if (key === 'verified') {
+      } else if (key === 'verified' || key === 'featured') {
         parent[leaf] = val === 'true';
       } else {
         parent[leaf] = val;
