@@ -82,8 +82,8 @@ const VOICES = RENTALS
   activeKey="stays"
   title="Alquiler · MIKA Homes"
   titleEn="Stays · MIKA Homes"
-  description="Casas, apartamentos y habitaciones en alquiler mensual en Boquete, Chiriquí. Primavera eterna, comunidad y montañas."
-  descriptionEn="Houses, apartments and rooms for monthly rent in Boquete, Chiriquí. Eternal spring, community and mountains."
+  description="Casas, apartamentos y habitaciones en alquiler mensual en Boquete, Chiriquí. Comunidad y montañas."
+  descriptionEn="Houses, apartments and rooms for monthly rent in Boquete, Chiriquí. Community and mountains."
 >
 
   <!-- ============ HERO: live the highlands ============ -->
@@ -93,12 +93,7 @@ const VOICES = RENTALS
 
     <div class="stays-hero-inner pad-sec">
       <div class="stays-hero-copy">
-        <div class="stays-climate rv-once">
-          <span class="stays-climate-dot"></span>
-          <span class="lang-es">Primavera eterna · 18–24 °C todo el año</span>
-          <span class="lang-en" hidden>Eternal spring · 18–24 °C year-round</span>
-        </div>
-        <h1 class="stays-hero-h1 rv-once" style="animation-delay:.08s">
+        <h1 class="stays-hero-h1 rv-once">
           <span class="lang-es">Despierta<br /><em>entre montañas.</em></span>
           <span class="lang-en" hidden>Wake up<br /><em>in the mountains.</em></span>
         </h1>
@@ -602,33 +597,6 @@ const VOICES = RENTALS
     margin: 0 auto;
     padding-top: 140px;
     padding-bottom: 44px;
-  }
-  .stays-climate {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: .02em;
-    color: var(--color-sand);
-    background: rgba(255,255,255,.1);
-    border: 1px solid rgba(255,255,255,.28);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    border-radius: var(--radius-pill);
-    padding: 9px 16px;
-    margin-bottom: 22px;
-  }
-  .stays-climate-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #9FD08C;
-    box-shadow: 0 0 0 0 rgba(159,208,140,.6);
-    animation: pulse 2.4s infinite;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(159,208,140,.55); }
-    70% { box-shadow: 0 0 0 9px rgba(159,208,140,0); }
-    100% { box-shadow: 0 0 0 0 rgba(159,208,140,0); }
   }
   .stays-hero-h1 {
     font-family: var(--font-display);

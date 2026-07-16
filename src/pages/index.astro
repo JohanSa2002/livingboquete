@@ -49,11 +49,6 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     </button>
 
     <div class="pad-sec" style="position:relative;z-index:4;max-width:1240px;margin:0 auto;padding:0 26px 64px;width:100%;color:var(--color-sand)">
-      <div style="display:inline-flex;align-items:center;gap:9px;background:rgba(245,240,232,.14);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(245,240,232,.28);padding:8px 15px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;margin-bottom:24px;animation:fadein 1s both">
-        <span style="width:7px;height:7px;border-radius:50%;background:var(--color-wood)"></span>
-        <span class="lang-es">Tierras altas de Chiriquí · Panamá</span>
-        <span class="lang-en" hidden>Chiriquí Highlands · Panama</span>
-      </div>
       <h1 style="font-family:var(--font-display);font-weight:800;font-size:var(--text-hero);line-height:1.05;letter-spacing:-.025em;margin:0 0 20px;max-width:820px;text-shadow:0 4px 30px rgba(0,0,0,.25)">
         <span class="lang-es">Encuentra tu próximo hogar entre montañas.</span>
         <span class="lang-en" hidden>Find your next home among the mountains.</span>
@@ -542,14 +537,23 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     };
     win.__cardModal = state;
 
-    state.backdrop = document.getElementById('detail-backdrop') as HTMLElement | null;
-    state.modal = document.getElementById('detail-modal') as HTMLElement | null;
-    state.closeBtn = document.getElementById('detail-close') as HTMLElement | null;
-    state.bodyContent = document.getElementById('detail-body-content') as HTMLElement | null;
-    state.placesData = readJson<PlaceItem>('places-json');
-    state.eventsData = readJson<EventItem>('events-json');
-    state.originEl = null;
-    state.isOpen = false;
+    // Astro skips re-running an inline script whose content already ran once,
+    // so this whole block only executes on the very first page load. Refs
+    // captured here would go stale after a client-side navigation swaps the
+    // DOM. `astro:page-load` fires on first load AND every navigation, so
+    // refreshing refs there keeps them pointed at whatever's on screen.
+    function refreshRefs() {
+      state.backdrop = document.getElementById('detail-backdrop') as HTMLElement | null;
+      state.modal = document.getElementById('detail-modal') as HTMLElement | null;
+      state.closeBtn = document.getElementById('detail-close') as HTMLElement | null;
+      state.bodyContent = document.getElementById('detail-body-content') as HTMLElement | null;
+      state.placesData = readJson<PlaceItem>('places-json');
+      state.eventsData = readJson<EventItem>('events-json');
+      state.originEl = null;
+      state.isOpen = false;
+    }
+    refreshRefs();
+    document.addEventListener('astro:page-load', refreshRefs);
 
     if (state.backdrop && state.modal && state.closeBtn && state.bodyContent) {
       const esc = (str: string) => {
