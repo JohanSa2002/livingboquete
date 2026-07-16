@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "seed": "npx tsx scripts/seed.ts"
+    "seed": "npx tsx scripts/seed.ts",
+    "setup-storage": "npx tsx scripts/setup-storage.ts"
   },
   "dependencies": {
     "@astrojs/node": "^11.0.0",

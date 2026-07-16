@@ -18,6 +18,8 @@ const [PLACES, EVENTS, POSTS, GALLERY] = await Promise.all(
 );
 
 const homePosts = POSTS.slice(0, 3);
+
+const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 ---
 
 <Layout activeKey="home">
@@ -116,20 +118,20 @@ const homePosts = POSTS.slice(0, 3);
         </h2>
       </div>
     </div>
-    <div class="cols-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:26px">
+    <div class="cols-3" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
       {PLACES.map(p => (
-        <div class="place-card" style="border-radius:18px;overflow:hidden;background:#fff;border:1px solid rgba(37,29,20,.09);box-shadow:0 1px 2px rgba(37,29,20,.04);display:flex;flex-direction:column">
-          <div style="position:relative;aspect-ratio:4/3.1;overflow:hidden">
+        <div class="place-card" data-place-id={p.id} role="button" tabindex="0" style="border-radius:12px;overflow:hidden;background:#fff;border:1px solid rgba(37,29,20,.09);box-shadow:0 1px 2px rgba(37,29,20,.04);display:flex;flex-direction:column">
+          <div style="position:relative;aspect-ratio:4/2.6;overflow:hidden">
             <img src={p.img} alt={p.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
-            <span style="position:absolute;top:13px;left:13px;background:rgba(20,28,18,.62);backdrop-filter:blur(4px);color:#F7F1E6;font-size:12px;font-weight:700;letter-spacing:.04em;padding:6px 12px;border-radius:999px">
+            <span style="position:absolute;top:8px;left:8px;background:rgba(20,28,18,.62);backdrop-filter:blur(4px);color:#F7F1E6;font-size:10px;font-weight:700;letter-spacing:.04em;padding:4px 8px;border-radius:999px">
               <span class="lang-es">{p.cat.es}</span><span class="lang-en" hidden>{p.cat.en}</span>
             </span>
           </div>
-          <div style="padding:20px 21px 23px;display:flex;flex-direction:column;flex:1">
-            <h3 style="font-family:'Manrope';font-weight:700;font-size:22px;margin:0 0 9px;color:#251D14">
+          <div style="padding:11px 12px 13px;display:flex;flex-direction:column;flex:1">
+            <h3 style="font-family:'Manrope';font-weight:700;font-size:14.5px;margin:0 0 5px;color:#251D14">
               <span class="lang-es">{p.name.es}</span><span class="lang-en" hidden>{p.name.en}</span>
             </h3>
-            <p style="font-size:14.5px;line-height:1.55;color:#5A4F42;margin:0;flex:1">
+            <p style="font-size:11.5px;line-height:1.45;color:#5A4F42;margin:0;flex:1">
               <span class="lang-es">{p.short.es}</span><span class="lang-en" hidden>{p.short.en}</span>
             </p>
           </div>
@@ -153,7 +155,7 @@ const homePosts = POSTS.slice(0, 3);
     </div>
     <div class="cols-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
       {EVENTS.map(e => (
-        <div style="position:relative;border-radius:18px;overflow:hidden;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end">
+        <div class="event-card" data-event-id={e.id} role="button" tabindex="0" style="position:relative;border-radius:18px;overflow:hidden;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end">
           <img src={e.img} alt={e.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
           <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,28,18,.12),rgba(18,20,12,.85))"></div>
           <div style="position:absolute;top:15px;left:15px;background:#F7F1E6;border-radius:13px;text-align:center;padding:9px 13px;line-height:1">
@@ -418,6 +420,36 @@ const homePosts = POSTS.slice(0, 3);
     </div>
   </section>
 
+  <!-- DETAIL MODAL DATA -->
+  <script type="application/json" id="places-json" is:inline set:html={jsonSafe(PLACES)} />
+  <script type="application/json" id="events-json" is:inline set:html={jsonSafe(EVENTS)} />
+
+  <!-- DETAIL MODAL -->
+  <div id="detail-backdrop" class="detail-backdrop" hidden>
+    <div id="detail-modal" class="detail-modal" role="dialog" aria-modal="true">
+      <button id="detail-close" class="detail-close" type="button" aria-label="Cerrar">&times;</button>
+      <div class="detail-media">
+        <img id="detail-img" src="" alt="" />
+        <span id="detail-badge" class="detail-badge"></span>
+        <div id="detail-date" class="detail-date-badge" hidden>
+          <span id="detail-date-d" class="detail-date-d"></span>
+          <span id="detail-date-m" class="detail-date-m"></span>
+        </div>
+      </div>
+      <div id="detail-body-content" class="detail-body-content">
+        <h3 id="detail-title" class="detail-title"></h3>
+        <p id="detail-desc" class="detail-desc"></p>
+        <div id="detail-meta" class="detail-meta"></div>
+        <div id="detail-tips" class="detail-tips" hidden>
+          <div class="detail-tips-label">
+            <span class="lang-es">Consejos</span><span class="lang-en" hidden>Tips</span>
+          </div>
+          <ul id="detail-tips-list"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Hero video: play once, then show poster + replay button
     const heroVideo = document.getElementById('hero-video') as HTMLVideoElement;
@@ -465,14 +497,318 @@ const homePosts = POSTS.slice(0, 3);
     });
   </script>
 
+  <script>
+    // Card -> detail modal: expands the clicked place/event card in place.
+    import { gsap } from 'gsap';
+
+    type Bilingual = { es: string; en: string };
+    interface PlaceItem {
+      id: string; cat: Bilingual; name: Bilingual; short: Bilingual; long: Bilingual;
+      hours: Bilingual; cost: Bilingual; tips: { es: string[]; en: string[] }; img: string;
+    }
+    interface EventItem {
+      id: string; d: string; m: Bilingual; range: Bilingual; name: Bilingual; cat: Bilingual;
+      time: Bilingual; place: Bilingual; desc: Bilingual; img: string;
+    }
+
+    function readJson<T>(id: string): T[] {
+      const el = document.getElementById(id);
+      if (!el?.textContent) return [];
+      try { return JSON.parse(el.textContent); } catch { return []; }
+    }
+
+    const PLACES_DATA = readJson<PlaceItem>('places-json');
+    const EVENTS_DATA = readJson<EventItem>('events-json');
+
+    const backdrop = document.getElementById('detail-backdrop') as HTMLElement | null;
+    const modal = document.getElementById('detail-modal') as HTMLElement | null;
+    const closeBtn = document.getElementById('detail-close') as HTMLElement | null;
+    const bodyContent = document.getElementById('detail-body-content') as HTMLElement | null;
+
+    if (backdrop && modal && closeBtn && bodyContent) {
+      let originEl: HTMLElement | null = null;
+      let isOpen = false;
+
+      const esc = (str: string) => {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+      };
+      const biSpan = (es: string, en: string) =>
+        `<span class="lang-es">${esc(es)}</span><span class="lang-en" hidden>${esc(en)}</span>`;
+      const metaRow = (labelEs: string, labelEn: string, valueEs: string, valueEn: string) =>
+        `<div class="detail-meta-row"><span class="detail-meta-label">${biSpan(labelEs, labelEn)}</span><span class="detail-meta-value">${biSpan(valueEs, valueEn)}</span></div>`;
+
+      function populateModal(item: PlaceItem | EventItem, type: 'place' | 'event') {
+        const img = document.getElementById('detail-img') as HTMLImageElement;
+        img.src = item.img;
+        img.alt = item.name.es;
+
+        const badgeEl = document.getElementById('detail-badge') as HTMLElement;
+        const dateEl = document.getElementById('detail-date') as HTMLElement;
+        if (type === 'event') {
+          const ev = item as EventItem;
+          badgeEl.hidden = true;
+          dateEl.hidden = false;
+          document.getElementById('detail-date-d')!.textContent = ev.d;
+          document.getElementById('detail-date-m')!.innerHTML = biSpan(ev.m.es, ev.m.en);
+        } else {
+          badgeEl.hidden = false;
+          badgeEl.innerHTML = biSpan(item.cat.es, item.cat.en);
+          dateEl.hidden = true;
+        }
+
+        document.getElementById('detail-title')!.innerHTML = biSpan(item.name.es, item.name.en);
+
+        const descSrc = type === 'place' ? (item as PlaceItem).long : (item as EventItem).desc;
+        document.getElementById('detail-desc')!.innerHTML = biSpan(descSrc.es, descSrc.en);
+
+        const meta = document.getElementById('detail-meta')!;
+        if (type === 'place') {
+          const p = item as PlaceItem;
+          meta.innerHTML =
+            metaRow('Horario', 'Hours', p.hours.es, p.hours.en) +
+            metaRow('Costo', 'Cost', p.cost.es, p.cost.en);
+        } else {
+          const e = item as EventItem;
+          meta.innerHTML =
+            metaRow('Categoría', 'Category', e.cat.es, e.cat.en) +
+            metaRow('Fecha', 'Date', e.range.es, e.range.en) +
+            metaRow('Horario', 'Time', e.time.es, e.time.en) +
+            metaRow('Lugar', 'Place', e.place.es, e.place.en);
+        }
+
+        const tipsWrap = document.getElementById('detail-tips') as HTMLElement;
+        const tipsList = document.getElementById('detail-tips-list')!;
+        if (type === 'place' && (item as PlaceItem).tips) {
+          const tips = (item as PlaceItem).tips;
+          tipsWrap.hidden = false;
+          tipsList.innerHTML = tips.es.map((t, i) => `<li>${biSpan(t, tips.en[i] ?? t)}</li>`).join('');
+        } else {
+          tipsWrap.hidden = true;
+          tipsList.innerHTML = '';
+        }
+      }
+
+      function openDetail(source: HTMLElement, item: PlaceItem | EventItem, type: 'place' | 'event') {
+        if (isOpen) return;
+        isOpen = true;
+        originEl = source;
+        populateModal(item, type);
+
+        const rect = source.getBoundingClientRect();
+        document.body.style.overflow = 'hidden';
+        backdrop!.hidden = false;
+
+        gsap.set(modal, {
+          position: 'fixed', top: rect.top, left: rect.left,
+          width: rect.width, height: rect.height, borderRadius: 14, opacity: 1,
+        });
+        gsap.set(backdrop, { opacity: 0 });
+        gsap.set(bodyContent, { opacity: 0, y: 12 });
+
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const targetW = Math.min(vw * 0.92, 760);
+        const targetH = Math.min(vh * 0.86, 640);
+        const targetTop = (vh - targetH) / 2;
+        const targetLeft = (vw - targetW) / 2;
+
+        const tl = gsap.timeline();
+        tl.to(backdrop, { opacity: 1, duration: 0.25, ease: 'power2.out' }, 0)
+          .to(modal, { top: targetTop, left: targetLeft, width: targetW, height: targetH, borderRadius: 22, duration: 0.55, ease: 'power3.inOut' }, 0)
+          .to(bodyContent, { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }, 0.28);
+
+        closeBtn!.focus();
+      }
+
+      function closeDetail() {
+        if (!isOpen) return;
+        const source = originEl;
+        const rect = source ? source.getBoundingClientRect() : null;
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            backdrop!.hidden = true;
+            document.body.style.overflow = '';
+            isOpen = false;
+            source?.focus();
+            originEl = null;
+          },
+        });
+        tl.to(bodyContent, { opacity: 0, y: 8, duration: 0.15 }, 0);
+        if (rect) {
+          tl.to(modal, { top: rect.top, left: rect.left, width: rect.width, height: rect.height, borderRadius: 14, duration: 0.45, ease: 'power3.inOut' }, 0.05);
+        } else {
+          tl.to(modal, { opacity: 0, scale: 0.92, duration: 0.3 }, 0.05);
+        }
+        tl.to(backdrop, { opacity: 0, duration: 0.3 }, 0.2);
+      }
+
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+
+        const placeCard = target.closest<HTMLElement>('[data-place-id]');
+        if (placeCard) {
+          const item = PLACES_DATA.find(p => p.id === placeCard.dataset.placeId);
+          if (item) openDetail(placeCard, item, 'place');
+          return;
+        }
+        const eventCard = target.closest<HTMLElement>('[data-event-id]');
+        if (eventCard) {
+          const item = EVENTS_DATA.find(ev => ev.id === eventCard.dataset.eventId);
+          if (item) openDetail(eventCard, item, 'event');
+          return;
+        }
+        if (target === backdrop || target === closeBtn || target.closest('#detail-close')) {
+          closeDetail();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen) closeDetail();
+      });
+
+      document.querySelectorAll<HTMLElement>('[data-place-id], [data-event-id]').forEach(el => {
+        el.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            (e.currentTarget as HTMLElement).click();
+          }
+        });
+      });
+    }
+  </script>
+
   <!-- Spacer so #contacto can scroll to center of viewport -->
   <div aria-hidden="true" style="height:50dvh;background:#2C3A2A"></div>
 
 </Layout>
 
 <style>
-  .place-card { transition: transform .25s, box-shadow .25s; }
+  .place-card { transition: transform .25s, box-shadow .25s; cursor: pointer; }
   .place-card:hover { transform: translateY(-5px); box-shadow: 0 22px 40px -22px rgba(37,29,20,.4); }
+  .place-card:focus-visible, .event-card:focus-visible { outline: 3px solid #B95C36; outline-offset: 3px; }
+
+  .event-card { cursor: pointer; transition: transform .25s; }
+  .event-card:hover { transform: translateY(-5px); }
+
+  .detail-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(20,28,18,.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .detail-backdrop[hidden] { display: none; }
+
+  .detail-modal {
+    background: #F7F1E6;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,.45);
+  }
+
+  .detail-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(20,28,18,.55);
+    backdrop-filter: blur(4px);
+    color: #F7F1E6;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s;
+  }
+  .detail-close:hover { background: rgba(20,28,18,.75); }
+
+  .detail-media {
+    position: relative;
+    flex: 0 0 42%;
+    min-height: 160px;
+    overflow: hidden;
+  }
+  .detail-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .detail-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(20,28,18,.62);
+    backdrop-filter: blur(4px);
+    color: #F7F1E6;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .detail-date-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: #F7F1E6;
+    border-radius: 13px;
+    text-align: center;
+    padding: 9px 13px;
+    line-height: 1;
+  }
+  .detail-date-d { display: block; font-family: 'Manrope'; font-weight: 800; font-size: 24px; color: #B95C36; }
+  .detail-date-m { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #5A4F42; margin-top: 2px; }
+
+  .detail-body-content {
+    padding: 26px 28px 30px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+  .detail-title {
+    font-family: 'Manrope';
+    font-weight: 700;
+    font-size: clamp(22px, 3vw, 28px);
+    color: #251D14;
+    margin: 0 0 12px;
+  }
+  .detail-desc { font-size: 15px; line-height: 1.65; color: #5A4F42; margin: 0 0 20px; }
+
+  .detail-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 16px 18px;
+    background: rgba(184,150,74,.08);
+    border-radius: 12px;
+  }
+  /* Injected client-side into #detail-meta / #detail-tips-list, so these must stay unscoped. */
+  :global(.detail-meta-row + .detail-meta-row) { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(37,29,20,.08); }
+  :global(.detail-meta-label) { display: block; font-weight: 700; color: #B95C36; text-transform: uppercase; letter-spacing: .05em; font-size: 11px; margin-bottom: 3px; }
+  :global(.detail-meta-value) { display: block; color: #251D14; font-size: 14px; line-height: 1.4; }
+
+  .detail-tips-label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #5A4F42; margin-bottom: 10px; }
+  :global(#detail-tips-list) { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  :global(#detail-tips-list li) { position: relative; padding-left: 18px; font-size: 14px; line-height: 1.5; color: #5A4F42; }
+  :global(#detail-tips-list li)::before { content: '+'; position: absolute; left: 0; color: #C8964A; font-weight: 700; }
+
+  @media (max-width: 640px) {
+    .detail-media { flex-basis: 34%; }
+    .detail-body-content { padding: 20px 20px 26px; }
+  }
 
   .lead-label {
     display: block;

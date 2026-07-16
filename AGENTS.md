@@ -14,6 +14,8 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 
 The admin CMS (places/events/posts/rentals/gallery) and the leads form are backed by Supabase Postgres (`src/lib/supabase.ts`), using the service role key server-side only — RLS is enabled on every table with no public policies. Schema lives in `supabase/migrations/0001_init.sql`; apply it to a project via the Supabase SQL editor or `supabase db push`. Seed sample content with `npm run seed` (reads `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` from `.env`).
 
+Image uploads in the admin CMS go to a public Supabase Storage bucket named `images` (`src/pages/api/upload.ts`, admin `type: 'image'` fields in `src/pages/admin/[section].astro`). Create the bucket once per project with `npm run setup-storage` (idempotent).
+
 ## Vercel
 
 `astro.config.mjs` picks the `@astrojs/vercel` adapter automatically when `process.env.VERCEL` is set (i.e. on Vercel's build), and falls back to `@astrojs/node` otherwise (local dev, Docker). Set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_SECRET`, and `ADMIN_PASS` as environment variables in the Vercel project settings.
