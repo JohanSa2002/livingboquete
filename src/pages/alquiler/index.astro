@@ -57,18 +57,19 @@ type Lifestyle = {
   es: string; en: string;
   taglineEs: string; taglineEn: string;
   icon: IconName;
+  img: string;
 };
 const LIFESTYLES: Lifestyle[] = [
-  { key: 'view', kind: 'amen', es: 'Vista al volcán', en: 'Volcano views', taglineEs: 'Amanece frente al Barú', taglineEn: 'Wake up facing Barú', icon: 'mountain' },
-  { key: 'pets', kind: 'amen', es: 'Con tu mascota', en: 'With your pet', taglineEs: 'Ellos también se mudan', taglineEn: 'They move in too', icon: 'paw' },
-  { key: 'furnished', kind: 'amen', es: 'Llega y vive', en: 'Move-in ready', taglineEs: 'Amueblado, sin vueltas', taglineEn: 'Furnished, zero hassle', icon: 'sofa' },
-  { key: 'casa', kind: 'type', es: 'Casa entera', en: 'Whole house', taglineEs: 'Tu espacio, tus reglas', taglineEn: 'Your space, your rules', icon: 'flame' },
+  { key: 'view', kind: 'amen', es: 'Vista al volcán', en: 'Volcano views', taglineEs: 'Amanece frente al Barú', taglineEn: 'Wake up facing Barú', icon: 'mountain', img: '/vista-al-volcan.webp' },
+  { key: 'pets', kind: 'amen', es: 'Con tu mascota', en: 'With your pet', taglineEs: 'Ellos también se mudan', taglineEn: 'They move in too', icon: 'paw', img: '/casa-perro.webp' },
+  { key: 'furnished', kind: 'amen', es: 'Llega y vive', en: 'Move-in ready', taglineEs: 'Amueblado, sin vueltas', taglineEn: 'Furnished, zero hassle', icon: 'sofa', img: '/casa-amueblada.webp' },
+  { key: 'casa', kind: 'type', es: 'Casa entera', en: 'Whole house', taglineEs: 'Tu espacio, tus reglas', taglineEn: 'Your space, your rules', icon: 'flame', img: '/casa-completa.webp' },
 ];
 const lifestyleData = LIFESTYLES.map(ls => {
   const matches = ls.kind === 'amen'
     ? RENTALS.filter((r: any) => r.amen.includes(ls.key))
     : RENTALS.filter((r: any) => r.type === ls.key);
-  return { ...ls, count: matches.length, img: matches[0]?.img ?? `https://picsum.photos/seed/bq-${ls.key}/700/500` };
+  return { ...ls, count: matches.length };
 });
 
 // Voices: the highest-rated real reviews across every listing.
