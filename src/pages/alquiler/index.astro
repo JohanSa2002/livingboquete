@@ -31,10 +31,6 @@ function getBadges(p: any) {
   return badges.slice(0, 2);
 }
 
-// --- Editorial data derived from the live listings -------------------
-const minPrice = RENTALS.length ? Math.min(...RENTALS.map((r: any) => r.price)) : 0;
-const verifiedCount = RENTALS.filter((r: any) => r.verified).length;
-
 // Spotlight: properties manually marked "featured" in the admin. Falls back
 // to the most-reviewed listing when nothing has been marked yet.
 const manuallyFeatured = RENTALS.filter((r: any) => r.featured);
@@ -110,25 +106,6 @@ const VOICES = RENTALS
           <a href="/#contacto" class="btn btn-ghost">
             <span class="lang-es">Publica tu propiedad</span><span class="lang-en" hidden>List your property</span>
           </a>
-        </div>
-      </div>
-
-      <div class="stays-hero-stats rv-once" style="animation-delay:.32s">
-        <div class="stays-stat">
-          <div class="stays-stat-n">{verifiedCount}</div>
-          <div class="stays-stat-l"><span class="lang-es">propiedades verificadas</span><span class="lang-en" hidden>verified listings</span></div>
-        </div>
-        <div class="stays-stat">
-          <div class="stays-stat-n">${minPrice}<span class="stays-stat-unit">/<span class="lang-es">mes</span><span class="lang-en" hidden>mo</span></span></div>
-          <div class="stays-stat-l"><span class="lang-es">desde</span><span class="lang-en" hidden>starting at</span></div>
-        </div>
-        <div class="stays-stat">
-          <div class="stays-stat-n">&lt;24h</div>
-          <div class="stays-stat-l"><span class="lang-es">respuesta del anfitrión</span><span class="lang-en" hidden>host response</span></div>
-        </div>
-        <div class="stays-stat">
-          <div class="stays-stat-n">0%</div>
-          <div class="stays-stat-l"><span class="lang-es">comisión para ti</span><span class="lang-en" hidden>fees for you</span></div>
         </div>
       </div>
     </div>
@@ -678,11 +655,12 @@ const VOICES = RENTALS
   /* ---------- Lifestyle cards ---------- */
   .stays-life-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
   }
   .stays-life-card {
     position: relative;
+    min-width: 0;
     aspect-ratio: 4/3;
     border: none;
     border-radius: var(--radius-lg);
@@ -1032,7 +1010,7 @@ const VOICES = RENTALS
 
   /* ---------- Responsive ---------- */
   @media (max-width: 1024px) {
-    .stays-life-grid { grid-template-columns: repeat(2, 1fr); }
+    .stays-life-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .stays-spot { grid-template-columns: 1fr; }
     .stays-spot-media { min-height: 300px; }
     .stays-steps { grid-template-columns: 1fr; gap: 26px; }
