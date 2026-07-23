@@ -484,9 +484,9 @@ const VOICES = RENTALS
     </div>
   </section>
 
-  <!-- ============ VOICES: real reviews ============ -->
-  {VOICES.length > 0 && (
-    <section class="stays-voices-section">
+  <!-- ============ VOICES + OWNER CTA: community background ============ -->
+  <section class="stays-community-section">
+    {VOICES.length > 0 && (
       <div class="pad-sec" style="max-width:1240px;margin:0 auto">
         <div class="eyebrow rv" style="margin-bottom:12px">
           <span class="lang-es">Ya viven aquí</span><span class="lang-en" hidden>Already living here</span>
@@ -516,33 +516,33 @@ const VOICES = RENTALS
           ))}
         </div>
       </div>
-    </section>
-  )}
+    )}
 
-  <!-- ============ OWNER CTA ============ -->
-  <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding:84px 26px 96px">
-    <div class="stays-owner rv">
-      <div class="stays-owner-copy">
-        <div class="eyebrow" style="color:var(--color-wood);margin-bottom:12px">
-          <span class="lang-es">Para propietarios</span><span class="lang-en" hidden>For owners</span>
+    <!-- ============ OWNER CTA ============ -->
+    <div class="pad-sec" style="max-width:1240px;margin:0 auto;padding-top:84px">
+      <div class="stays-owner rv">
+        <div class="stays-owner-copy">
+          <div class="eyebrow" style="color:var(--color-wood);margin-bottom:12px">
+            <span class="lang-es">Para propietarios</span><span class="lang-en" hidden>For owners</span>
+          </div>
+          <h2 class="stays-h2" style="color:var(--color-sand);margin-bottom:14px">
+            <span class="lang-es">¿Tienes una propiedad<br />en Boquete?</span>
+            <span class="lang-en" hidden>Own a property<br />in Boquete?</span>
+          </h2>
+          <p>
+            <span class="lang-es">Publícala con nosotros y llega a personas que buscan quedarse meses, no noches. Inquilinos estables, menos rotación.</span>
+            <span class="lang-en" hidden>List it with us and reach people looking to stay for months, not nights. Stable tenants, less turnover.</span>
+          </p>
+          <a href="/#contacto" class="btn stays-owner-btn">
+            <span class="lang-es">Quiero publicar</span><span class="lang-en" hidden>List my property</span>
+            <Icon name="chevron-right" size={16} />
+          </a>
         </div>
-        <h2 class="stays-h2" style="color:var(--color-sand);margin-bottom:14px">
-          <span class="lang-es">¿Tienes una propiedad<br />en Boquete?</span>
-          <span class="lang-en" hidden>Own a property<br />in Boquete?</span>
-        </h2>
-        <p>
-          <span class="lang-es">Publícala con nosotros y llega a personas que buscan quedarse meses, no noches. Inquilinos estables, menos rotación.</span>
-          <span class="lang-en" hidden>List it with us and reach people looking to stay for months, not nights. Stable tenants, less turnover.</span>
-        </p>
-        <a href="/#contacto" class="btn stays-owner-btn">
-          <span class="lang-es">Quiero publicar</span><span class="lang-en" hidden>List my property</span>
-          <Icon name="chevron-right" size={16} />
-        </a>
-      </div>
-      <div class="stays-owner-art" aria-hidden="true">
-        <div class="stays-owner-card c1">🏔️</div>
-        <div class="stays-owner-card c2">☕</div>
-        <div class="stays-owner-card c3">🏡</div>
+        <div class="stays-owner-art" aria-hidden="true">
+          <div class="stays-owner-card c1">🏔️</div>
+          <div class="stays-owner-card c2">☕</div>
+          <div class="stays-owner-card c3">🏡</div>
+        </div>
       </div>
     </div>
   </section>
@@ -576,6 +576,7 @@ const VOICES = RENTALS
   /* ---------- Hero ---------- */
   .stays-hero {
     position: relative;
+    z-index: 1;
     min-height: 88vh;
     display: flex;
     align-items: flex-end;
@@ -915,11 +916,10 @@ const VOICES = RENTALS
     margin: 0;
   }
 
-  /* ---------- Voices ---------- */
-  .stays-voices-section {
+  /* ---------- Voices + Owner CTA ---------- */
+  .stays-community-section {
     position: relative;
-    margin-top: 92px;
-    padding: 84px 26px;
+    padding: 84px 26px 96px;
     background-image: url('/fondopersonas.webp');
     background-size: cover;
     background-position: center;
