@@ -111,6 +111,12 @@ const VOICES = RENTALS
     </div>
   </section>
 
+  <div class="rental-bg">
+
+  <div class="rental-bg-canvas" aria-hidden="true"></div>
+
+  <div class="rental-bg-content">
+
   <!-- ============ LIFESTYLES: browse by how you want to live ============ -->
   <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding-top:72px">
     <div class="eyebrow rv" style="margin-bottom:12px">
@@ -480,33 +486,35 @@ const VOICES = RENTALS
 
   <!-- ============ VOICES: real reviews ============ -->
   {VOICES.length > 0 && (
-    <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding-top:84px">
-      <div class="eyebrow rv" style="margin-bottom:12px">
-        <span class="lang-es">Ya viven aquí</span><span class="lang-en" hidden>Already living here</span>
-      </div>
-      <h2 class="stays-h2 rv" style="margin-bottom:40px">
-        <span class="lang-es">Voces de la <em>comunidad</em></span>
-        <span class="lang-en" hidden>Voices from the <em>community</em></span>
-      </h2>
-      <div class="stays-voices">
-        {VOICES.map((v: any, i: number) => (
-          <figure class="stays-voice rv" style={`animation-delay:${i * 0.07}s`}>
-            <div class="stays-voice-stars">{'★'.repeat(Math.round(v.rating))}</div>
-            <blockquote>
-              <span class="lang-es">“{v.text.es}”</span>
-              <span class="lang-en" hidden>“{v.text.en}”</span>
-            </blockquote>
-            <figcaption>
-              <span class="stays-voice-avatar">{v.name[0]}</span>
-              <div>
-                <div class="stays-voice-name">{v.name}</div>
-                <div class="stays-voice-stay">
-                  <span class="lang-es">{v.stayEs}</span><span class="lang-en" hidden>{v.stayEn}</span>
+    <section class="stays-voices-section">
+      <div class="pad-sec" style="max-width:1240px;margin:0 auto">
+        <div class="eyebrow rv" style="margin-bottom:12px">
+          <span class="lang-es">Ya viven aquí</span><span class="lang-en" hidden>Already living here</span>
+        </div>
+        <h2 class="stays-h2 rv" style="margin-bottom:40px">
+          <span class="lang-es">Voces de la <em>comunidad</em></span>
+          <span class="lang-en" hidden>Voices from the <em>community</em></span>
+        </h2>
+        <div class="stays-voices">
+          {VOICES.map((v: any, i: number) => (
+            <figure class="stays-voice rv" style={`animation-delay:${i * 0.07}s`}>
+              <div class="stays-voice-stars">{'★'.repeat(Math.round(v.rating))}</div>
+              <blockquote>
+                <span class="lang-es">“{v.text.es}”</span>
+                <span class="lang-en" hidden>“{v.text.en}”</span>
+              </blockquote>
+              <figcaption>
+                <span class="stays-voice-avatar">{v.name[0]}</span>
+                <div>
+                  <div class="stays-voice-name">{v.name}</div>
+                  <div class="stays-voice-stay">
+                    <span class="lang-es">{v.stayEs}</span><span class="lang-en" hidden>{v.stayEn}</span>
+                  </div>
                 </div>
-              </div>
-            </figcaption>
-          </figure>
-        ))}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
     </section>
   )}
@@ -539,9 +547,32 @@ const VOICES = RENTALS
     </div>
   </section>
 
+  </div>
+
+  </div>
+
 </Layout>
 
 <style>
+  /* ---------- Fixed background (behind lifestyle cards through footer) ---------- */
+  .rental-bg {
+    position: relative;
+  }
+  .rental-bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url('/fondoalquiler2.webp');
+    background-size: cover;
+    background-position: center 75%;
+    background-repeat: no-repeat;
+  }
+  .rental-bg-content {
+    position: relative;
+    z-index: 1;
+  }
+
   /* ---------- Hero ---------- */
   .stays-hero {
     position: relative;
@@ -837,7 +868,10 @@ const VOICES = RENTALS
   /* ---------- How it works ---------- */
   .stays-how {
     position: relative;
-    background: var(--color-forest-dark);
+    background: linear-gradient(180deg, rgba(20,26,18,.86) 0%, rgba(20,26,18,.92) 100%), url('/fondoalquiler2.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     margin-top: 92px;
     padding: 76px 0 84px;
     overflow: hidden;
@@ -882,6 +916,16 @@ const VOICES = RENTALS
   }
 
   /* ---------- Voices ---------- */
+  .stays-voices-section {
+    position: relative;
+    margin-top: 92px;
+    padding: 84px 26px;
+    background-image: url('/fondopersonas.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
   .stays-voices {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1042,6 +1086,27 @@ const VOICES = RENTALS
     .stays-life-grid { grid-template-columns: 1fr; }
   }
 </style>
+
+<script>
+  // Keeps the fixed background pinned to the viewport while scrolling,
+  // fading it out before the footer so it never overlaps it (same
+  // approach used on the rental detail page).
+  const FADE_ZONE_PX = 220;
+
+  function updateRentalBgVisibility() {
+    const wrap = document.querySelector('.rental-bg');
+    const canvas = document.querySelector<HTMLElement>('.rental-bg-canvas');
+    if (!wrap || !canvas) return;
+    const distanceToFooter = wrap.getBoundingClientRect().bottom - window.innerHeight;
+    const opacity = Math.max(0, Math.min(1, distanceToFooter / FADE_ZONE_PX));
+    canvas.style.opacity = String(opacity);
+  }
+
+  window.addEventListener('scroll', updateRentalBgVisibility, { passive: true });
+  window.addEventListener('resize', updateRentalBgVisibility);
+  document.addEventListener('DOMContentLoaded', updateRentalBgVisibility);
+  document.addEventListener('astro:page-load', updateRentalBgVisibility);
+</script>
 
 <script>
   const cards = document.querySelectorAll<HTMLElement>('.rental-card');
