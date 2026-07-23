@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ cookies }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   const body = await request.json();
-  const { nombre, email, celular, pais, retiro, timeline, interes } = body;
+  const { nombre, email, celular, pais, retiro, timeline, interes, type, tipo_propiedad, ubicacion, mensaje } = body;
   if (!nombre || !email) {
     return new Response(JSON.stringify({ error: 'nombre and email required' }), { status: 400 });
   }
@@ -32,6 +32,10 @@ export const POST: APIRoute = async ({ request }) => {
       retiro: retiro || null,
       timeline: timeline || null,
       interes: interes || null,
+      type: type === 'propietario' ? 'propietario' : 'guide',
+      tipo_propiedad: tipo_propiedad || null,
+      ubicacion: ubicacion || null,
+      mensaje: mensaje || null,
     })
     .select('id')
     .single();

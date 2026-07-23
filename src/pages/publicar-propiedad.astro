@@ -1,0 +1,276 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
+import { TYPE_LABELS } from '../data/data';
+---
+
+<Layout
+  title="Publica tu propiedad · MIKA Homes"
+  titleEn="List your property · MIKA Homes"
+  description="Publica tu casa, apartamento o habitación en alquiler en Boquete. Cuéntanos sobre tu propiedad y te contactamos."
+  descriptionEn="List your house, apartment or room for rent in Boquete. Tell us about your property and we'll reach out."
+>
+  <section class="owner-hero">
+    <div class="pad-sec owner-hero-inner">
+      <div class="eyebrow rv" style="color:var(--color-wood);margin-bottom:14px">
+        <span class="lang-es">Para propietarios</span><span class="lang-en" hidden>For owners</span>
+      </div>
+      <h1 class="owner-h1 rv">
+        <span class="lang-es">Publica tu propiedad <em>en Boquete.</em></span>
+        <span class="lang-en" hidden>List your property <em>in Boquete.</em></span>
+      </h1>
+      <p class="owner-sub rv" style="animation-delay:.1s">
+        <span class="lang-es">Cuéntanos sobre tu casa, apartamento o habitación. Un miembro de nuestro equipo revisa cada solicitud y te contacta para conversar los detalles.</span>
+        <span class="lang-en" hidden>Tell us about your house, apartment or room. A member of our team reviews every request and reaches out to talk through the details.</span>
+      </p>
+
+      <div class="owner-card rv" style="animation-delay:.18s">
+        <div id="owner-form-wrap">
+          <form id="owner-form">
+            <input type="hidden" name="type" value="propietario" />
+
+            <div>
+              <label class="lead-label">
+                <span class="lang-es">Nombre completo</span><span class="lang-en" hidden>Full name</span>
+              </label>
+              <input name="nombre" required class="lead-input" />
+            </div>
+
+            <div class="form-row">
+              <div>
+                <label class="lead-label">
+                  <span class="lang-es">Correo</span><span class="lang-en" hidden>Email</span>
+                </label>
+                <input name="email" type="email" required class="lead-input" />
+              </div>
+              <div>
+                <label class="lead-label">
+                  <span class="lang-es">Celular / WhatsApp</span><span class="lang-en" hidden>Phone / WhatsApp</span>
+                </label>
+                <input name="celular" type="tel" class="lead-input" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div>
+                <label class="lead-label">
+                  <span class="lang-es">Tipo de propiedad</span><span class="lang-en" hidden>Property type</span>
+                </label>
+                <select name="tipo_propiedad" required class="lead-select lang-es">
+                  <option value="" disabled selected>Elige una</option>
+                  {Object.entries(TYPE_LABELS).map(([key, label]) => (
+                    <option value={key}>{label.es}</option>
+                  ))}
+                </select>
+                <select name="tipo_propiedad" required class="lead-select lang-en">
+                  <option value="" disabled selected>Choose one</option>
+                  {Object.entries(TYPE_LABELS).map(([key, label]) => (
+                    <option value={key}>{label.en}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label class="lead-label">
+                  <span class="lang-es">Ubicación</span><span class="lang-en" hidden>Location</span>
+                </label>
+                <input name="ubicacion" class="lead-input" placeholder="Ej. Alto Boquete" />
+              </div>
+            </div>
+
+            <div>
+              <label class="lead-label">
+                <span class="lang-es">Cuéntanos sobre tu propiedad</span><span class="lang-en" hidden>Tell us about your property</span>
+              </label>
+              <textarea name="mensaje" rows="4" class="lead-input lead-textarea" placeholder="Habitaciones, baños, precio esperado, disponibilidad..."></textarea>
+            </div>
+
+            <button type="submit" class="lead-btn">
+              <span class="lang-es">Enviar solicitud</span><span class="lang-en" hidden>Send request</span>
+              <Icon name="chevron-right" size={16} />
+            </button>
+          </form>
+
+          <p class="owner-disclaimer">
+            <span class="lang-es">Sin compromiso. Te contactamos para conocer más detalles.</span>
+            <span class="lang-en" hidden>No commitment. We'll reach out to learn more.</span>
+          </p>
+        </div>
+
+        <div id="owner-success" class="owner-success" hidden>
+          <div class="owner-success-icon"><Icon name="check" size={24} /></div>
+          <h3>
+            <span class="lang-es">¡Gracias!</span>
+            <span class="lang-en" hidden>Thank you!</span>
+          </h3>
+          <p>
+            <span class="lang-es">Recibimos tu solicitud. Nuestro equipo te contactará pronto para conversar los detalles de tu propiedad.</span>
+            <span class="lang-en" hidden>We received your request. Our team will reach out soon to talk through your property's details.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .owner-hero {
+    background: var(--color-forest);
+    background: radial-gradient(120% 160% at 88% -10%, rgba(162,106,66,.28) 0%, transparent 55%), var(--color-forest);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  .owner-hero-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding-top: 140px;
+    padding-bottom: 80px;
+    width: 100%;
+  }
+  .owner-h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(34px, 4.6vw, 52px);
+    line-height: 1.06;
+    letter-spacing: -.02em;
+    color: var(--color-sand);
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .owner-h1 em {
+    font-family: var(--font-accent);
+    font-weight: 500;
+    font-style: italic;
+    color: #E8D9B8;
+  }
+  .owner-sub {
+    font-size: 16.5px;
+    line-height: 1.65;
+    color: rgba(245,240,232,.82);
+    max-width: 520px;
+    margin: 0 0 40px;
+  }
+
+  .owner-card {
+    background: var(--color-sand);
+    border-radius: 22px;
+    padding: clamp(28px,3.4vw,44px);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.35);
+  }
+
+  #owner-form { display: flex; flex-direction: column; gap: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .lead-label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    margin-bottom: 6px;
+  }
+  .lead-input, .lead-select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-ink);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .lead-textarea { resize: vertical; font-family: inherit; }
+  .lead-input:focus, .lead-select:focus { border-color: var(--color-wood); }
+  .lead-input::placeholder { color: var(--color-ink-faint); }
+  .lead-select { appearance: auto; cursor: pointer; }
+
+  .lead-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+    padding: 15px 24px;
+    background: var(--color-forest);
+    color: var(--color-sand);
+    font-weight: 800;
+    font-size: 16px;
+    font-family: inherit;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color .2s, transform .2s;
+  }
+  .lead-btn:hover { background: var(--color-forest-dark); transform: translateY(-1px); }
+
+  .owner-disclaimer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--color-ink-faint);
+    margin: 14px 0 0;
+  }
+
+  .owner-success { text-align: center; padding: 20px 10px; }
+  .owner-success-icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--color-forest);
+    color: #E8D9B8;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .owner-success h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--color-ink);
+    margin: 0 0 8px;
+  }
+  .owner-success p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+    margin: 0;
+  }
+
+  @media (max-width: 560px) {
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  function syncOwnerSelects() {
+    const lang = document.documentElement.getAttribute('data-lang') || 'es';
+    document.querySelectorAll<HTMLSelectElement>('#owner-form select').forEach(s => {
+      const isActive = s.classList.contains(`lang-${lang}`);
+      s.disabled = !isActive;
+    });
+  }
+  syncOwnerSelects();
+  new MutationObserver(syncOwnerSelects).observe(document.documentElement, { attributes: true, attributeFilter: ['data-lang'] });
+
+  const form = document.getElementById('owner-form') as HTMLFormElement | null;
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    try {
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('request failed');
+      document.getElementById('owner-form-wrap')!.hidden = true;
+      document.getElementById('owner-success')!.hidden = false;
+    } catch {
+      submitBtn.disabled = false;
+      alert('No pudimos enviar tu solicitud. Intenta de nuevo. / We could not send your request. Please try again.');
+    }
+  });
+</script>

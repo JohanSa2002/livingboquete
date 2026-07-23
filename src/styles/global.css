@@ -237,6 +237,18 @@ a { color: inherit; }
 [data-lang="en"] select.lang-en,
 [data-lang="es"] select.lang-es { display: block !important; }
 
+/* Stable-width language pairs: reserves space for the wider translation so
+   nav links and buttons don't visibly resize when the language is toggled. */
+.lang-stable { display: inline-grid; }
+[data-lang] .lang-stable > .lang-es,
+[data-lang] .lang-stable > .lang-en {
+  display: inline-block !important;
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+[data-lang="en"] .lang-stable > .lang-es { visibility: hidden; }
+[data-lang="es"] .lang-stable > .lang-en { visibility: hidden; }
+
 /* Responsive */
 @media (max-width: 880px) {
   .desktop-nav { display: none !important; }

@@ -27,8 +27,10 @@ const currentPath = Astro.url.pathname;
             href={item.href}
             style={`cursor:pointer;padding:9px 16px;font-size:14.5px;font-weight:600;color:${isActive ? 'var(--color-forest)' : 'var(--color-ink-soft)'};text-decoration:none;border-radius:var(--radius-pill);background:${isActive ? 'rgba(47,82,51,.1)' : 'transparent'};transition:background-color .16s ease,color .16s ease`}
           >
-            <span class="lang-es">{item.label.es}</span>
-            <span class="lang-en" hidden>{item.label.en}</span>
+            <span class="lang-stable">
+              <span class="lang-es">{item.label.es}</span>
+              <span class="lang-en" hidden>{item.label.en}</span>
+            </span>
           </a>
         );
       })}
@@ -55,8 +57,10 @@ const currentPath = Astro.url.pathname;
 
       <!-- CTA -->
       <a href="/#contacto" class="btn btn-primary desktop-cta" style="padding:11px 20px;font-size:14px">
-        <span class="lang-es">Empieza aquí</span>
-        <span class="lang-en" hidden>Start here</span>
+        <span class="lang-stable">
+          <span class="lang-es">Empieza aquí</span>
+          <span class="lang-en" hidden>Start here</span>
+        </span>
       </a>
 
       <!-- Mobile burger -->

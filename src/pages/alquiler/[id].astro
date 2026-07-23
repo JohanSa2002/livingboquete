@@ -243,9 +243,12 @@ if (!isAvailableNow) {
 
   delete L.Icon.Default.prototype._getIconUrl;
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: markerIcon2x,
-    iconUrl: markerIcon,
-    shadowUrl: markerShadow,
+    // Astro's asset pipeline resolves .png imports to an ImageMetadata
+    // object ({src, width, height, format}), not a plain URL string —
+    // Leaflet needs the string.
+    iconRetinaUrl: (markerIcon2x as unknown as { src: string }).src,
+    iconUrl: (markerIcon as unknown as { src: string }).src,
+    shadowUrl: (markerShadow as unknown as { src: string }).src,
   });
 
   const mapEl = document.getElementById('map');
