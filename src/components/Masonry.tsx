@@ -53,6 +53,7 @@ const preloadImages = async (urls: string[]) => {
 export interface MasonryItem {
   id: string;
   img: string;
+  fullImg?: string;
   height: number;
   label?: string;
 }

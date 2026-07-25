@@ -1,8 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
+import YouTubeFacade from '../../components/YouTubeFacade.astro';
 import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
 import { getSupabase, cachedQuery } from '../../lib/supabase';
+import { Image } from 'astro:assets';
 import 'leaflet/dist/leaflet.css';
 
 const { id } = Astro.params;
@@ -76,16 +78,21 @@ if (!isAvailableNow) {
       )}
     </div>
 
-    <!-- Photo grid -->
-    <div class="gallery-grid" style="display:grid;grid-template-columns:1.6fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;aspect-ratio:2.4;border-radius:20px;overflow:hidden;margin-bottom:40px">
-      <div class="gallery-cell" style="grid-row:1/3;position:relative">
-        <img src={stay.img} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+    <!-- Video + photo grid -->
+    <div class="media-split" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:40px">
+      <div class="video-box" style="border-radius:20px;overflow:hidden;aspect-ratio:4/3">
+        <YouTubeFacade url={stay.video} title={stay.name.es} />
       </div>
-      {['-g1','-g2','-g3','-g4'].slice(0,4).map((suf, i) => (
-        <div class="gallery-cell" style="position:relative">
-          <img src={`https://picsum.photos/seed/${stay.id}${suf}/600/400`} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+      <div class="gallery-grid" style="display:grid;grid-template-columns:1.6fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;aspect-ratio:4/3;border-radius:20px;overflow:hidden">
+        <div class="gallery-cell" style="grid-row:1/3;position:relative">
+          <Image src={stay.img} width={900} height={620} densities={[1, 2]} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
         </div>
-      ))}
+        {['-g1','-g2','-g3','-g4'].slice(0,4).map((suf) => (
+          <div class="gallery-cell" style="position:relative">
+            <Image src={`https://picsum.photos/seed/${stay.id}${suf}/600/400`} width={600} height={400} densities={[1, 2]} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -294,6 +301,12 @@ if (!isAvailableNow) {
   }
 
   @media (max-width: 700px) {
+    .media-split {
+      grid-template-columns: 1fr !important;
+    }
+    .video-box {
+      aspect-ratio: 16/10 !important;
+    }
     .gallery-grid {
       display: flex !important;
       aspect-ratio: auto !important;

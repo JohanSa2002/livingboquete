@@ -6,6 +6,7 @@ interface GalleryItem {
   cat: string;
   label: { es: string; en: string };
   img: string;
+  fullImg?: string;
 }
 
 interface CategoryDef {
@@ -43,13 +44,14 @@ export default function GalleryMasonry({ items, categories }: Props) {
   const masonryItems: MasonryItem[] = filtered.map((item, i) => ({
     id: item.id,
     img: item.img,
+    fullImg: item.fullImg,
     height: HEIGHTS[i % HEIGHTS.length],
     label: item.label[lang],
   }));
 
   const handleItemClick = useCallback(
     (mItem: MasonryItem) => {
-      setLightboxSrc(mItem.img);
+      setLightboxSrc(mItem.fullImg ?? mItem.img);
       setLightboxAlt(mItem.label ?? '');
     },
     []

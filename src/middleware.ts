@@ -12,10 +12,13 @@ import { defineMiddleware } from 'astro:middleware';
 // still show up within ~30s without making every click a cold fetch.
 export const onRequest = defineMiddleware(async (context, next) => {
   const response = await next();
+  const isImage = context.url.pathname.startsWith('/_image');
   const isAdminOrApi = context.url.pathname.startsWith('/admin') || context.url.pathname.startsWith('/api');
   response.headers.set(
     'Cache-Control',
-    isAdminOrApi ? 'no-store' : 'public, max-age=0, s-maxage=30, stale-while-revalidate=300',
+    isImage
+      ? 'public, max-age=31536000, immutable'
+      : isAdminOrApi ? 'no-store' : 'public, max-age=0, s-maxage=30, stale-while-revalidate=300',
   );
   return response;
 });

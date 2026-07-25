@@ -15,6 +15,15 @@ export default defineConfig({
   // only links with an explicit data-astro-prefetch attribute are prefetched.
   prefetch: { defaultStrategy: 'hover', prefetchAll: true },
   integrations: [react()],
+  image: {
+    // picsum.photos 302s to fastly.picsum.photos, and Astro checks the
+    // post-redirect hostname against remotePatterns — both entries are needed.
+    remotePatterns: [
+      { protocol: 'https', hostname: '**.supabase.co' },
+      { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: '**.picsum.photos' },
+    ],
+  },
   vite: {
     ssr: {
       // gsap ships ESM-only; bundle it so the Vercel serverless

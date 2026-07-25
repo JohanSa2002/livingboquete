@@ -2,6 +2,7 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { isAuthenticated } from '../../lib/auth';
 import { getSupabase } from '../../lib/supabase';
+import { Image } from 'astro:assets';
 
 if (!isAuthenticated(Astro.cookies)) return Astro.redirect('/admin/login');
 
@@ -69,6 +70,7 @@ const helpTexts: Record<string, { title: string; lines: string[] }> = {
       '<strong>Destacado</strong> — Marca "Sí" para que la propiedad aparezca en la portada de <code>/alquiler</code>. Si marcas varias, se muestran en un carrusel; si no marcas ninguna, se destaca automáticamente la más reseñada.',
       '<strong>Latitud / Longitud</strong> — Coordenadas para el mapa. Boquete está aprox. en <code>8.78</code>, <code>-82.43</code>. Puedes obtener coordenadas desde Google Maps (click derecho → copiar coordenadas).',
       '<strong>Imagen</strong> — Sube un archivo o pega una URL. Tamaño recomendado: 800×560px.',
+      '<strong>Video</strong> — Pega la URL del video de YouTube del canal Mika Houses (ej: <code>https://youtu.be/XXXXXXXXXXX</code>). Déjalo vacío si la propiedad aún no tiene video.',
     ],
   },
   gallery: {
@@ -144,7 +146,7 @@ const help = helpTexts[section!];
                   {section === 'posts' && <td>{item.author}</td>}
                   {section === 'rentals' && <td style="font-weight:600">${item.price}/mes</td>}
                   <td>
-                    {item.img && <img src={item.img} alt="" style="width:56px;height:38px;object-fit:cover;border-radius:8px;border:1px solid #ebebea" />}
+                    {item.img && <Image src={item.img} width={112} height={76} alt="" style="width:56px;height:38px;object-fit:cover;border-radius:8px;border:1px solid #ebebea" />}
                   </td>
                   <td style="white-space:nowrap">
                     <div style="display:flex;gap:6px;justify-content:flex-end">
@@ -293,6 +295,7 @@ const help = helpTexts[section!];
       { key: 'lat', label: 'Latitud', type: 'number' },
       { key: 'lng', label: 'Longitud', type: 'number' },
       { key: 'img', label: 'Imagen', type: 'image' },
+      { key: 'video', label: 'Video de YouTube', type: 'text', hint: 'Pega el link del video del canal Mika Houses (o solo el ID del video). Vacío = no se muestra.' },
     ],
     gallery: [
       { key: 'id', label: 'ID (slug)', type: 'text' },
@@ -334,6 +337,7 @@ const help = helpTexts[section!];
         'host.email': 'ej: roberto@livingboquete.com',
         lat: 'ej: 8.7835',
         lng: 'ej: -82.4389',
+        video: 'ej: https://youtu.be/dQw4w9WgXcQ',
       };
       const ph = placeholders[field.key] || '';
 

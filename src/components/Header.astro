@@ -118,16 +118,6 @@ const currentPath = Astro.url.pathname;
 
 <style>
   .site-header { position: sticky; }
-  .site-header::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 100%;
-    height: 44px;
-    background: linear-gradient(to bottom, rgba(245,240,232,.85), rgba(245,240,232,0));
-    pointer-events: none;
-  }
   .lang-toggle-btn { font-family: inherit; line-height: 1; }
   .lang-toggle-btn:active { transform: scale(.94); }
 

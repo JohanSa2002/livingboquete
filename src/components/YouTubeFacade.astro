@@ -1,0 +1,116 @@
+---
+// Lightweight YouTube embed: renders just the thumbnail until clicked, so
+// the page never pays YouTube's iframe/script cost unless the visitor
+// actually wants to watch. Accepts any common YouTube URL shape or a bare
+// 11-char video ID (matches whatever gets pasted into the admin field).
+interface Props {
+  url?: string | null;
+  title: string;
+}
+const { url, title } = Astro.props;
+
+function extractVideoId(raw?: string | null): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (/^[\w-]{11}$/.test(trimmed)) return trimmed;
+  const patterns = [
+    /youtu\.be\/([\w-]{11})/,
+    /youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/)([\w-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+const videoId = extractVideoId(url);
+const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+---
+
+{videoId ? (
+  <button
+    type="button"
+    class="yt-facade"
+    data-yt-facade
+    data-video-id={videoId}
+    aria-label={`Reproducir video de ${title}`}
+    style={`background-image:url('${thumbnail}')`}
+  >
+    <span class="yt-facade-play" aria-hidden="true">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>
+    </span>
+  </button>
+) : (
+  <div class="yt-facade yt-facade-empty">
+    <span class="lang-es">No hay video disponible</span><span class="lang-en" hidden>No video available</span>
+  </div>
+)}
+
+<style>
+  .yt-facade {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: block;
+    background-color: #251D14;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+  }
+  .yt-facade-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: rgba(37, 29, 20, .28);
+    transition: background .18s ease;
+  }
+  .yt-facade-play svg {
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .4));
+  }
+  .yt-facade:hover .yt-facade-play {
+    background: rgba(37, 29, 20, .42);
+  }
+  .yt-facade-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    background: #F7F1E6;
+    border: 1px dashed rgba(37, 29, 20, .25);
+    color: #8A7D69;
+    font-size: 14.5px;
+    font-weight: 600;
+  }
+  .yt-facade-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+</style>
+
+<script>
+  document.addEventListener('click', (event) => {
+    const trigger = (event.target as HTMLElement)?.closest<HTMLButtonElement>('[data-yt-facade]');
+    if (!trigger) return;
+    const videoId = trigger.dataset.videoId;
+    if (!videoId) return;
+    const iframe = document.createElement('iframe');
+    iframe.className = 'yt-facade-frame';
+    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
+    iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+    iframe.allowFullscreen = true;
+    iframe.title = trigger.getAttribute('aria-label') || 'YouTube video';
+    trigger.replaceWith(iframe);
+  });
+</script>

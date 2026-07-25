@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getSupabase, cachedQuery } from '../../lib/supabase';
+import { Image } from 'astro:assets';
 
 const POSTS = await cachedQuery('posts', async () => {
   const { data } = await getSupabase()
@@ -32,7 +33,7 @@ const POSTS = await cachedQuery('posts', async () => {
       {POSTS.map(b => (
         <a href={`/blog/${b.id}`} class="blog-card rv" style="cursor:pointer;background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:20px;overflow:hidden;text-decoration:none;color:inherit;display:block">
           <div style="position:relative;aspect-ratio:16/8.6;overflow:hidden">
-            <img src={b.img} alt={b.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+            <Image src={b.img} width={600} height={323} densities={[1, 2]} alt={b.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
           </div>
           <div style="padding:24px 26px 28px">
             <div style="display:flex;gap:10px;align-items:center;font-size:12.5px;color:#8A7D69;margin-bottom:11px">
