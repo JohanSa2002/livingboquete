@@ -220,10 +220,6 @@ a { color: inherit; }
 .hidden { display: none !important; }
 
 /* Animations */
-@keyframes reveal {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: none; }
-}
 @keyframes slowzoom {
   from { transform: scale(1.08); }
   to   { transform: scale(1); }
@@ -237,11 +233,37 @@ a { color: inherit; }
   to   { transform: translateX(0); }
 }
 
-.rv {
-  animation: reveal .9s var(--ease-out) both;
-  animation-timeline: view();
-  animation-range: entry 2% cover 30%;
+/* ─── Scroll Reveal ────────────────────────────────────────────────────────
+   [data-reveal] is added by JS only to individual headings/subtitles.
+   .rv / .rv-once on <section> elements are NOT given transform so they
+   never create compositor layers that break position:sticky on the header.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* JS-controlled reveal: only for individual title/eyebrow/subtitle elements */
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+[data-reveal="sub"] {
+  transform: translate3d(0, 18px, 0);
+}
+
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Stagger delays */
+[data-reveal-delay="100"] { transition-delay: 0.1s; }
+[data-reveal-delay="120"] { transition-delay: 0.12s; }
+[data-reveal-delay="150"] { transition-delay: 0.15s; }
+[data-reveal-delay="200"] { transition-delay: 0.2s; }
+[data-reveal-delay="240"] { transition-delay: 0.24s; }
+[data-reveal-delay="300"] { transition-delay: 0.3s; }
+[data-reveal-delay="360"] { transition-delay: 0.36s; }
 
 /* Layout helpers */
 .pad-sec { padding-left: 26px; padding-right: 26px; }
@@ -269,6 +291,7 @@ a { color: inherit; }
 @media (max-width: 880px) {
   .desktop-nav { display: none !important; }
   .desktop-cta { display: none !important; }
+  .desktop-lang-toggle { display: none !important; }
   .mobile-burger { display: flex !important; }
   .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 30px !important; }
   .hero-h1 { font-size: clamp(64px, 20vw, 120px) !important; }
@@ -284,11 +307,19 @@ a { color: inherit; }
   .footer-grid { grid-template-columns: 1fr !important; }
   .gal-grid { grid-template-columns: 1fr !important; }
   .ev-row { flex-direction: column !important; align-items: flex-start !important; }
-  .hero-stats { flex-wrap: wrap; row-gap: 18px !important; }
+  .hero-stats { flex-wrap: nowrap !important; gap: 8px !important; padding: 18px 10px !important; }
+  .hero-stat { flex: 1; min-width: 0; }
+  .hero-stat-num { font-size: clamp(17px, 5.6vw, 24px) !important; gap: 3px !important; }
+  .hero-stat-label { font-size: 11px !important; line-height: 1.25; }
+  .hero-stat-divider { height: 28px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
-  .rv { animation: none; }
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }

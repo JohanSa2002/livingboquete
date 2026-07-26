@@ -79,6 +79,96 @@ const {
     document.addEventListener('astro:page-load', () => {
       ScrollTrigger.refresh();
     });
+
+    // Smooth Scroll Entrance Animations for Titles, Subtitles & Section Intros.
+    // NOTE: We only target individual heading/label elements — NOT section.rv
+    // wrappers. Applying transform to sections creates compositor layers that
+    // conflict with the header's position:sticky + transform hide animation.
+    function setupScrollReveals() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll<HTMLElement>('[data-reveal]').forEach(el => {
+          el.classList.add('is-revealed');
+        });
+        return;
+      }
+
+      // Headings and eyebrow labels that are already in the DOM (static markup).
+      // Excludes anything inside the sticky header or mobile overlay.
+      const initial = Array.from(
+        document.querySelectorAll<HTMLElement>('h1,h2,h3,.eyebrow,[data-reveal]')
+      ).filter(el =>
+        !el.closest('header') &&
+        !el.closest('#mobile-overlay') &&
+        !el.closest('.admin-sidebar')
+      );
+
+      // Auto-tag the immediate <p> sibling of a heading as a subtitle reveal.
+      initial.forEach(h => {
+        if (!/^H[123]$/.test(h.tagName)) return;
+        const next = h.nextElementSibling as HTMLElement | null;
+        if (next && next.tagName === 'P' && !next.hasAttribute('data-reveal')) {
+          next.setAttribute('data-reveal', 'sub');
+          initial.push(next);
+        }
+      });
+
+      // De-duplicate (the [data-reveal] selector already picked up some).
+      const seen = new Set<HTMLElement>();
+      const elements = initial.filter(el => {
+        if (seen.has(el)) return false;
+        seen.add(el);
+        return true;
+      });
+
+      // Tag untagged elements and compute sibling stagger delays.
+      elements.forEach(el => {
+        if (!el.hasAttribute('data-reveal')) el.setAttribute('data-reveal', 'title');
+
+        if (!el.hasAttribute('data-reveal-delay')) {
+          const parent = el.parentElement;
+          if (parent) {
+            const revealSiblings = Array.from(parent.children).filter(
+              c => (c as HTMLElement).hasAttribute('data-reveal')
+            ) as HTMLElement[];
+            const idx = revealSiblings.indexOf(el);
+            if (idx > 0) {
+              el.setAttribute('data-reveal-delay', String(Math.min(idx * 120, 360)));
+            }
+          }
+        }
+      });
+
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target as HTMLElement;
+          const delay = parseInt(el.getAttribute('data-reveal-delay') || '0', 10);
+          if (delay > 0) {
+            setTimeout(() => el.classList.add('is-revealed'), delay);
+          } else {
+            el.classList.add('is-revealed');
+          }
+          obs.unobserve(el);
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
+
+      elements.forEach(el => {
+        if (el.classList.contains('is-revealed')) return;
+        const rect = el.getBoundingClientRect();
+        // Already in viewport on page load → reveal immediately (small cap so
+        // above-fold headings don't flash invisible even for a frame).
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          const delay = parseInt(el.getAttribute('data-reveal-delay') || '0', 10);
+          setTimeout(() => el.classList.add('is-revealed'), Math.min(delay, 80));
+        } else {
+          observer.observe(el);
+        }
+      });
+    }
+
+    // astro:page-load fires on both the initial page load and every client-side
+    // navigation — no need to also listen to DOMContentLoaded.
+    document.addEventListener('astro:page-load', setupScrollReveals);
   </script>
 
   <script>
