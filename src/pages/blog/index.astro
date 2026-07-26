@@ -14,13 +14,15 @@ const POSTS = await cachedQuery('posts', async () => {
 
 <Layout activeKey="blog" title="Blog · MIKA Homes" titleEn="Blog · MIKA Homes">
 
-  <section class="blog-intro" style="position:relative;overflow:hidden;background-image:url('/fondoblogs.webp');background-size:cover;background-position:center top;background-repeat:no-repeat">
-    <!-- Wash fades the illustration into the page's sand background toward the
-         bottom, so it reads as ambient texture behind the text rather than a
-         hard-edged photo block. -->
-    <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(180deg, rgba(245,240,232,.1) 0%, rgba(245,240,232,.5) 65%, var(--color-sand) 100%)"></div>
+  <div class="blog-hero">
+    <div class="blog-hero-bg" aria-hidden="true"></div>
+    <!-- Wash spans the whole hero+cards wrapper (not just the intro), stronger
+         behind the text for legibility and lighter over the cards so the
+         illustration keeps reading through the grid gaps as content scrolls
+         over it. -->
+    <div class="blog-hero-wash" aria-hidden="true"></div>
 
-    <div class="pad-sec" style="position:relative;z-index:2;max-width:1240px;margin:0 auto;padding:70px 26px 0">
+    <section class="pad-sec blog-hero-section" style="max-width:1240px;margin:0 auto;padding:70px 26px 0">
       <div data-reveal="title" style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:14px">
         <span class="lang-es">Blog &amp; noticias</span><span class="lang-en" hidden>Blog &amp; news</span>
       </div>
@@ -32,38 +34,38 @@ const POSTS = await cachedQuery('posts', async () => {
         <span class="lang-es">Guías, cultura y novedades de la comunidad.</span>
         <span class="lang-en" hidden>Guides, culture and community news.</span>
       </p>
-    </div>
-  </section>
+    </section>
 
-  <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding:0 26px 96px">
-    <div class="cols-2" style="display:grid;grid-template-columns:1fr 1fr;gap:34px">
-      {POSTS.map(b => (
-        <a href={`/blog/${b.id}`} class="blog-card" data-reveal="card" style="cursor:pointer;background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:20px;overflow:hidden;text-decoration:none;color:inherit;display:block">
-          <div style="position:relative;aspect-ratio:16/8.6;overflow:hidden">
-            <Image src={b.img} width={600} height={323} densities={[1, 2]} alt={b.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
-          </div>
-          <div style="padding:24px 26px 28px">
-            <div style="display:flex;gap:10px;align-items:center;font-size:12.5px;color:#8A7D69;margin-bottom:11px">
-              <span style="color:#B95C36;font-weight:700">
-                <span class="lang-es">{b.cat.es}</span><span class="lang-en" hidden>{b.cat.en}</span>
-              </span>
-              <span>·</span>
-              <span><span class="lang-es">{b.date.es}</span><span class="lang-en" hidden>{b.date.en}</span></span>
+    <section class="pad-sec blog-hero-section" style="max-width:1240px;margin:0 auto;padding:0 26px 96px">
+      <div class="cols-2" style="display:grid;grid-template-columns:1fr 1fr;gap:34px">
+        {POSTS.map(b => (
+          <a href={`/blog/${b.id}`} class="blog-card" style="cursor:pointer;background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:20px;overflow:hidden;text-decoration:none;color:inherit;display:block">
+            <div style="position:relative;aspect-ratio:16/8.6;overflow:hidden">
+              <Image src={b.img} width={600} height={323} densities={[1, 2]} alt={b.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
             </div>
-            <h3 style="font-family:'Manrope';font-weight:700;font-size:24px;line-height:1.16;margin:0 0 11px;color:#251D14">
-              <span class="lang-es">{b.title.es}</span><span class="lang-en" hidden>{b.title.en}</span>
-            </h3>
-            <p style="font-size:15px;line-height:1.58;color:#5A4F42;margin:0 0 16px">
-              <span class="lang-es">{b.excerpt.es}</span><span class="lang-en" hidden>{b.excerpt.en}</span>
-            </p>
-            <span style="color:#B95C36;font-weight:700;font-size:14px">
-              <span class="lang-es">Leer más</span><span class="lang-en" hidden>Read more</span> →
-            </span>
-          </div>
-        </a>
-      ))}
-    </div>
-  </section>
+            <div style="padding:24px 26px 28px">
+              <div style="display:flex;gap:10px;align-items:center;font-size:12.5px;color:#8A7D69;margin-bottom:11px">
+                <span style="color:#B95C36;font-weight:700">
+                  <span class="lang-es">{b.cat.es}</span><span class="lang-en" hidden>{b.cat.en}</span>
+                </span>
+                <span>·</span>
+                <span><span class="lang-es">{b.date.es}</span><span class="lang-en" hidden>{b.date.en}</span></span>
+              </div>
+              <h3 style="font-family:'Manrope';font-weight:700;font-size:24px;line-height:1.16;margin:0 0 11px;color:#251D14">
+                <span class="lang-es">{b.title.es}</span><span class="lang-en" hidden>{b.title.en}</span>
+              </h3>
+              <p style="font-size:15px;line-height:1.58;color:#5A4F42;margin:0 0 16px">
+                <span class="lang-es">{b.excerpt.es}</span><span class="lang-en" hidden>{b.excerpt.en}</span>
+              </p>
+              <span style="color:#B95C36;font-weight:700;font-size:14px">
+                <span class="lang-es">Leer más</span><span class="lang-en" hidden>Read more</span> →
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  </div>
 
 </Layout>
 
@@ -71,59 +73,79 @@ const POSTS = await cachedQuery('posts', async () => {
   .blog-card { transition: transform .25s, box-shadow .25s; }
   .blog-card:hover { transform: translateY(-4px); box-shadow: 0 22px 40px -22px rgba(37,29,20,.4); }
 
-  /* Keeps the illustration pinned to the viewport while the intro's text and
-     wash scroll over it, instead of scrolling away with the rest of the page. */
-  .blog-intro { background-attachment: fixed; }
+  /* Wraps the intro + card grid so one illustration sits fixed behind both —
+     the section boundary is where it's naturally clipped away (no JS needed
+     on desktop: background-attachment:fixed is bounded by this element's own
+     box). isolation:isolate keeps the internal z-index stack (bg/wash/content)
+     self-contained regardless of the fixed positioning used on mobile below. */
+  .blog-hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .blog-hero-section { position: relative; z-index: 2; }
+  .blog-hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: url('/fondoblogs.webp');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    pointer-events: none;
+  }
+  .blog-hero-wash {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(180deg,
+      rgba(245, 240, 232, .15) 0%,
+      rgba(245, 240, 232, .55) 20%,
+      rgba(245, 240, 232, .4) 34%,
+      rgba(245, 240, 232, .4) 100%
+    );
+  }
+
   @media (max-width: 880px) {
-    /* iOS Safari mostly ignores background-attachment:fixed anyway, and it's
-       a known jank source on Android — fall back to a plain static image. */
-    .blog-intro { background-attachment: scroll; }
+    /* iOS Safari mostly ignores background-attachment:fixed, and it's a known
+       jank source on Android — fall back to a real position:fixed layer
+       anchored to the viewport instead of this element's box, so the visual
+       result still matches. It stays on screen the whole time the hero+cards
+       region is anywhere in view, and only fades out once fully scrolled past
+       (see the IntersectionObserver below) — same lifetime as the desktop
+       technique gets for free from being clipped to its own box. */
+    .blog-hero-bg {
+      position: fixed;
+      background-attachment: scroll;
+      transition: opacity .3s ease;
+    }
+    .blog-hero-bg.is-past { opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .blog-intro { background-attachment: scroll; }
+    .blog-hero-bg { background-attachment: scroll; }
   }
 </style>
 
 <script>
-  // Chains the card grid's entrance to the intro text above it: if the grid
-  // is already on screen alongside the eyebrow/title/paragraph (true on most
-  // viewports, since this is the first thing on the page), it waits for that
-  // sequence to visibly finish before cascading in. If the grid is scrolled
-  // to independently later, it just reveals on its own the moment it arrives.
+  // Only matters on the mobile fallback (position:fixed background, see CSS
+  // above) — on desktop the illustration is clipped natively via
+  // background-attachment:fixed on .blog-hero's own box, no JS involved.
   document.addEventListener('astro:page-load', () => {
-    const cards = Array.from(document.querySelectorAll<HTMLElement>('.blog-card'));
-    if (!cards.length) return;
+    const heroWrap = document.querySelector<HTMLElement>('.blog-hero');
+    const heroBg = document.querySelector<HTMLElement>('.blog-hero-bg');
+    if (!heroWrap || !heroBg) return;
 
-    // Cascade always plays, reduced-motion or not — same call as the rest of
-    // the scroll-reveal system (see setupScrollReveals in Layout.astro).
-
-    const CARD_STAGGER_MS = 130;
-    // Intro's own last stagger (240ms) + its transition duration (800ms) +
-    // the requested 200ms pause before the grid starts.
-    const AFTER_INTRO_MS = 240 + 800 + 200;
-
-    function cascadeFrom(startDelay: number) {
-      cards.forEach((card, i) => {
-        if (card.classList.contains('is-revealed')) return;
-        setTimeout(() => card.classList.add('is-revealed'), startDelay + i * CARD_STAGGER_MS);
+    const bgObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          heroBg.classList.remove('is-past');
+        } else if (entry.boundingClientRect.bottom < 0) {
+          heroBg.classList.add('is-past');
+        }
       });
-    }
-
-    const grid = cards[0].parentElement;
-    const rect = grid?.getBoundingClientRect();
-    const introVisible = rect ? rect.top < window.innerHeight && rect.bottom > 0 : false;
-
-    if (introVisible) {
-      cascadeFrom(AFTER_INTRO_MS);
-    } else {
-      const observer = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          obs.disconnect();
-          cascadeFrom(0);
-        });
-      }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
-      if (grid) observer.observe(grid);
-    }
+    }, { threshold: 0 });
+    bgObserver.observe(heroWrap);
   });
 </script>

@@ -96,9 +96,8 @@ const {
         !el.closest('header') &&
         !el.closest('#mobile-overlay') &&
         !el.closest('.admin-sidebar') &&
-        // Card grids run their own bespoke reveal sequence (see e.g. blog/index.astro)
-        // so they're chained off a specific intro, not this generic per-element observer.
-        el.getAttribute('data-reveal') !== 'card'
+        // Lead form: content should be immediately visible, not staged in.
+        !el.closest('#contacto')
       );
 
       // Auto-tag the immediate <p> sibling of a heading as a subtitle reveal.

@@ -81,6 +81,7 @@ const currentPath = Astro.url.pathname;
       </button>
     </div>
   </div>
+  <div class="site-header-fade" aria-hidden="true"></div>
 </header>
 
 <!-- Mobile overlay -->
@@ -144,10 +145,8 @@ const currentPath = Astro.url.pathname;
     z-index: 60;
     isolation: isolate;
     visibility: visible;
-    border-bottom: 1px solid transparent;
-    box-shadow: none;
     will-change: transform;
-    transition: transform .34s var(--ease-drawer), visibility 0s linear 0s, border-color .25s ease, box-shadow .25s ease;
+    transition: transform .34s var(--ease-drawer), visibility 0s linear 0s;
   }
   /* visibility is delayed until the slide-out transition finishes (and
      restored instantly on the way back in) so the hidden header drops out
@@ -157,7 +156,7 @@ const currentPath = Astro.url.pathname;
     transform: translateY(-100%);
     pointer-events: none;
     visibility: hidden;
-    transition: transform .34s var(--ease-drawer), visibility 0s linear .34s, border-color .25s ease, box-shadow .25s ease;
+    transition: transform .34s var(--ease-drawer), visibility 0s linear .34s;
   }
   /* The blurred background lives on a separate absolutely-positioned layer
      instead of directly on the sticky element. iOS Safari has a long-standing
@@ -168,19 +167,29 @@ const currentPath = Astro.url.pathname;
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(112deg, rgba(245, 240, 232, .9), rgba(245, 240, 232, .77));
+    background: linear-gradient(112deg, rgba(245, 240, 232, .88), rgba(245, 240, 232, .86));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     transition: background-color .25s ease, backdrop-filter .25s ease, -webkit-backdrop-filter .25s ease;
   }
   .site-header.is-scrolled::before {
-    background: rgba(245, 240, 232, .95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(245, 240, 232, .93);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
-  .site-header.is-scrolled {
-    border-bottom-color: var(--color-border-soft);
-    box-shadow: 0 10px 28px -22px rgba(43, 43, 43, .4);
+  /* Bottom dissolve: replaces the old hard border + drop-shadow cutoff with a
+     soft gradient the header's glass tone fades through, so it blends into
+     whatever's underneath (a hero image especially) instead of a visible seam. */
+  .site-header-fade {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 52px;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(245, 240, 232, .5), rgba(245, 240, 232, 0));
   }
   .site-header::after {
     content: '';
