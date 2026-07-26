@@ -99,7 +99,10 @@ const {
       ).filter(el =>
         !el.closest('header') &&
         !el.closest('#mobile-overlay') &&
-        !el.closest('.admin-sidebar')
+        !el.closest('.admin-sidebar') &&
+        // Card grids run their own bespoke reveal sequence (see e.g. blog/index.astro)
+        // so they're chained off a specific intro, not this generic per-element observer.
+        el.getAttribute('data-reveal') !== 'card'
       );
 
       // Auto-tag the immediate <p> sibling of a heading as a subtitle reveal.
@@ -138,11 +141,23 @@ const {
         }
       });
 
+      // Once the transform/opacity/filter transition settles, drop will-change
+      // so the browser doesn't keep a composited layer around indefinitely for
+      // content that will never animate again (it already fired once).
+      function retireLayer(el: HTMLElement) {
+        el.addEventListener('transitionend', () => { el.style.willChange = 'auto'; }, { once: true });
+      }
+
+      // rootMargin pulls the trigger line up from the bottom edge so a section
+      // starts revealing a little before it's fully scrolled into view — the
+      // next block is already emerging as the previous one settles, instead of
+      // waiting for a hard "fully visible" cutoff.
       const observer = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
           if (!entry.isIntersecting) return;
           const el = entry.target as HTMLElement;
           const delay = parseInt(el.getAttribute('data-reveal-delay') || '0', 10);
+          retireLayer(el);
           if (delay > 0) {
             setTimeout(() => el.classList.add('is-revealed'), delay);
           } else {
@@ -150,16 +165,24 @@ const {
           }
           obs.unobserve(el);
         });
-      }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
+      }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
 
       elements.forEach(el => {
         if (el.classList.contains('is-revealed')) return;
         const rect = el.getBoundingClientRect();
-        // Already in viewport on page load → reveal immediately (small cap so
-        // above-fold headings don't flash invisible even for a frame).
+        // Already in viewport on page load → reveal on the same stagger a
+        // scroll-triggered reveal would use. No flash risk: [data-reveal]'s
+        // opacity:0 is in the stylesheet from first paint, so the element was
+        // never visible to begin with — the delay is purely the intended
+        // staged entrance (e.g. eyebrow → title → paragraph on a page intro).
         if (rect.top < window.innerHeight && rect.bottom > 0) {
           const delay = parseInt(el.getAttribute('data-reveal-delay') || '0', 10);
-          setTimeout(() => el.classList.add('is-revealed'), Math.min(delay, 80));
+          retireLayer(el);
+          if (delay > 0) {
+            setTimeout(() => el.classList.add('is-revealed'), delay);
+          } else {
+            el.classList.add('is-revealed');
+          }
         } else {
           observer.observe(el);
         }

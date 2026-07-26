@@ -327,8 +327,8 @@ const currentPath = Astro.url.pathname;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .site-header, .site-header::before { transition: none; }
-    .site-header.is-hidden { transform: none; visibility: visible; pointer-events: auto; }
+    /* The hide-on-scroll slide is exempt on purpose — the site owner wants it
+       to always run, reduced-motion or not. Everything else backs off. */
     .nav-pill { transition: opacity .15s linear; }
     .header-inner, .logo-frame { transition: none; }
     .site-header::after, .desktop-nav, .nav-link, .burger-line, .mobile-nav-link { transition: none !important; animation: none !important; }
@@ -381,8 +381,6 @@ const currentPath = Astro.url.pathname;
   // what data-astro-rerun did, and which broke on the second navigation
   // because top-level const/let can't be redeclared in the page's shared
   // global scope).
-  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
   // Centra #contacto en el área visible (descontando el header sticky).
   // No depende del DOM de una página en particular, así que se define una
   // sola vez y sirve para todas las navegaciones.
@@ -444,7 +442,7 @@ const currentPath = Astro.url.pathname;
     });
     document.getElementById('mobile-close')?.addEventListener('click', closeMobile);
     overlay?.addEventListener('click', (event) => { if (event.target === overlay) closeMobile(); });
-    document.querySelectorAll('.mobile-nav-link').forEach(link => link.addEventListener('click', closeMobile));
+    document.querySelectorAll('.mobile-nav-link:not(.lang-toggle-group)').forEach(link => link.addEventListener('click', closeMobile));
 
     // Header hide-on-scroll: plain scroll listener comparing the current
     // position against the last one to detect direction, toggling a class
@@ -453,7 +451,7 @@ const currentPath = Astro.url.pathname;
     if (headerScrollListener) window.removeEventListener('scroll', headerScrollListener);
     headerScrollListener = null;
 
-    if (header && !reduceMotion) {
+    if (header) {
       let lastY = window.scrollY;
       headerScrollListener = () => {
         // Clamp negative values from iOS rubber-band overscroll.
@@ -477,9 +475,6 @@ const currentPath = Astro.url.pathname;
       };
       window.addEventListener('scroll', headerScrollListener, { passive: true });
       headerScrollListener();
-    } else if (header) {
-      header.classList.remove('is-hidden');
-      header.classList.toggle('is-scrolled', window.scrollY > 8);
     }
 
     // Desktop nav: a pill tracks the hovered/focused link and rests under

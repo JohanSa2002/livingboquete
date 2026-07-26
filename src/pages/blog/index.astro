@@ -14,24 +14,36 @@ const POSTS = await cachedQuery('posts', async () => {
 
 <Layout activeKey="blog" title="Blog · MIKA Homes" titleEn="Blog · MIKA Homes">
 
-  <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding:70px 26px 0">
-    <div style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:14px">
-      <span class="lang-es">Blog &amp; noticias</span><span class="lang-en" hidden>Blog &amp; news</span>
+  <section style="position:relative;overflow:hidden">
+    <img
+      src="/fondoblogs.webp"
+      alt=""
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.6;z-index:1"
+    />
+    <!-- Wash fades the illustration into the page's sand background toward the
+         bottom, so it reads as ambient texture behind the text rather than a
+         hard-edged photo block. -->
+    <div style="position:absolute;inset:0;z-index:2;background:linear-gradient(180deg, rgba(245,240,232,.35) 0%, rgba(245,240,232,.75) 65%, var(--color-sand) 100%)"></div>
+
+    <div class="pad-sec" style="position:relative;z-index:3;max-width:1240px;margin:0 auto;padding:70px 26px 0">
+      <div data-reveal="title" style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:14px">
+        <span class="lang-es">Blog &amp; noticias</span><span class="lang-en" hidden>Blog &amp; news</span>
+      </div>
+      <h1 style="font-family:'Manrope';font-weight:800;font-size:clamp(40px,6vw,72px);line-height:.98;letter-spacing:-.025em;margin:0 0 14px;color:#251D14">
+        <span class="lang-es">Historias de las tierras altas</span>
+        <span class="lang-en" hidden>Stories from the highlands</span>
+      </h1>
+      <p style="font-size:18px;color:#5A4F42;max-width:540px;margin:0 0 46px">
+        <span class="lang-es">Guías, cultura y novedades de la comunidad.</span>
+        <span class="lang-en" hidden>Guides, culture and community news.</span>
+      </p>
     </div>
-    <h1 style="font-family:'Manrope';font-weight:800;font-size:clamp(40px,6vw,72px);line-height:.98;letter-spacing:-.025em;margin:0 0 14px;color:#251D14">
-      <span class="lang-es">Historias de las tierras altas</span>
-      <span class="lang-en" hidden>Stories from the highlands</span>
-    </h1>
-    <p style="font-size:18px;color:#5A4F42;max-width:540px;margin:0 0 46px">
-      <span class="lang-es">Guías, cultura y novedades de la comunidad.</span>
-      <span class="lang-en" hidden>Guides, culture and community news.</span>
-    </p>
   </section>
 
   <section class="pad-sec" style="max-width:1240px;margin:0 auto;padding:0 26px 96px">
     <div class="cols-2" style="display:grid;grid-template-columns:1fr 1fr;gap:34px">
       {POSTS.map(b => (
-        <a href={`/blog/${b.id}`} class="blog-card rv" style="cursor:pointer;background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:20px;overflow:hidden;text-decoration:none;color:inherit;display:block">
+        <a href={`/blog/${b.id}`} class="blog-card" data-reveal="card" style="cursor:pointer;background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:20px;overflow:hidden;text-decoration:none;color:inherit;display:block">
           <div style="position:relative;aspect-ratio:16/8.6;overflow:hidden">
             <Image src={b.img} width={600} height={323} densities={[1, 2]} alt={b.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
           </div>
@@ -64,3 +76,49 @@ const POSTS = await cachedQuery('posts', async () => {
   .blog-card { transition: transform .25s, box-shadow .25s; }
   .blog-card:hover { transform: translateY(-4px); box-shadow: 0 22px 40px -22px rgba(37,29,20,.4); }
 </style>
+
+<script>
+  // Chains the card grid's entrance to the intro text above it: if the grid
+  // is already on screen alongside the eyebrow/title/paragraph (true on most
+  // viewports, since this is the first thing on the page), it waits for that
+  // sequence to visibly finish before cascading in. If the grid is scrolled
+  // to independently later, it just reveals on its own the moment it arrives.
+  document.addEventListener('astro:page-load', () => {
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('.blog-card'));
+    if (!cards.length) return;
+
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cards.forEach(c => c.classList.add('is-revealed'));
+      return;
+    }
+
+    const CARD_STAGGER_MS = 130;
+    // Intro's own last stagger (240ms) + its transition duration (800ms) +
+    // the requested 200ms pause before the grid starts.
+    const AFTER_INTRO_MS = 240 + 800 + 200;
+
+    function cascadeFrom(startDelay: number) {
+      cards.forEach((card, i) => {
+        if (card.classList.contains('is-revealed')) return;
+        setTimeout(() => card.classList.add('is-revealed'), startDelay + i * CARD_STAGGER_MS);
+      });
+    }
+
+    const grid = cards[0].parentElement;
+    const rect = grid?.getBoundingClientRect();
+    const introVisible = rect ? rect.top < window.innerHeight && rect.bottom > 0 : false;
+
+    if (introVisible) {
+      cascadeFrom(AFTER_INTRO_MS);
+    } else {
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          obs.disconnect();
+          cascadeFrom(0);
+        });
+      }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
+      if (grid) observer.observe(grid);
+    }
+  });
+</script>
