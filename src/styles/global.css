@@ -337,11 +337,6 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
-  [data-reveal] {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-    transition: none !important;
-    will-change: auto !important;
-  }
+  /* [data-reveal] (scroll-reveal fade/blur/slide) is exempt on purpose — the
+     site owner wants that sequence to always play, reduced-motion or not. */
 }

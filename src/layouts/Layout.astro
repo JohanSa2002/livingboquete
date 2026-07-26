@@ -85,12 +85,8 @@ const {
     // wrappers. Applying transform to sections creates compositor layers that
     // conflict with the header's position:sticky + transform hide animation.
     function setupScrollReveals() {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.querySelectorAll<HTMLElement>('[data-reveal]').forEach(el => {
-          el.classList.add('is-revealed');
-        });
-        return;
-      }
+      // Runs the same staged reveal regardless of prefers-reduced-motion —
+      // the site owner wants the fade/blur/slide sequence to always play.
 
       // Headings and eyebrow labels that are already in the DOM (static markup).
       // Excludes anything inside the sticky header or mobile overlay.

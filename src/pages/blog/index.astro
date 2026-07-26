@@ -14,18 +14,13 @@ const POSTS = await cachedQuery('posts', async () => {
 
 <Layout activeKey="blog" title="Blog · MIKA Homes" titleEn="Blog · MIKA Homes">
 
-  <section style="position:relative;overflow:hidden">
-    <img
-      src="/fondoblogs.webp"
-      alt=""
-      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.6;z-index:1"
-    />
+  <section class="blog-intro" style="position:relative;overflow:hidden;background-image:url('/fondoblogs.webp');background-size:cover;background-position:center top;background-repeat:no-repeat">
     <!-- Wash fades the illustration into the page's sand background toward the
          bottom, so it reads as ambient texture behind the text rather than a
          hard-edged photo block. -->
-    <div style="position:absolute;inset:0;z-index:2;background:linear-gradient(180deg, rgba(245,240,232,.35) 0%, rgba(245,240,232,.75) 65%, var(--color-sand) 100%)"></div>
+    <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(180deg, rgba(245,240,232,.1) 0%, rgba(245,240,232,.5) 65%, var(--color-sand) 100%)"></div>
 
-    <div class="pad-sec" style="position:relative;z-index:3;max-width:1240px;margin:0 auto;padding:70px 26px 0">
+    <div class="pad-sec" style="position:relative;z-index:2;max-width:1240px;margin:0 auto;padding:70px 26px 0">
       <div data-reveal="title" style="font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B95C36;margin-bottom:14px">
         <span class="lang-es">Blog &amp; noticias</span><span class="lang-en" hidden>Blog &amp; news</span>
       </div>
@@ -75,6 +70,18 @@ const POSTS = await cachedQuery('posts', async () => {
 <style>
   .blog-card { transition: transform .25s, box-shadow .25s; }
   .blog-card:hover { transform: translateY(-4px); box-shadow: 0 22px 40px -22px rgba(37,29,20,.4); }
+
+  /* Keeps the illustration pinned to the viewport while the intro's text and
+     wash scroll over it, instead of scrolling away with the rest of the page. */
+  .blog-intro { background-attachment: fixed; }
+  @media (max-width: 880px) {
+    /* iOS Safari mostly ignores background-attachment:fixed anyway, and it's
+       a known jank source on Android — fall back to a plain static image. */
+    .blog-intro { background-attachment: scroll; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blog-intro { background-attachment: scroll; }
+  }
 </style>
 
 <script>
@@ -87,10 +94,8 @@ const POSTS = await cachedQuery('posts', async () => {
     const cards = Array.from(document.querySelectorAll<HTMLElement>('.blog-card'));
     if (!cards.length) return;
 
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      cards.forEach(c => c.classList.add('is-revealed'));
-      return;
-    }
+    // Cascade always plays, reduced-motion or not — same call as the rest of
+    // the scroll-reveal system (see setupScrollReveals in Layout.astro).
 
     const CARD_STAGGER_MS = 130;
     // Intro's own last stagger (240ms) + its transition duration (800ms) +
