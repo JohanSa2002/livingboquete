@@ -118,23 +118,6 @@ const {
       if (btn?.dataset.langBtn) applyLang(btn.dataset.langBtn as Lang);
     });
 
-    // Mobile menu toggle
-    const burger = document.getElementById('mobile-burger');
-    const mobileOverlay = document.getElementById('mobile-overlay');
-
-    function closeMobile() {
-      mobileOverlay?.classList.add('hidden');
-    }
-
-    burger?.addEventListener('click', () => {
-      mobileOverlay?.classList.toggle('hidden');
-    });
-
-    mobileOverlay?.addEventListener('click', closeMobile);
-    document.querySelectorAll('.mobile-nav-link').forEach(link => {
-      link.addEventListener('click', closeMobile);
-    });
-
     // Scroll to hash, centering within the visible area below the sticky header
     function scrollToHash() {
       const hash = window.location.hash;

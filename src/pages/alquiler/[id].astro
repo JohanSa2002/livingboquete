@@ -80,21 +80,27 @@ if (!isAvailableNow) {
 
     <!-- Video + photo grid -->
     <div class="media-split" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:40px">
-      <div class="video-box" style="border-radius:20px;overflow:hidden;aspect-ratio:4/3">
+      <div class="video-box" style="border-radius:20px;overflow:hidden;aspect-ratio:16/9">
         <YouTubeFacade url={stay.video} title={stay.name.es} />
       </div>
-      <div class="gallery-grid" style="display:grid;grid-template-columns:1.6fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;aspect-ratio:4/3;border-radius:20px;overflow:hidden">
-        <div class="gallery-cell" style="grid-row:1/3;position:relative">
+      <div class="gallery-grid" style="display:grid;grid-template-columns:1.6fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;aspect-ratio:16/9;border-radius:20px;overflow:hidden">
+        <button type="button" class="gallery-cell" data-lightbox-trigger style="grid-row:1/3;position:relative">
           <Image src={stay.img} width={900} height={620} densities={[1, 2]} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
-        </div>
+        </button>
         {['-g1','-g2','-g3','-g4'].slice(0,4).map((suf) => (
-          <div class="gallery-cell" style="position:relative">
+          <button type="button" class="gallery-cell" data-lightbox-trigger style="position:relative">
             <Image src={`https://picsum.photos/seed/${stay.id}${suf}/600/400`} width={600} height={400} densities={[1, 2]} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
-          </div>
+          </button>
         ))}
       </div>
     </div>
   </section>
+
+  <!-- Photo lightbox -->
+  <div id="gallery-lightbox" class="hidden" style="position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center">
+    <button id="gallery-lightbox-close" aria-label="Cerrar" style="position:absolute;top:20px;right:24px;background:transparent;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1">&times;</button>
+    <img id="gallery-lightbox-img" src="" alt="" style="max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px" />
+  </div>
 
   <!-- CONTENT -->
   <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:0 26px 40px">
@@ -281,6 +287,39 @@ if (!isAvailableNow) {
   }
 </script>
 
+<script>
+  // Photo gallery lightbox: click any thumbnail to see it full-size,
+  // reusing the same dark-backdrop pattern as the home gallery lightbox.
+  const lightbox = document.getElementById('gallery-lightbox');
+  const lightboxImg = document.getElementById('gallery-lightbox-img') as HTMLImageElement | null;
+
+  function openLightbox(img: HTMLImageElement) {
+    if (!lightbox || !lightboxImg) return;
+    lightboxImg.src = img.currentSrc || img.src;
+    lightboxImg.alt = img.alt;
+    lightbox.classList.remove('hidden');
+  }
+
+  function closeLightbox() {
+    lightbox?.classList.add('hidden');
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-lightbox-trigger]').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const img = trigger.querySelector('img');
+      if (img) openLightbox(img);
+    });
+  });
+
+  document.getElementById('gallery-lightbox-close')?.addEventListener('click', closeLightbox);
+  lightbox?.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+</script>
+
 <style>
   .rental-bg {
     position: relative;
@@ -300,12 +339,40 @@ if (!isAvailableNow) {
     z-index: 1;
   }
 
+  /* Gallery cells are <button>s so photos are keyboard- and click-accessible;
+     reset default button chrome and add a hover cue that they open a lightbox. */
+  .gallery-cell {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  .gallery-cell::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 15, 10, 0);
+    transition: background-color .18s ease;
+  }
+  .gallery-cell:hover::after,
+  .gallery-cell:focus-visible::after {
+    background: rgba(20, 15, 10, .15);
+  }
+
+  #gallery-lightbox {
+    transition: opacity .2s ease;
+  }
+
   @media (max-width: 700px) {
     .media-split {
       grid-template-columns: 1fr !important;
     }
     .video-box {
-      aspect-ratio: 16/10 !important;
+      aspect-ratio: 16/9 !important;
     }
     .gallery-grid {
       display: flex !important;

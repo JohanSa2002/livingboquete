@@ -67,6 +67,22 @@
 
 html { scroll-behavior: smooth; }
 
+/* Astro route transitions: a brief, soft dissolve keeps navigation feeling
+   continuous without competing with property photography or page content. */
+::view-transition-old(root) {
+  animation: route-out .22s cubic-bezier(.4, 0, 1, 1) both;
+}
+::view-transition-new(root) {
+  animation: route-in .42s var(--ease-out) both;
+}
+@keyframes route-out {
+  to { opacity: 0; transform: translateY(-5px); filter: blur(1px); }
+}
+@keyframes route-in {
+  from { opacity: 0; transform: translateY(10px); filter: blur(2px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
 
@@ -269,4 +285,10 @@ a { color: inherit; }
   .gal-grid { grid-template-columns: 1fr !important; }
   .ev-row { flex-direction: column !important; align-items: flex-start !important; }
   .hero-stats { flex-wrap: wrap; row-gap: 18px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  .rv { animation: none; }
 }
