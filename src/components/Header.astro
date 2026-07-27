@@ -217,8 +217,13 @@ const currentPath = Astro.url.pathname;
     transition: height .25s ease;
   }
   .site-header.is-scrolled .header-inner { height: 66px; }
-  .header-zone-start { justify-self: start; min-width: 0; }
-  .header-zone-end { justify-self: end; min-width: 0; }
+  /* Explicit grid-column, not just source order: .desktop-nav (the middle
+     column) is display:none on mobile, and a display:none item is removed
+     from the grid entirely — auto-placement then slides header-zone-end
+     into the now-empty middle track instead of the third one, landing the
+     mobile burger right next to the logo instead of the far edge. */
+  .header-zone-start { grid-column: 1; justify-self: start; min-width: 0; }
+  .header-zone-end { grid-column: 3; justify-self: end; min-width: 0; }
 
   .logo-frame {
     transform-origin: left center;

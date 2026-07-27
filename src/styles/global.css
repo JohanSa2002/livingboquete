@@ -65,7 +65,14 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+/* Guards against phantom horizontal scroll: the off-screen mobile drawer
+   (translateX(100%) when closed) and the slide-left/slide-right scroll-reveal
+   transforms (±72px before a section reveals) both extend past the viewport
+   edge on narrow screens with nothing to clip them otherwise.
+   overflow-x:hidden goes on <html> only, not <body> — on body it makes body
+   itself a scroll container, which desyncs position:sticky (the header)
+   from the real viewport scroll and breaks it entirely. */
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 /* Astro route transitions: a brief, soft dissolve keeps navigation feeling
    continuous without competing with property photography or page content. */
