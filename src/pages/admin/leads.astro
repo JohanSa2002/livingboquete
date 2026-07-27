@@ -21,6 +21,27 @@ const guideLeads = leads.filter(l => l.type !== 'propietario');
     </div>
   </div>
 
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total</div>
+      <div class="stat-value">{leads.length}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Guía gratuita</div>
+      <div class="stat-value">{guideLeads.length}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Propietarios</div>
+      <div class="stat-value">{ownerLeads.length}</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab is-active" data-filter="all">Todos <span class="tab-count">{leads.length}</span></button>
+    <button type="button" class="tab" data-filter="guide">Guía <span class="tab-count">{guideLeads.length}</span></button>
+    <button type="button" class="tab" data-filter="propietario">Propietarios <span class="tab-count">{ownerLeads.length}</span></button>
+  </div>
+
   <div class="help-box">
     <svg class="help-box-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
     <div class="help-box-content">
@@ -68,7 +89,7 @@ const guideLeads = leads.filter(l => l.type !== 'propietario');
           </thead>
           <tbody>
             {leads.map(l => (
-              <tr data-id={l.id}>
+              <tr data-id={l.id} data-type={l.type === 'propietario' ? 'propietario' : 'guide'}>
                 <td style="color:#b5b5b0;font-size:12px;font-variant-numeric:tabular-nums">{l.id}</td>
                 <td>{l.type === 'propietario' ? <span class="badge badge-amber">Propietario</span> : <span class="badge badge-green">Guía</span>}</td>
                 <td style="font-weight:600;color:#1a1918">{l.nombre}</td>
@@ -99,6 +120,19 @@ const guideLeads = leads.filter(l => l.type !== 'propietario');
 </AdminLayout>
 
 <script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.tab');
+  const rows = document.querySelectorAll<HTMLTableRowElement>('tbody tr');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      const filter = tab.dataset.filter;
+      rows.forEach(row => {
+        row.style.display = (filter === 'all' || row.dataset.type === filter) ? '' : 'none';
+      });
+    });
+  });
+
   document.querySelectorAll('.delete-lead').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id = Number((btn as HTMLElement).dataset.id);

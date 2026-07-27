@@ -278,6 +278,31 @@ const nav = [
     .badge-blue { background: #eff6ff; color: #2563eb; }
     .badge-amber { background: #fffbeb; color: #d97706; }
 
+    /* ─── Tabs (filter toggle, e.g. leads by type) ─── */
+    .tabs {
+      display: flex; gap: 6px;
+      margin-bottom: 18px;
+    }
+    .tab {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 14px; border-radius: 9px;
+      border: 1px solid #ebebea;
+      background: #fff; color: #6e6e69;
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer;
+      transition: all .12s ease;
+    }
+    .tab:hover { background: #fafaf9; color: #3d3d39; }
+    .tab.is-active {
+      background: #1a1918; color: #fafaf9; border-color: #1a1918;
+    }
+    .tab-count {
+      font-size: 11px; font-weight: 700;
+      padding: 1px 6px; border-radius: 999px;
+      background: rgba(0,0,0,.06); color: inherit;
+    }
+    .tab.is-active .tab-count { background: rgba(255,255,255,.18); }
+
     .empty {
       text-align: center;
       padding: 56px 24px; color: #a8a8a3;
