@@ -116,17 +116,25 @@ const POSTS = await cachedQuery('posts', async () => {
   @media (max-width: 880px) {
     /* iOS Safari mostly ignores background-attachment:fixed, and it's a known
        jank source on Android — fall back to a real position:fixed layer
-       anchored to the viewport instead of this element's box, so the visual
-       result still matches. It stays on screen the whole time the hero+cards
-       region is anywhere in view, and only fades out once fully scrolled past
-       (see the IntersectionObserver below) — same lifetime as the desktop
-       technique gets for free from being clipped to its own box. */
+       anchored to the viewport instead of this element's box. A fixed layer
+       covers the full viewport regardless of how little of .blog-hero
+       remains on screen, so `height` is driven from script to track
+       .blog-hero's own bottom edge every scroll frame (`bottom` is dropped
+       here since an explicit height overrides it) — the fixed layer is
+       clipped to look exactly like it's still bound to that element's box,
+       which is what background-attachment:fixed gives natively on desktop.
+       An opacity fade (see the old approach used for .rental-bg-canvas on
+       the alquiler pages) can't work here: .blog-hero is barely taller than
+       one screen, so there's a stretch of scroll where the card grid and
+       the footer are both partially on screen at once, and a single
+       opacity value can't be simultaneously "shown" for one and "hidden"
+       for the other — only a hard clip can. */
     .blog-hero-bg {
       position: fixed;
+      top: 0;
+      bottom: auto;
       background-attachment: scroll;
-      transition: opacity .3s ease;
     }
-    .blog-hero-bg.is-past { opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     .blog-hero-bg { background-attachment: scroll; }
@@ -137,20 +145,26 @@ const POSTS = await cachedQuery('posts', async () => {
   // Only matters on the mobile fallback (position:fixed background, see CSS
   // above) — on desktop the illustration is clipped natively via
   // background-attachment:fixed on .blog-hero's own box, no JS involved.
-  document.addEventListener('astro:page-load', () => {
+  // A fixed layer covers the full viewport no matter how little of
+  // .blog-hero remains on screen. .blog-hero is barely taller than one
+  // screen, so there's a stretch of scroll where the card grid and the
+  // footer are both partially visible at once — an opacity fade (the
+  // approach used for .rental-bg-canvas on the alquiler pages) can't
+  // handle that: a single opacity can't be "shown" over the still-visible
+  // cards and "hidden" over the footer in the same frame. Setting `height`
+  // instead clips the fixed layer's bottom edge to .blog-hero's own bottom
+  // edge every frame, which is exactly what background-attachment:fixed
+  // gives for free on desktop.
+  function updateBlogHeroBgVisibility() {
     const heroWrap = document.querySelector<HTMLElement>('.blog-hero');
     const heroBg = document.querySelector<HTMLElement>('.blog-hero-bg');
     if (!heroWrap || !heroBg) return;
+    const visibleHeight = Math.max(0, heroWrap.getBoundingClientRect().bottom);
+    heroBg.style.height = `${visibleHeight}px`;
+  }
 
-    const bgObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          heroBg.classList.remove('is-past');
-        } else if (entry.boundingClientRect.bottom < 0) {
-          heroBg.classList.add('is-past');
-        }
-      });
-    }, { threshold: 0 });
-    bgObserver.observe(heroWrap);
-  });
+  window.addEventListener('scroll', updateBlogHeroBgVisibility, { passive: true });
+  window.addEventListener('resize', updateBlogHeroBgVisibility);
+  document.addEventListener('DOMContentLoaded', updateBlogHeroBgVisibility);
+  document.addEventListener('astro:page-load', updateBlogHeroBgVisibility);
 </script>
