@@ -457,16 +457,22 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
       e.preventDefault();
       const form = e.target as HTMLFormElement;
       const data = Object.fromEntries(new FormData(form));
+      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      submitBtn.disabled = true;
       try {
-        await fetch('/api/leads', {
+        const res = await fetch('/api/leads', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
-      } catch {}
-      form.style.display = 'none';
-      (document.querySelector('#lead-card > p:last-of-type') as HTMLElement).style.display = 'none';
-      document.getElementById('lead-success')!.style.display = 'block';
+        if (!res.ok) throw new Error('request failed');
+        form.style.display = 'none';
+        (document.querySelector('#lead-card > p:last-of-type') as HTMLElement).style.display = 'none';
+        document.getElementById('lead-success')!.style.display = 'block';
+      } catch {
+        submitBtn.disabled = false;
+        alert('No pudimos enviar tu solicitud. Intenta de nuevo. / We could not send your request. Please try again.');
+      }
     });
   </script>
 
