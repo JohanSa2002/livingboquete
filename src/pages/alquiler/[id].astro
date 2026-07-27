@@ -56,7 +56,7 @@ if (!isAvailableNow) {
         <span class="lang-es">{stay.name.es}</span><span class="lang-en" hidden>{stay.name.en}</span>
       </h1>
       {stay.verified && (
-        <span style="display:inline-flex;align-items:center;gap:5px;background:#2C3A2A;color:#C8964A;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;flex:none" title="Propiedad verificada por Boquete">
+        <span style="display:inline-flex;align-items:center;gap:5px;background:#2C3A2A;color:#E6B87C;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;flex:none" title="Propiedad verificada por Boquete">
           <Icon name="check" size={13} />
           <span class="lang-es">Verificada</span><span class="lang-en" hidden>Verified</span>
         </span>
@@ -130,7 +130,7 @@ if (!isAvailableNow) {
 
         <!-- Host -->
         <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px;display:flex;align-items:center;gap:16px">
-          <div style="width:54px;height:54px;border-radius:50%;background:#2C3A2A;color:#C8964A;display:flex;align-items:center;justify-content:center;font-family:'Manrope';font-weight:800;font-size:22px;flex:none">{stay.host.name[0]}</div>
+          <div style="width:54px;height:54px;border-radius:50%;background:#2C3A2A;color:#E6B87C;display:flex;align-items:center;justify-content:center;font-family:'Manrope';font-weight:800;font-size:22px;flex:none">{stay.host.name[0]}</div>
           <div>
             <div style="display:flex;align-items:center;gap:8px">
               <span style="font-family:'Manrope';font-weight:700;font-size:18px;color:#251D14">{stay.host.name}</span>
@@ -329,7 +329,12 @@ if (!isAvailableNow) {
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background-image: url('/fondoalquiler.webp');
+    /* Flat wash, not a gradient: this layer is position:fixed, so it's
+       anchored to the viewport rather than the scrolling title block — a
+       gradient would drift in and out of strength as the page scrolls. */
+    background-image:
+      linear-gradient(rgba(245,240,232,.68), rgba(245,240,232,.68)),
+      url('/fondoalquiler.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

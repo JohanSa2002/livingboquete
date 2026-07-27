@@ -236,12 +236,12 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
   </section>
 
   <!-- LEAD FORM -->
-  <section id="contacto" style="background:#2C3A2A">
+  <section id="contacto" style="background:var(--color-forest-dark)">
     <div class="lead-wrap" style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;min-height:600px">
 
       <!-- Left: Copy -->
       <div style="padding:clamp(40px,5vw,80px) clamp(26px,4vw,64px);display:flex;flex-direction:column;justify-content:center">
-        <div class="eyebrow" style="color:#C8964A;margin-bottom:18px">
+        <div class="eyebrow" style="color:#E6B87C;margin-bottom:18px">
           <span class="lang-es">Guía gratuita</span>
           <span class="lang-en" hidden>Complimentary guide</span>
         </div>
@@ -249,7 +249,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
           <span class="lang-es">Antes de planear la mudanza, ten el panorama completo.</span>
           <span class="lang-en" hidden>Before you plan the move, get the full picture.</span>
         </h2>
-        <p style="font-size:16px;line-height:1.65;color:#A99C86;margin:0 0 32px;max-width:440px">
+        <p style="font-size:16px;line-height:1.65;color:rgba(245,240,232,.72);margin:0 0 32px;max-width:440px">
           <span class="lang-es">Nuestra guía práctica para retirarse en Boquete reúne las preguntas importantes en un solo lugar, claro y accesible.</span>
           <span class="lang-en" hidden>Our practical introduction to retiring in Boquete brings the important questions into one calm, readable place.</span>
         </p>
@@ -265,7 +265,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
             { es: 'Checklist para tu visita', en: 'Visit planning checklist' },
           ].map(item => (
             <div style="display:flex;align-items:baseline;gap:8px;font-size:14.5px;color:#D8CDBA;line-height:1.6">
-              <span style="color:#C8964A;font-size:13px;flex:none">+</span>
+              <span style="color:#E6B87C;font-size:13px;flex:none">+</span>
               <span>
                 <span class="lang-es">{item.es}</span>
                 <span class="lang-en" hidden>{item.en}</span>
@@ -397,7 +397,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
           <!-- Success message -->
           <div id="lead-success" style="display:none;text-align:center;padding:32px 10px">
-            <div style="width:52px;height:52px;border-radius:50%;background:#2C3A2A;color:#C8964A;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;margin-bottom:16px">✓</div>
+            <div style="width:52px;height:52px;border-radius:50%;background:#2C3A2A;color:#E6B87C;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;margin-bottom:16px">✓</div>
             <h3 style="font-family:'Manrope';font-weight:800;font-size:24px;color:#251D14;margin:0 0 8px">
               <span class="lang-es">¡Gracias!</span>
               <span class="lang-en" hidden>Thank you!</span>
@@ -428,7 +428,12 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
           <span id="detail-date-m" class="detail-date-m"></span>
         </div>
       </div>
-      <div id="detail-body-content" class="detail-body-content">
+      <!-- data-lenis-prevent: Lenis's own wheel handler still preventDefaults
+           everything while stopped (see openDetail below), so without this
+           attribute the modal's internal scroll would be frozen along with
+           the background. Lenis special-cases this attribute to fall back
+           to native scrolling for the element, stopped or not. -->
+      <div id="detail-body-content" class="detail-body-content" data-lenis-prevent>
         <h3 id="detail-title" class="detail-title"></h3>
         <p id="detail-desc" class="detail-desc"></p>
         <div id="detail-meta" class="detail-meta"></div>
@@ -514,7 +519,10 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     // refreshed each time, but the document-level listeners must be bound only
     // once (a `state` object persisted on `window`), otherwise navigating away
     // and back stacks duplicate handlers and the modal glitches.
-    const win = window as unknown as { __cardModal?: ModalState };
+    const win = window as unknown as {
+      __cardModal?: ModalState;
+      __lenis?: { stop: () => void; start: () => void };
+    };
     const state: ModalState = win.__cardModal ?? {
       backdrop: null, modal: null, closeBtn: null, bodyContent: null,
       placesData: [], eventsData: [], originEl: null, isOpen: false, bound: false,
@@ -612,6 +620,10 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
         const rect = source.getBoundingClientRect();
         document.body.style.overflow = 'hidden';
+        // Lenis (see Layout.astro) drives scroll itself and ignores the
+        // native overflow lock above, so the background page kept scrolling
+        // under the modal — it has to be paused explicitly.
+        win.__lenis?.stop();
         backdrop.hidden = false;
 
         gsap.set(modal, {
@@ -647,6 +659,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
           onComplete: () => {
             backdrop.hidden = true;
             document.body.style.overflow = '';
+            win.__lenis?.start();
             state.isOpen = false;
             source?.focus();
             state.originEl = null;
@@ -702,7 +715,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
   </script>
 
   <!-- Slogan (also gives #contacto room to scroll to center of viewport) -->
-  <section style="min-height:50dvh;background:#2C3A2A;display:flex;align-items:center;justify-content:center;padding:60px 26px">
+  <section style="min-height:50dvh;background:var(--color-forest-dark);display:flex;align-items:center;justify-content:center;padding:60px 26px">
     <p style="font-family:'Spectral';font-style:italic;font-weight:500;font-size:clamp(24px,3.4vw,38px);line-height:1.45;color:#F7F1E6;text-align:center;max-width:760px;margin:0">
       <span class="lang-es">El refugio perfecto donde el alma encuentra la paz.</span>
       <span class="lang-en" hidden>The perfect refuge where the soul finds peace.</span>

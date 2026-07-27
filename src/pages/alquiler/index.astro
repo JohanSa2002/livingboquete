@@ -69,11 +69,12 @@ const lifestyleData = LIFESTYLES.map(ls => {
   return { ...ls, count: matches.length };
 });
 
-// Voices: the highest-rated real reviews across every listing.
+// Voices: every real review across every listing, highest-rated first. Feeds
+// a slow auto-scrolling marquee (see stays-voices-track below) rather than a
+// fixed grid, so the count is free to grow as more reviews get added.
 const VOICES = RENTALS
   .flatMap((r: any) => (r.reviewsList ?? []).map((rv: any) => ({ ...rv, stayEs: r.name.es, stayEn: r.name.en })))
-  .sort((a: any, b: any) => b.rating - a.rating)
-  .slice(0, 3);
+  .sort((a: any, b: any) => b.rating - a.rating);
 ---
 
 <Layout
@@ -448,8 +449,8 @@ const VOICES = RENTALS
       <path d="M0,250 C200,190 340,290 540,230 C740,170 880,270 1080,210 C1130,195 1175,200 1200,206" />
       <path d="M0,190 C160,130 300,230 500,170 C700,110 840,210 1040,150 C1110,130 1165,140 1200,150" />
     </svg>
-    <div class="pad-sec" style="max-width:1240px;margin:0 auto;position:relative">
-      <div class="eyebrow rv" style="margin-bottom:12px;color:var(--color-wood)">
+    <div class="pad-sec" style="max-width:1240px;margin:0 auto;position:relative;text-align:center">
+      <div class="eyebrow rv" style="margin-bottom:12px;color:#E6B87C">
         <span class="lang-es">Sin fricción</span><span class="lang-en" hidden>Zero friction</span>
       </div>
       <h2 class="stays-h2 rv" style="color:var(--color-sand);margin-bottom:48px">
@@ -458,7 +459,6 @@ const VOICES = RENTALS
       </h2>
       <div class="stays-steps">
         <div class="stays-step rv">
-          <div class="stays-step-n">01</div>
           <h3><span class="lang-es">Explora y elige</span><span class="lang-en" hidden>Browse and pick</span></h3>
           <p>
             <span class="lang-es">Fotos reales, precios claros y reseñas de gente que ya vivió ahí. Sin crear cuenta.</span>
@@ -466,7 +466,6 @@ const VOICES = RENTALS
           </p>
         </div>
         <div class="stays-step rv" style="animation-delay:.08s">
-          <div class="stays-step-n">02</div>
           <h3><span class="lang-es">Habla con el anfitrión</span><span class="lang-en" hidden>Talk to the host</span></h3>
           <p>
             <span class="lang-es">Envía tu solicitud con fecha de mudanza y te responden en menos de 24 horas.</span>
@@ -474,7 +473,6 @@ const VOICES = RENTALS
           </p>
         </div>
         <div class="stays-step rv" style="animation-delay:.16s">
-          <div class="stays-step-n">03</div>
           <h3><span class="lang-es">Múdate y vive Boquete</span><span class="lang-en" hidden>Move in and live Boquete</span></h3>
           <p>
             <span class="lang-es">Café de altura, senderos, comunidad. Tu nueva rutina empieza entre montañas.</span>
@@ -496,25 +494,31 @@ const VOICES = RENTALS
           <span class="lang-es">Voces de la <em>comunidad</em></span>
           <span class="lang-en" hidden>Voices from the <em>community</em></span>
         </h2>
-        <div class="stays-voices">
-          {VOICES.map((v: any, i: number) => (
-            <figure class="stays-voice rv" style={`animation-delay:${i * 0.07}s`}>
-              <div class="stays-voice-stars">{'★'.repeat(Math.round(v.rating))}</div>
-              <blockquote>
-                <span class="lang-es">“{v.text.es}”</span>
-                <span class="lang-en" hidden>“{v.text.en}”</span>
-              </blockquote>
-              <figcaption>
-                <span class="stays-voice-avatar">{v.name[0]}</span>
-                <div>
-                  <div class="stays-voice-name">{v.name}</div>
-                  <div class="stays-voice-stay">
-                    <span class="lang-es">{v.stayEs}</span><span class="lang-en" hidden>{v.stayEn}</span>
+        <div class="stays-voices-viewport">
+          <!-- Content is rendered twice back-to-back and the track animates
+               from 0 to -50%, so the loop point is invisible — the second
+               copy is aria-hidden so screen readers only hear each review
+               once. -->
+          <div class="stays-voices-track" id="voices-track">
+            {[...VOICES, ...VOICES].map((v: any, i: number) => (
+              <figure class="stays-voice" aria-hidden={i >= VOICES.length ? 'true' : undefined}>
+                <div class="stays-voice-stars">{'★'.repeat(Math.round(v.rating))}</div>
+                <blockquote>
+                  <span class="lang-es">“{v.text.es}”</span>
+                  <span class="lang-en" hidden>“{v.text.en}”</span>
+                </blockquote>
+                <figcaption>
+                  <span class="stays-voice-avatar">{v.name[0]}</span>
+                  <div>
+                    <div class="stays-voice-name">{v.name}</div>
+                    <div class="stays-voice-stay">
+                      <span class="lang-es">{v.stayEs}</span><span class="lang-en" hidden>{v.stayEn}</span>
+                    </div>
                   </div>
-                </div>
-              </figcaption>
-            </figure>
-          ))}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </div>
       </div>
     )}
@@ -523,7 +527,7 @@ const VOICES = RENTALS
     <div class="pad-sec" style="max-width:1240px;margin:0 auto;padding-top:84px">
       <div class="stays-owner rv">
         <div class="stays-owner-copy">
-          <div class="eyebrow" style="color:var(--color-wood);margin-bottom:12px">
+          <div class="eyebrow" style="color:#E6B87C;margin-bottom:12px">
             <span class="lang-es">Para propietarios</span><span class="lang-en" hidden>For owners</span>
           </div>
           <h2 class="stays-h2" style="color:var(--color-sand);margin-bottom:14px">
@@ -564,7 +568,15 @@ const VOICES = RENTALS
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background-image: url('/fondoalquiler2.webp');
+    /* Flat sand-tinted wash (not a gradient): this whole layer is
+       position:fixed, so a top-to-bottom gradient is anchored to the
+       viewport, not the scrolling content — whatever text happens to sit
+       on this background drifts through the gradient as the page scrolls,
+       landing on the weak part just as often as the strong part. A uniform
+       tint keeps legibility constant regardless of scroll position. */
+    background-image:
+      linear-gradient(rgba(245,240,232,.78), rgba(245,240,232,.78)),
+      url('/fondoalquiler2.webp');
     background-size: cover;
     background-position: center 75%;
     background-repeat: no-repeat;
@@ -683,7 +695,11 @@ const VOICES = RENTALS
     margin-bottom: 34px;
     flex-wrap: wrap;
   }
-  .stays-sec-sub { font-size: 15.5px; color: var(--color-ink-faint); margin: 0; max-width: 380px; }
+  /* ink-soft, not ink-faint: both usages of this class sit directly on the
+     illustrated wash (no card), and the faint tone was reading too weak
+     against the illustration's denser linework (e.g. the branch flourish
+     behind the "Explorar" subtitle). */
+  .stays-sec-sub { font-size: 15.5px; color: var(--color-ink-soft); margin: 0; max-width: 380px; }
 
   /* ---------- Lifestyle cards ---------- */
   .stays-life-grid {
@@ -893,15 +909,7 @@ const VOICES = RENTALS
     gap: 34px;
   }
   .stays-step {
-    border-top: 1px solid rgba(245,240,232,.2);
     padding-top: 22px;
-  }
-  .stays-step-n {
-    font-family: var(--font-accent);
-    font-style: italic;
-    font-size: 15px;
-    color: var(--color-wood);
-    margin-bottom: 12px;
   }
   .stays-step h3 {
     font-family: var(--font-display);
@@ -921,18 +929,43 @@ const VOICES = RENTALS
   .stays-community-section {
     position: relative;
     padding: 84px 26px 96px;
-    background-image: url('/fondopersonas.webp');
+    /* Flat wash, not a gradient — background-attachment:fixed anchors it to
+       the viewport rather than this section's content, so a gradient here
+       would suffer the same scroll-position drift as .rental-bg-canvas. */
+    background-image:
+      linear-gradient(rgba(245,240,232,.76), rgba(245,240,232,.76)),
+      url('/fondopersonas.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
   }
-  .stays-voices {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+  /* Auto-scrolling marquee: content is duplicated in the markup and the
+     track animates 0 → -50%, looping seamlessly. Speed (not duration) is
+     kept constant via --voices-duration, computed from the track's actual
+     width in the script below, so adding more reviews doesn't speed the
+     loop up. */
+  .stays-voices-viewport {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  }
+  .stays-voices-track {
+    display: flex;
     gap: 22px;
+    width: max-content;
+    animation: stays-voices-scroll var(--voices-duration, 48s) linear infinite;
+  }
+  .stays-voices-viewport:hover .stays-voices-track { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) {
+    .stays-voices-track { animation: none; }
+  }
+  @keyframes stays-voices-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
   }
   .stays-voice {
+    flex: 0 0 360px;
     margin: 0;
     background: var(--color-white);
     border: 1px solid var(--color-border-soft);
@@ -1059,7 +1092,7 @@ const VOICES = RENTALS
     .stays-spot { grid-template-columns: 1fr; }
     .stays-spot-media { min-height: 300px; }
     .stays-steps { grid-template-columns: 1fr; gap: 26px; }
-    .stays-voices { grid-template-columns: 1fr; }
+    .stays-voice { flex-basis: 300px; }
     .stays-owner { grid-template-columns: 1fr; padding: 44px 34px; }
     .stays-owner-art { display: none; }
   }
@@ -1263,4 +1296,23 @@ const VOICES = RENTALS
 
   // Fires on the initial load and after every client-side navigation.
   document.addEventListener('astro:page-load', initHeroParallax);
+</script>
+
+<script>
+  // Voices marquee: sets --voices-duration so the loop always moves at the
+  // same visual speed (px/s) no matter how many reviews get added later —
+  // a fixed animation-duration would make the loop speed up as the track
+  // (which is exactly double the review count) gets wider.
+  function initVoicesMarquee() {
+    const track = document.getElementById('voices-track');
+    if (!track) return;
+    const PX_PER_SECOND = 36;
+    // Track content is duplicated for the seamless loop, so the distance
+    // actually travelled (0 → -50%) is half the full scrollWidth.
+    const halfWidth = track.scrollWidth / 2;
+    if (halfWidth > 0) {
+      track.style.setProperty('--voices-duration', `${halfWidth / PX_PER_SECOND}s`);
+    }
+  }
+  document.addEventListener('astro:page-load', initVoicesMarquee);
 </script>
