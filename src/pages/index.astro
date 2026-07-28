@@ -14,9 +14,20 @@ async function fetchAll(table: string) {
   return (data ?? []).map((r: any) => r.data);
 }
 
-const [PLACES, EVENTS, POSTS, GALLERY] = await Promise.all(
-  ['places', 'events', 'posts', 'gallery'].map((table) => fetchAll(table))
-);
+async function fetchPosts() {
+  const { data } = await getSupabase()
+    .from('posts')
+    .select('data')
+    .order('created_at', { ascending: false });
+  return (data ?? []).map((r: any) => r.data);
+}
+
+const [PLACES, EVENTS, POSTS, GALLERY] = await Promise.all([
+  fetchAll('places'),
+  fetchAll('events'),
+  fetchPosts(),
+  fetchAll('gallery'),
+]);
 
 const homePosts = POSTS.slice(0, 3);
 

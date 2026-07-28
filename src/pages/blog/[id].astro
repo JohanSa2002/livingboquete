@@ -8,7 +8,7 @@ const { id } = Astro.params;
 const { data: postRows } = await getSupabase()
   .from('posts')
   .select('data')
-  .order('created_at', { ascending: true });
+  .order('created_at', { ascending: false });
 const POSTS = (postRows ?? []).map((r: any) => r.data);
 const post = POSTS.find((p: any) => p.id === id);
 if (!post) return Astro.redirect('/blog');

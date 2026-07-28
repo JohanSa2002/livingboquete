@@ -6,7 +6,7 @@ import { Image } from 'astro:assets';
 const { data: postRows } = await getSupabase()
   .from('posts')
   .select('data')
-  .order('created_at', { ascending: true });
+  .order('created_at', { ascending: false });
 const POSTS = (postRows ?? []).map((r: any) => r.data);
 ---
 
