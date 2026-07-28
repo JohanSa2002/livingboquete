@@ -3,15 +3,13 @@ import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import YouTubeFacade from '../../components/YouTubeFacade.astro';
 import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
-import { getSupabase, cachedQuery } from '../../lib/supabase';
+import { getSupabase } from '../../lib/supabase';
 import { Image } from 'astro:assets';
 import 'leaflet/dist/leaflet.css';
 
 const { id } = Astro.params;
-const stayRow = await cachedQuery(`rentals:${id}`, async () => {
-  const { data } = await getSupabase().from('rentals').select('data').eq('id', id).maybeSingle();
-  return data;
-});
+if (!id) return Astro.redirect('/alquiler');
+const { data: stayRow } = await getSupabase().from('rentals').select('data').eq('id', id).maybeSingle();
 if (!stayRow) return Astro.redirect('/alquiler');
 const stay = stayRow.data;
 

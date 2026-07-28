@@ -1,15 +1,13 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getSupabase, cachedQuery } from '../../lib/supabase';
+import { getSupabase } from '../../lib/supabase';
 import { Image } from 'astro:assets';
 
-const POSTS = await cachedQuery('posts', async () => {
-  const { data } = await getSupabase()
-    .from('posts')
-    .select('data')
-    .order('created_at', { ascending: true });
-  return (data ?? []).map((r: any) => r.data);
-});
+const { data: postRows } = await getSupabase()
+  .from('posts')
+  .select('data')
+  .order('created_at', { ascending: true });
+const POSTS = (postRows ?? []).map((r: any) => r.data);
 ---
 
 <Layout activeKey="blog" title="Blog · MIKA Homes" titleEn="Blog · MIKA Homes">

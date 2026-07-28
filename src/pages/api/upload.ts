@@ -5,11 +5,7 @@ import { isAuthenticated } from '../../lib/auth';
 const BUCKET = 'images';
 const MAX_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES: Record<string, string> = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
   'image/webp': 'webp',
-  'image/gif': 'gif',
-  'image/svg+xml': 'svg',
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -25,7 +21,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const ext = ALLOWED_TYPES[file.type];
   if (!ext) {
-    return new Response(JSON.stringify({ error: 'Tipo de archivo no permitido' }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'Solo se permiten imágenes en formato WebP' }), { status: 400 });
   }
   if (file.size > MAX_BYTES) {
     return new Response(JSON.stringify({ error: 'La imagen supera el límite de 8MB' }), { status: 400 });

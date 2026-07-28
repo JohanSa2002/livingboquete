@@ -34,7 +34,7 @@ const helpTexts: Record<string, { title: string; lines: string[] }> = {
       '<strong>Descripción corta</strong> — Aparece en la tarjeta de la home. Máximo 2 líneas.',
       '<strong>Descripción larga</strong> — Se muestra al ver el detalle del lugar.',
       '<strong>Tips</strong> — Escribe un consejo por línea. Se muestran como lista con viñetas.',
-      '<strong>Imagen</strong> — Sube un archivo desde tu computadora, o pega una URL si prefieres. Tamaño recomendado: 800×600px.',
+      '<strong>Imagen</strong> — Sube un archivo desde tu computadora (se convierte automáticamente a formato WebP). Tamaño recomendado: 800×600px.',
     ],
   },
   events: {
@@ -56,7 +56,7 @@ const helpTexts: Record<string, { title: string; lines: string[] }> = {
       '<strong>Fecha</strong> — En ambos formatos (ES: <code>12 Jun 2026</code>, EN: <code>Jun 12, 2026</code>).',
       '<strong>Extracto</strong> — Resumen corto que aparece en la tarjeta del blog. 1-2 oraciones.',
       '<strong>Cuerpo</strong> — Escribe un párrafo por línea. Cada línea será un párrafo separado en el artículo.',
-      '<strong>Imagen</strong> — Foto principal del artículo. Sube un archivo o pega una URL. Tamaño recomendado: 800×500px.',
+      '<strong>Imagen</strong> — Foto principal del artículo. Sube un archivo desde tu computadora (se convierte automáticamente a formato WebP). Tamaño recomendado: 800×500px.',
     ],
   },
   rentals: {
@@ -69,7 +69,7 @@ const helpTexts: Record<string, { title: string; lines: string[] }> = {
       '<strong>Amenidades</strong> — Lista separada por comas. Valores válidos: <code>wifi</code>, <code>kitchen</code>, <code>view</code>, <code>parking</code>, <code>pool</code>, <code>fireplace</code>, <code>furnished</code>, <code>pets</code>.',
       '<strong>Destacado</strong> — Marca "Sí" para que la propiedad aparezca en la portada de <code>/alquiler</code>. Si marcas varias, se muestran en un carrusel; si no marcas ninguna, se destaca automáticamente la más reseñada.',
       '<strong>Latitud / Longitud</strong> — Coordenadas para el mapa. Boquete está aprox. en <code>8.78</code>, <code>-82.43</code>. Puedes obtener coordenadas desde Google Maps (click derecho → copiar coordenadas).',
-      '<strong>Imagen</strong> — Sube un archivo o pega una URL. Tamaño recomendado: 800×560px.',
+      '<strong>Imagen</strong> — Sube un archivo desde tu computadora (se convierte automáticamente a formato WebP). Tamaño recomendado: 800×560px.',
       '<strong>Video</strong> — Pega la URL del video de YouTube del canal Mika Houses (ej: <code>https://youtu.be/XXXXXXXXXXX</code>). Déjalo vacío si la propiedad aún no tiene video.',
     ],
   },
@@ -79,7 +79,7 @@ const helpTexts: Record<string, { title: string; lines: string[] }> = {
       'Las fotos aparecen en la sección de <strong>galería</strong> de la página de inicio con filtro por categoría.',
       '<strong>Etiqueta</strong> — Texto descriptivo de la foto en ambos idiomas (ej: ES: <code>Volcán Barú al amanecer</code>).',
       '<strong>Categoría</strong> — Selecciona entre Naturaleza, Café, Cultura o Aventura. Determina el filtro.',
-      '<strong>Imagen</strong> — Sube un archivo o pega una URL. Tamaño recomendado: 600×600px (cuadrada).',
+      '<strong>Imagen</strong> — Sube un archivo desde tu computadora (se convierte automáticamente a formato WebP). Tamaño recomendado: 600×600px (cuadrada).',
     ],
   },
 };
@@ -317,7 +317,7 @@ const help = helpTexts[section!];
       const val = getPath(data, field.key);
       const placeholders = {
         id: 'ej: mi-nuevo-lugar',
-        img: 'o pega una URL: https://ejemplo.com/imagen.jpg',
+        img: 'Se completa automáticamente al subir una imagen',
         author: 'Nombre del autor',
         d: 'ej: 10',
         price: 'ej: 120',
@@ -388,10 +388,10 @@ const help = helpTexts[section!];
               <div class="f-image-preview" data-preview-for="${field.key}" style="${imgVal ? `background-image:url('${esc(imgVal)}')` : ''}">
                 ${imgVal ? '' : '<span>Arrastra una imagen o haz clic para subir</span>'}
               </div>
-              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" class="f-image-file" data-target="${field.key}" hidden />
+              <input type="file" accept="image/*" class="f-image-file" data-target="${field.key}" hidden />
             </label>
             <div class="f-image-controls">
-              <input class="f-input" data-key="${field.key}" value="${esc(imgVal)}" placeholder="${ph}" />
+              <input class="f-input" data-key="${field.key}" value="${esc(imgVal)}" placeholder="${ph}" readonly />
               <span class="f-image-status" data-status-for="${field.key}"></span>
             </div>
           </div>
@@ -450,6 +450,21 @@ const help = helpTexts[section!];
     return data;
   }
 
+  async function convertToWebp(file, quality = 0.85) {
+    if (file.type === 'image/webp') return file;
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0);
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('No se pudo convertir la imagen'))), 'image/webp', quality);
+    });
+    const name = file.name.replace(/\.[^.]+$/, '') + '.webp';
+    return new File([blob], name, { type: 'image/webp' });
+  }
+
   async function uploadImage(file, key) {
     const status = modalBody.querySelector(`[data-status-for="${key}"]`);
     const preview = modalBody.querySelector(`[data-preview-for="${key}"]`);
@@ -458,10 +473,18 @@ const help = helpTexts[section!];
       if (status) status.textContent = 'Solo se permiten imágenes';
       return;
     }
+    if (status) status.textContent = 'Convirtiendo a WebP...';
+    let webpFile;
+    try {
+      webpFile = await convertToWebp(file);
+    } catch (err) {
+      if (status) status.textContent = 'No se pudo convertir la imagen';
+      return;
+    }
     if (status) status.textContent = 'Subiendo...';
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', webpFile);
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error al subir');
@@ -492,20 +515,6 @@ const help = helpTexts[section!];
         drop.classList.remove('is-dragover');
         const file = e.dataTransfer.files && e.dataTransfer.files[0];
         if (file) uploadImage(file, key);
-      });
-    });
-    modalBody.querySelectorAll('.f-image input.f-input').forEach(input => {
-      input.addEventListener('input', () => {
-        const key = input.dataset.key;
-        const preview = modalBody.querySelector(`[data-preview-for="${key}"]`);
-        if (!preview) return;
-        if (input.value) {
-          preview.style.backgroundImage = `url('${input.value}')`;
-          preview.innerHTML = '';
-        } else {
-          preview.style.backgroundImage = '';
-          preview.innerHTML = '<span>Arrastra una imagen o haz clic para subir</span>';
-        }
       });
     });
   }

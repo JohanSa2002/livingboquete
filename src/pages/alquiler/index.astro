@@ -2,16 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
-import { getSupabase, cachedQuery } from '../../lib/supabase';
+import { getSupabase } from '../../lib/supabase';
 import { Image } from 'astro:assets';
 
-const RENTALS = await cachedQuery('rentals', async () => {
-  const { data } = await getSupabase()
-    .from('rentals')
-    .select('data')
-    .order('created_at', { ascending: true });
-  return (data ?? []).map((r: any) => r.data);
-});
+const { data: rentalRows } = await getSupabase()
+  .from('rentals')
+  .select('data')
+  .order('created_at', { ascending: true });
+const RENTALS = (rentalRows ?? []).map((r: any) => r.data);
 
 // Presentational only — derives trust badges from existing data fields.
 // Nothing here touches RENTALS or the client-side filtering logic below.
