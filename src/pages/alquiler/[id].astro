@@ -159,7 +159,7 @@ if (!isAvailableNow) {
             <span class="lang-es">Reseñas</span><span class="lang-en" hidden>Reviews</span>
           </h3>
           <div style="display:flex;flex-direction:column;gap:18px">
-            {stay.reviewsList.map(rv => (
+            {(stay.reviewsList ?? []).map(rv => (
               <div style="background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:16px;padding:20px">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
                   <div style="display:flex;align-items:center;gap:10px">
