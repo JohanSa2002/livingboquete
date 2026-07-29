@@ -107,6 +107,11 @@ const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg
     if (!videoId) return;
     const iframe = document.createElement('iframe');
     iframe.className = 'yt-facade-frame';
+    // Inline styles, not just the class: this iframe is created at runtime,
+    // so it never gets the data-astro-cid attribute Astro uses to scope the
+    // <style> block below — the scoped .yt-facade-frame rule silently
+    // wouldn't match it, leaving the iframe at its 300x150 browser default.
+    iframe.style.cssText = 'width:100%;height:100%;border:0;display:block';
     iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
     iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
     iframe.allowFullscreen = true;
