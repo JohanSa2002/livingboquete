@@ -108,8 +108,8 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
   </section>
 
   <!-- TOP ATTRACTIONS -->
-  <section id="atractivos" class="pad-sec rv" style="max-width:1240px;margin:0 auto;padding:96px 26px 30px">
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:42px;flex-wrap:wrap">
+  <section id="atractivos" class="rv" style="padding:96px 0 40px">
+    <div class="pad-sec" style="max-width:1240px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:42px;flex-wrap:wrap">
       <div style="max-width:560px">
         <div class="eyebrow" data-reveal="slide-right" style="margin-bottom:14px">
           <span class="lang-es">Principales atractivos</span>
@@ -121,25 +121,56 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
         </h2>
       </div>
     </div>
-    <div class="cols-3" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
-      {PLACES.map(p => (
-        <div class="place-card" data-place-id={p.id} role="button" tabindex="0" style="border-radius:12px;overflow:hidden;background:#fff;border:1px solid rgba(37,29,20,.09);box-shadow:0 1px 2px rgba(37,29,20,.04);display:flex;flex-direction:column">
-          <div style="position:relative;aspect-ratio:4/2.6;overflow:hidden">
-            <Image src={p.img} width={480} height={312} densities={[1, 2]} alt={p.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
-            <span style="position:absolute;top:8px;left:8px;background:rgba(20,28,18,.62);backdrop-filter:blur(4px);color:#F7F1E6;font-size:10px;font-weight:700;letter-spacing:.04em;padding:4px 8px;border-radius:999px">
-              <span class="lang-es">{p.cat.es}</span><span class="lang-en" hidden>{p.cat.en}</span>
-            </span>
-          </div>
-          <div style="padding:11px 12px 13px;display:flex;flex-direction:column;flex:1">
-            <h3 style="font-family:'Manrope';font-weight:700;font-size:14.5px;margin:0 0 5px;color:#251D14">
-              <span class="lang-es">{p.name.es}</span><span class="lang-en" hidden>{p.name.en}</span>
-            </h3>
-            <p style="font-size:11.5px;line-height:1.45;color:#5A4F42;margin:0;flex:1">
-              <span class="lang-es">{p.short.es}</span><span class="lang-en" hidden>{p.short.en}</span>
-            </p>
-          </div>
+
+    <div class="attractions-carousel" id="attractions-carousel">
+      <div class="attractions-viewport" id="attractions-viewport">
+        <div class="attractions-track" id="attractions-track">
+          {[...PLACES, ...PLACES].map((p, i) => {
+            const isClone = i >= PLACES.length;
+            return (
+              <div
+                class="place-card attractions-card"
+                data-place-id={p.id}
+                data-real-index={i % PLACES.length}
+                data-clone={isClone ? 'true' : undefined}
+                role="button"
+                tabindex={isClone ? -1 : 0}
+                aria-hidden={isClone ? 'true' : undefined}
+              >
+                <div class="attractions-media">
+                  <Image src={p.img} width={480} height={360} densities={[1, 2]} alt={p.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+                  <span class="attractions-badge">
+                    <span class="lang-es">{p.cat.es}</span><span class="lang-en" hidden>{p.cat.en}</span>
+                  </span>
+                </div>
+                <div class="attractions-body">
+                  <h3 class="attractions-title">
+                    <span class="lang-es">{p.name.es}</span><span class="lang-en" hidden>{p.name.en}</span>
+                  </h3>
+                  <p class="attractions-desc">
+                    <span class="lang-es">{p.short.es}</span><span class="lang-en" hidden>{p.short.en}</span>
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ))}
+      </div>
+    </div>
+
+    <div class="pad-sec attractions-controls" style="max-width:1240px;margin:22px auto 0;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <div class="attractions-dots" id="attractions-dots" role="tablist" aria-label="Atractivos">
+        {PLACES.map((_, i) => (
+          <button type="button" class="attractions-dot" data-dot-index={i} aria-label={`${i + 1}`}></button>
+        ))}
+      </div>
+      <div class="attractions-progress" aria-hidden="true">
+        <div class="attractions-progress-bar" id="attractions-progress-bar"></div>
+      </div>
+      <button type="button" class="attractions-playstate" id="attractions-playstate" aria-pressed="false">
+        <span class="attractions-play-icon" id="attractions-play-icon">▶</span>
+        <span class="lang-es">Autoplay</span><span class="lang-en" hidden>Autoplay</span>
+      </button>
     </div>
   </section>
 
@@ -725,6 +756,282 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     }
   </script>
 
+  <!-- ATTRACTIONS MARQUEE CAROUSEL -->
+  <script>
+    // Continuous, drag/swipe-able "living gallery" marquee. Track holds the
+    // real cards followed by an identical clone set; position wraps with a
+    // simple modulo so the loop never jumps (the clone always lines up
+    // exactly where the real set ends).
+    interface Ctx {
+      root: HTMLElement;
+      viewport: HTMLElement;
+      track: HTMLElement;
+      allCards: HTMLElement[];
+      realCards: HTMLElement[];
+      realCount: number;
+      dots: HTMLButtonElement[];
+      progressBar: HTMLElement | null;
+      playBtn: HTMLButtonElement;
+      playIcon: HTMLElement;
+      x: number;
+      setWidth: number;
+      step: number;
+      cardWidth: number;
+      speedPxPerSec: number;
+      speedFactor: number;
+      targetFactor: number;
+      userPaused: boolean;
+      dragging: boolean;
+      dragMoved: number;
+      dragStartClientX: number;
+      dragStartX: number;
+      activeIndex: number;
+      reduceMotion: boolean;
+      resumeTimer: number | null;
+    }
+
+    const win = window as unknown as {
+      __attractionsMarquee?: { rafId: number | null; ctx: Ctx | null; resizeBound: boolean };
+    };
+    const state = win.__attractionsMarquee ?? { rafId: null, ctx: null, resizeBound: false };
+    win.__attractionsMarquee = state;
+
+    function wrapX(ctx: Ctx) {
+      if (ctx.setWidth <= 0) return;
+      while (ctx.x <= -ctx.setWidth) ctx.x += ctx.setWidth;
+      while (ctx.x > 0) ctx.x -= ctx.setWidth;
+    }
+
+    function applyTransform(ctx: Ctx) {
+      ctx.track.style.transform = `translate3d(${ctx.x}px,0,0)`;
+    }
+
+    function measure(ctx: Ctx) {
+      const first = ctx.allCards[0];
+      const second = ctx.allCards[1];
+      if (!first || !second) return;
+      ctx.step = second.offsetLeft - first.offsetLeft;
+      ctx.cardWidth = first.offsetWidth;
+      ctx.setWidth = ctx.step * ctx.realCount;
+      const durationSec = window.innerWidth < 768 ? 55 : 40;
+      ctx.speedPxPerSec = ctx.step > 0 ? ctx.setWidth / durationSec : 0;
+    }
+
+    function pauseAuto(ctx: Ctx) { ctx.targetFactor = 0; }
+    function resumeAuto(ctx: Ctx) {
+      if (!ctx.userPaused && !ctx.dragging) ctx.targetFactor = ctx.reduceMotion ? 0 : 1;
+    }
+
+    function scheduleResume(ctx: Ctx) {
+      if (ctx.resumeTimer != null) window.clearTimeout(ctx.resumeTimer);
+      ctx.resumeTimer = window.setTimeout(() => {
+        ctx.resumeTimer = null;
+        resumeAuto(ctx);
+      }, 1500);
+    }
+
+    // Jump the track so real-card `index` sits at the front of the current
+    // cycle — used by dot clicks and keyboard nav (never resets progress to 0).
+    function jumpToIndex(ctx: Ctx, index: number) {
+      if (ctx.setWidth <= 0) return;
+      const traveled = (((-ctx.x) % ctx.setWidth) + ctx.setWidth) % ctx.setWidth;
+      const cycleBase = -ctx.x - traveled;
+      ctx.x = -(cycleBase + index * ctx.step);
+      wrapX(ctx);
+      applyTransform(ctx);
+    }
+
+    function updateIndicators(ctx: Ctx) {
+      if (ctx.setWidth > 0) {
+        const traveled = (((-ctx.x) % ctx.setWidth) + ctx.setWidth) % ctx.setWidth;
+
+        // "Predominant" card = whichever one currently sits nearest the
+        // horizontal center of the viewport (not just the leading edge).
+        const viewportCenter = traveled + ctx.viewport.clientWidth / 2;
+        const centeredTraveled = ((viewportCenter % ctx.setWidth) + ctx.setWidth) % ctx.setWidth;
+        const idx = Math.round((centeredTraveled - ctx.cardWidth / 2) / ctx.step + ctx.realCount) % ctx.realCount;
+
+        if (idx !== ctx.activeIndex) {
+          ctx.activeIndex = idx;
+          ctx.allCards.forEach(c => {
+            c.classList.toggle('is-active', Number(c.dataset.realIndex) === idx);
+          });
+          ctx.dots.forEach((d, i) => d.classList.toggle('is-active', i === idx));
+        }
+        if (ctx.progressBar) ctx.progressBar.style.width = `${(traveled / ctx.setWidth) * 100}%`;
+      }
+      const playing = ctx.targetFactor > 0 && !ctx.userPaused && !ctx.dragging;
+      ctx.playIcon.textContent = playing ? '▶' : '⏸';
+      ctx.playBtn.setAttribute('aria-pressed', String(!playing));
+    }
+
+    function tick(now: number, lastTime: number): number {
+      const ctx = state.ctx;
+      if (!ctx) return now;
+      const dt = Math.min(now - lastTime, 50);
+
+      if (!ctx.dragging) {
+        const rate = 1 - Math.exp(-dt / 90);
+        ctx.speedFactor += (ctx.targetFactor - ctx.speedFactor) * rate;
+        if (Math.abs(ctx.speedFactor) < 0.001) ctx.speedFactor = 0;
+
+        if (ctx.speedFactor > 0) {
+          ctx.x -= ctx.speedPxPerSec * ctx.speedFactor * (dt / 1000);
+          wrapX(ctx);
+          applyTransform(ctx);
+        }
+      }
+
+      updateIndicators(ctx);
+      return now;
+    }
+
+    function startLoop() {
+      if (state.rafId != null) cancelAnimationFrame(state.rafId);
+      let lastTime = performance.now();
+      const frame = (now: number) => {
+        lastTime = tick(now, lastTime);
+        state.rafId = requestAnimationFrame(frame);
+      };
+      state.rafId = requestAnimationFrame(frame);
+    }
+
+    function initAttractionsCarousel() {
+      const root = document.getElementById('attractions-carousel');
+      const viewport = document.getElementById('attractions-viewport');
+      const track = document.getElementById('attractions-track');
+      const playBtn = document.getElementById('attractions-playstate') as HTMLButtonElement | null;
+      const playIcon = document.getElementById('attractions-play-icon');
+      if (!root || !viewport || !track || !playBtn || !playIcon) {
+        if (state.rafId != null) { cancelAnimationFrame(state.rafId); state.rafId = null; }
+        state.ctx = null;
+        return;
+      }
+
+      const allCards = Array.from(track.querySelectorAll<HTMLElement>('.attractions-card'));
+      const realCards = allCards.filter(c => c.dataset.clone !== 'true');
+      const realCount = realCards.length;
+      const dots = Array.from(document.querySelectorAll<HTMLButtonElement>('#attractions-dots .attractions-dot'));
+      const progressBar = document.getElementById('attractions-progress-bar');
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (realCount === 0) return;
+
+      const ctx: Ctx = {
+        root, viewport, track, allCards, realCards, realCount, dots, progressBar,
+        playBtn, playIcon,
+        x: 0, setWidth: 0, step: 0, cardWidth: 0, speedPxPerSec: 0,
+        speedFactor: reduceMotion ? 0 : 1, targetFactor: reduceMotion ? 0 : 1,
+        userPaused: false, dragging: false, dragMoved: 0, dragStartClientX: 0, dragStartX: 0,
+        activeIndex: -1, reduceMotion, resumeTimer: null,
+      };
+      state.ctx = ctx;
+      measure(ctx);
+      startLoop();
+
+      root.addEventListener('mouseenter', () => pauseAuto(ctx));
+      root.addEventListener('mouseleave', () => { if (!ctx.dragging) resumeAuto(ctx); });
+
+      root.addEventListener('focusin', () => pauseAuto(ctx));
+      root.addEventListener('focusout', (e) => {
+        if (!root.contains(e.relatedTarget as Node)) resumeAuto(ctx);
+      });
+
+      playBtn.addEventListener('click', () => {
+        ctx.userPaused = !ctx.userPaused;
+        ctx.targetFactor = ctx.userPaused ? 0 : (ctx.reduceMotion ? 0 : 1);
+      });
+
+      viewport.addEventListener('pointerdown', (e: PointerEvent) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        ctx.dragging = true;
+        ctx.dragMoved = 0;
+        ctx.dragStartClientX = e.clientX;
+        ctx.dragStartX = ctx.x;
+        ctx.targetFactor = 0;
+        track.classList.add('is-dragging');
+        if (ctx.resumeTimer != null) { window.clearTimeout(ctx.resumeTimer); ctx.resumeTimer = null; }
+        viewport.setPointerCapture(e.pointerId);
+      });
+
+      viewport.addEventListener('pointermove', (e: PointerEvent) => {
+        if (!ctx.dragging) return;
+        const delta = e.clientX - ctx.dragStartClientX;
+        ctx.dragMoved = Math.max(ctx.dragMoved, Math.abs(delta));
+        ctx.x = ctx.dragStartX + delta;
+        wrapX(ctx);
+        applyTransform(ctx);
+      });
+
+      function endDrag() {
+        if (!ctx.dragging) return;
+        ctx.dragging = false;
+        track.classList.remove('is-dragging');
+        if (ctx.dragMoved > 6) root.dataset.justDragged = 'true';
+        scheduleResume(ctx);
+      }
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+
+      // Swallow the click that follows a real drag before it reaches the
+      // document-level modal-open listener (capture phase runs first).
+      root.addEventListener('click', (e) => {
+        if (root.dataset.justDragged === 'true') {
+          delete root.dataset.justDragged;
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, true);
+
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => {
+          jumpToIndex(ctx, i);
+          ctx.userPaused = false;
+          pauseAuto(ctx);
+          scheduleResume(ctx);
+        });
+      });
+
+      root.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const activeEl = document.activeElement as HTMLElement | null;
+        const currentCard = activeEl?.closest<HTMLElement>('.attractions-card[tabindex="0"]');
+        if (!currentCard) return;
+        e.preventDefault();
+        const idx = Number(currentCard.dataset.realIndex);
+        const nextIdx = e.key === 'ArrowRight' ? (idx + 1) % ctx.realCount : (idx - 1 + ctx.realCount) % ctx.realCount;
+        ctx.realCards[nextIdx]?.focus();
+        jumpToIndex(ctx, nextIdx);
+        pauseAuto(ctx);
+        scheduleResume(ctx);
+      });
+    }
+
+    // A single resize listener for the whole page lifetime — it always reads
+    // `state.ctx`, which initAttractionsCarousel() swaps out on every
+    // navigation, so it never holds on to a stale/detached track.
+    if (!state.resizeBound) {
+      state.resizeBound = true;
+      let resizeRaf: number | null = null;
+      window.addEventListener('resize', () => {
+        if (resizeRaf != null) return;
+        resizeRaf = requestAnimationFrame(() => {
+          resizeRaf = null;
+          const ctx = state.ctx;
+          if (!ctx) return;
+          const ratio = ctx.setWidth > 0 ? ctx.x / ctx.setWidth : 0;
+          measure(ctx);
+          ctx.x = ratio * ctx.setWidth;
+          wrapX(ctx);
+          applyTransform(ctx);
+        });
+      });
+    }
+
+    initAttractionsCarousel();
+    document.addEventListener('astro:page-load', initAttractionsCarousel);
+  </script>
+
   <!-- Slogan (also gives #contacto room to scroll to center of viewport) -->
   <section style="min-height:50dvh;background:var(--color-forest-dark);display:flex;align-items:center;justify-content:center;padding:60px 26px">
     <p style="font-family:'Spectral';font-style:italic;font-weight:500;font-size:clamp(24px,3.4vw,38px);line-height:1.45;color:#F7F1E6;text-align:center;max-width:760px;margin:0">
@@ -742,6 +1049,99 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
   .event-card { cursor: pointer; transition: transform .25s; }
   .event-card:hover { transform: translateY(-5px); }
+
+  /* ─── Attractions marquee carousel ──────────────────────────────────────
+     Full-bleed track (breaks out of the 1240px container) whose left edge
+     stays aligned with the rest of the section's content via the same
+     max(26px, ...) inset used elsewhere (see Header.astro's ::after). */
+  .attractions-carousel {
+    position: relative;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
+  .attractions-viewport {
+    overflow: hidden;
+    touch-action: pan-y;
+    padding-left: max(26px, calc((100vw - 1240px) / 2 + 26px));
+    padding-right: 26px;
+  }
+  .attractions-track {
+    display: flex;
+    gap: 24px;
+    width: max-content;
+    will-change: transform;
+    cursor: grab;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .attractions-track.is-dragging { cursor: grabbing; }
+  .attractions-track.is-dragging .attractions-card { pointer-events: none; }
+
+  .attractions-card {
+    flex: 0 0 auto;
+    width: 340px;
+    height: 440px;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid rgba(37,29,20,.09);
+    box-shadow: var(--shadow-sm);
+    opacity: .94;
+    transform: scale(1);
+    transition: opacity .35s var(--ease-out), transform .35s var(--ease-out), box-shadow .35s var(--ease-out);
+  }
+  .attractions-card.is-active { opacity: 1; transform: scale(1.02); box-shadow: var(--shadow-md); }
+  .attractions-card:hover { opacity: 1; transform: translateY(-6px) scale(1.02); box-shadow: var(--shadow-md); }
+  .attractions-card:focus-visible { outline: 3px solid #B95C36; outline-offset: 3px; }
+
+  .attractions-media { position: relative; aspect-ratio: 4/3; overflow: hidden; flex: none; }
+  .attractions-badge {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(20,28,18,.62); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    color: #F7F1E6; font-size: 10.5px; font-weight: 700; letter-spacing: .04em;
+    padding: 5px 10px; border-radius: 999px;
+  }
+  .attractions-body { padding: 16px 18px 20px; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .attractions-title { font-family: 'Manrope'; font-weight: 700; font-size: 18px; margin: 0 0 8px; color: #251D14; }
+  .attractions-desc { font-size: 13.5px; line-height: 1.55; color: #5A4F42; margin: 0; flex: 1; overflow: hidden; }
+
+  .attractions-controls { color: #5A4F42; }
+  .attractions-dots { display: flex; gap: 8px; }
+  .attractions-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex: none;
+    background: rgba(37,29,20,.18); border: none; padding: 0; cursor: pointer;
+    transition: background .25s, transform .25s;
+  }
+  .attractions-dot.is-active { background: #B95C36; transform: scale(1.35); }
+  .attractions-dot:focus-visible { outline: 2px solid #B95C36; outline-offset: 2px; }
+
+  .attractions-progress {
+    flex: 1; max-width: 220px; height: 3px;
+    background: rgba(37,29,20,.1); border-radius: 999px; overflow: hidden;
+  }
+  .attractions-progress-bar { height: 100%; width: 0%; background: #B95C36; border-radius: 999px; }
+
+  .attractions-playstate {
+    display: flex; align-items: center; gap: 8px; margin-left: auto;
+    background: none; border: none; cursor: pointer; padding: 6px 10px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 700; letter-spacing: .04em; color: #5A4F42;
+    transition: background .2s, color .2s;
+  }
+  .attractions-playstate:hover { background: rgba(37,29,20,.06); color: #251D14; }
+  .attractions-playstate:focus-visible { outline: 2px solid #B95C36; outline-offset: 2px; }
+  .attractions-play-icon { font-size: 11px; }
+
+  @media (min-width: 768px) and (max-width: 1279px) {
+    .attractions-card { width: 42vw; max-width: 320px; min-width: 260px; height: 420px; }
+  }
+  @media (max-width: 767px) {
+    .attractions-card { width: 82vw; max-width: 340px; min-width: 240px; height: 400px; }
+  }
+  @media (max-width: 880px) {
+    .attractions-viewport { padding-left: 20px; padding-right: 20px; }
+  }
 
   .detail-backdrop {
     position: fixed;
