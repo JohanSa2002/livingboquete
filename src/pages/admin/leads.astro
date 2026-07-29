@@ -12,6 +12,13 @@ const { data } = await getSupabase()
 const leads = data ?? [];
 const ownerLeads = leads.filter(l => l.type === 'propietario');
 const guideLeads = leads.filter(l => l.type !== 'propietario');
+
+const timelineLabels: Record<string, string> = {
+  '0-6': '0-6 meses',
+  '6-12': '6-12 meses',
+  '1ano': '1 año',
+  '2anos': '2+ años',
+};
 ---
 <AdminLayout title="Leads" active="leads">
   <div class="page-header">
@@ -51,7 +58,7 @@ const guideLeads = leads.filter(l => l.type !== 'propietario');
         <ul>
           <li><strong>Tipo</strong> — <code>Guía</code> (interés general/retiro) o <code>Propietario</code> (quiere publicar una propiedad).</li>
           <li><strong>Retiro</strong> — Si planean retirarse: <code>si</code>, <code>talvez</code> o <code>investigando</code>.</li>
-          <li><strong>Timeline</strong> — Horizonte de tiempo: <code>0-6</code>, <code>6-12</code>, <code>1ano</code> o <code>2anos</code>.</li>
+          <li><strong>Timeline</strong> — Horizonte de tiempo: <code>0-6 meses</code>, <code>6-12 meses</code>, <code>1 año</code> o <code>2+ años</code>.</li>
           <li><strong>Interés</strong> — Motivación principal: <code>retiro</code>, <code>estilo</code>, <code>casa</code>, <code>inversiones</code> o <code>info</code>.</li>
           <li><strong>Tipo de propiedad / Ubicación / Mensaje</strong> — solo aplican a leads de propietarios.</li>
         </ul>
@@ -97,7 +104,7 @@ const guideLeads = leads.filter(l => l.type !== 'propietario');
                 <td>{l.celular || <span style="color:#b5b5b0">--</span>}</td>
                 <td>{l.pais || l.ubicacion || <span style="color:#b5b5b0">--</span>}</td>
                 <td>{l.retiro ? <span class="badge badge-green">{l.retiro}</span> : <span style="color:#b5b5b0">--</span>}</td>
-                <td>{l.timeline ? <span class="badge badge-amber">{l.timeline}</span> : <span style="color:#b5b5b0">--</span>}</td>
+                <td>{l.timeline ? <span class="badge badge-amber">{timelineLabels[l.timeline] ?? l.timeline}</span> : <span style="color:#b5b5b0">--</span>}</td>
                 <td>{l.interes ? <span class="badge badge-blue">{l.interes}</span> : l.tipo_propiedad ? <span class="badge badge-blue">{l.tipo_propiedad}</span> : <span style="color:#b5b5b0">--</span>}</td>
                 <td style="max-width:220px;white-space:normal;color:#5b5650">{l.mensaje || <span style="color:#b5b5b0">--</span>}</td>
                 <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{l.created_at}</td>
