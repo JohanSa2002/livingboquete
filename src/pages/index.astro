@@ -158,19 +158,12 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
       </div>
     </div>
 
-    <div class="pad-sec attractions-controls" style="max-width:1240px;margin:22px auto 0;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+    <div class="pad-sec attractions-controls" style="max-width:1240px;margin:22px auto 0;display:flex;align-items:center;justify-content:center">
       <div class="attractions-dots" id="attractions-dots" role="tablist" aria-label="Atractivos">
         {PLACES.map((_, i) => (
           <button type="button" class="attractions-dot" data-dot-index={i} aria-label={`${i + 1}`}></button>
         ))}
       </div>
-      <div class="attractions-progress" aria-hidden="true">
-        <div class="attractions-progress-bar" id="attractions-progress-bar"></div>
-      </div>
-      <button type="button" class="attractions-playstate" id="attractions-playstate" aria-pressed="false">
-        <span class="attractions-play-icon" id="attractions-play-icon">▶</span>
-        <span class="lang-es">Autoplay</span><span class="lang-en" hidden>Autoplay</span>
-      </button>
     </div>
   </section>
 
@@ -771,8 +764,8 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
       realCount: number;
       dots: HTMLButtonElement[];
       progressBar: HTMLElement | null;
-      playBtn: HTMLButtonElement;
-      playIcon: HTMLElement;
+      playBtn: HTMLButtonElement | null;
+      playIcon: HTMLElement | null;
       x: number;
       setWidth: number;
       step: number;
@@ -861,8 +854,8 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
         if (ctx.progressBar) ctx.progressBar.style.width = `${(traveled / ctx.setWidth) * 100}%`;
       }
       const playing = ctx.targetFactor > 0 && !ctx.userPaused && !ctx.dragging;
-      ctx.playIcon.textContent = playing ? '▶' : '⏸';
-      ctx.playBtn.setAttribute('aria-pressed', String(!playing));
+      if (ctx.playIcon) ctx.playIcon.textContent = playing ? '▶' : '⏸';
+      if (ctx.playBtn) ctx.playBtn.setAttribute('aria-pressed', String(!playing));
     }
 
     function tick(now: number, lastTime: number): number {
@@ -902,7 +895,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
       const track = document.getElementById('attractions-track');
       const playBtn = document.getElementById('attractions-playstate') as HTMLButtonElement | null;
       const playIcon = document.getElementById('attractions-play-icon');
-      if (!root || !viewport || !track || !playBtn || !playIcon) {
+      if (!root || !viewport || !track) {
         if (state.rafId != null) { cancelAnimationFrame(state.rafId); state.rafId = null; }
         state.ctx = null;
         return;
@@ -937,7 +930,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
         if (!root.contains(e.relatedTarget as Node)) resumeAuto(ctx);
       });
 
-      playBtn.addEventListener('click', () => {
+      playBtn?.addEventListener('click', () => {
         ctx.userPaused = !ctx.userPaused;
         ctx.targetFactor = ctx.userPaused ? 0 : (ctx.reduceMotion ? 0 : 1);
       });
@@ -1116,22 +1109,6 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
   }
   .attractions-dot.is-active { background: #B95C36; transform: scale(1.35); }
   .attractions-dot:focus-visible { outline: 2px solid #B95C36; outline-offset: 2px; }
-
-  .attractions-progress {
-    flex: 1; max-width: 220px; height: 3px;
-    background: rgba(37,29,20,.1); border-radius: 999px; overflow: hidden;
-  }
-  .attractions-progress-bar { height: 100%; width: 0%; background: #B95C36; border-radius: 999px; }
-
-  .attractions-playstate {
-    display: flex; align-items: center; gap: 8px; margin-left: auto;
-    background: none; border: none; cursor: pointer; padding: 6px 10px; border-radius: 999px;
-    font-size: 12.5px; font-weight: 700; letter-spacing: .04em; color: #5A4F42;
-    transition: background .2s, color .2s;
-  }
-  .attractions-playstate:hover { background: rgba(37,29,20,.06); color: #251D14; }
-  .attractions-playstate:focus-visible { outline: 2px solid #B95C36; outline-offset: 2px; }
-  .attractions-play-icon { font-size: 11px; }
 
   @media (min-width: 768px) and (max-width: 1279px) {
     .attractions-card { width: 42vw; max-width: 320px; min-width: 260px; height: 420px; }

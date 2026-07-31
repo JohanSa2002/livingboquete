@@ -157,6 +157,16 @@ const POSTS = (postRows ?? []).map((r: any) => r.data);
     const heroWrap = document.querySelector<HTMLElement>('.blog-hero');
     const heroBg = document.querySelector<HTMLElement>('.blog-hero-bg');
     if (!heroWrap || !heroBg) return;
+    // Must match the CSS `@media (max-width: 880px)` breakpoint above — that's
+    // the only mode where .blog-hero-bg is position:fixed and needs its height
+    // clipped manually. On desktop it's position:absolute with inset:0, which
+    // already stretches it to the full hero height on its own; overwriting
+    // that here with a viewport-relative height (which shrinks as the page
+    // scrolls) is what made the illustration cut off partway through the grid.
+    if (window.innerWidth > 880) {
+      heroBg.style.height = '';
+      return;
+    }
     const visibleHeight = Math.max(0, heroWrap.getBoundingClientRect().bottom);
     heroBg.style.height = `${visibleHeight}px`;
   }
