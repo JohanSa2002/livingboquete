@@ -5,6 +5,7 @@ import GalleryMasonry from '../components/GalleryMasonry';
 import { GALLERY_CATS } from '../data/data';
 import { getSupabase } from '../lib/supabase';
 import { Image, getImage } from 'astro:assets';
+import heroPoster from '../assets/hero-poster.webp';
 
 async function fetchAll(table: string) {
   const { data } = await getSupabase()
@@ -48,10 +49,14 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
   <!-- HERO -->
   <section style="position:relative;min-height:92dvh;display:flex;align-items:flex-end;overflow:hidden">
-    <img
-      id="hero-poster"
-      src="/hero-poster.webp"
+    <Image
+      src={heroPoster}
       alt="Vista de Boquete"
+      widths={[480, 768, 1080, 1440, 1920]}
+      sizes="100vw"
+      quality={65}
+      loading="eager"
+      fetchpriority="high"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"
     />
     <div style="position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(20,28,18,.4) 0%,rgba(34,61,38,.08) 30%,rgba(18,22,15,.6) 76%,rgba(15,17,12,.88) 100%)"></div>
@@ -159,7 +164,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     </div>
 
     <div class="pad-sec attractions-controls" style="max-width:1240px;margin:22px auto 0;display:flex;align-items:center;justify-content:center">
-      <div class="attractions-dots" id="attractions-dots" role="tablist" aria-label="Atractivos">
+      <div class="attractions-dots" id="attractions-dots" role="group" aria-label="Atractivos">
         {PLACES.map((_, i) => (
           <button type="button" class="attractions-dot" data-dot-index={i} aria-label={`${i + 1}`}></button>
         ))}

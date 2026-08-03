@@ -4,6 +4,7 @@ import Icon from '../../components/Icon.astro';
 import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
 import { getSupabase } from '../../lib/supabase';
 import { Image } from 'astro:assets';
+import heroPoster from '../../assets/hero-poster.webp';
 
 const { data: rentalRows } = await getSupabase()
   .from('rentals')
@@ -85,7 +86,16 @@ const VOICES = RENTALS
 
   <!-- ============ HERO: live the highlands ============ -->
   <section class="stays-hero">
-    <img src="/hero-poster.webp" alt="Tierras altas de Boquete" class="stays-hero-img" />
+    <Image
+      src={heroPoster}
+      alt="Tierras altas de Boquete"
+      class="stays-hero-img"
+      widths={[480, 768, 1080, 1440, 1920]}
+      sizes="100vw"
+      quality={65}
+      loading="eager"
+      fetchpriority="high"
+    />
     <div class="stays-hero-veil"></div>
 
     <div class="stays-hero-inner pad-sec">

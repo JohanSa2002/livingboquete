@@ -37,10 +37,21 @@ const {
   <ClientRouter />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  {/* Loaded as non-blocking: the `media="print"` + onload swap trick lets first
+      paint proceed on fallback fonts instead of waiting on this stylesheet
+      round-trip, while `display=swap` still avoids invisible text once it lands. */}
   <link
     href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@1,400;1,500&display=swap"
     rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
   />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+  </noscript>
 </head>
 <body>
   <Header activeKey={activeKey} />
@@ -162,9 +173,16 @@ const {
         });
       }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
 
-      elements.forEach(el => {
-        if (el.classList.contains('is-revealed')) return;
-        const rect = el.getBoundingClientRect();
+      // Read every element's rect BEFORE writing any classList change below —
+      // interleaving reads and writes per-element in a single pass forces the
+      // browser to flush layout on every iteration (Lighthouse's "forced
+      // reflow" diagnostic). Batching all reads first, then all writes, costs
+      // one layout flush total instead of one per element.
+      const toEvaluate = elements.filter(el => !el.classList.contains('is-revealed'));
+      const rects = toEvaluate.map(el => el.getBoundingClientRect());
+
+      toEvaluate.forEach((el, i) => {
+        const rect = rects[i];
         // Already in viewport on page load → reveal on the same stagger a
         // scroll-triggered reveal would use. No flash risk: [data-reveal]'s
         // opacity:0 is in the stylesheet from first paint, so the element was
