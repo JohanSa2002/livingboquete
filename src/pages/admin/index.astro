@@ -2,6 +2,7 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { isAuthenticated } from '../../lib/auth';
 import { getSupabase } from '../../lib/supabase';
+import { formatDate } from '../../lib/format';
 
 if (!isAuthenticated(Astro.cookies)) return Astro.redirect('/admin/login');
 
@@ -104,7 +105,7 @@ const recentLeads = data ?? [];
               <td>{l.email}</td>
               <td>{l.pais || <span style="color:#b5b5b0">--</span>}</td>
               <td>{l.interes ? <span class="badge badge-blue">{l.interes}</span> : <span style="color:#b5b5b0">--</span>}</td>
-              <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{l.created_at}</td>
+              <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{formatDate(l.created_at)}</td>
             </tr>
           ))}
         </tbody>

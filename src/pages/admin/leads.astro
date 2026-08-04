@@ -2,6 +2,7 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { isAuthenticated } from '../../lib/auth';
 import { getSupabase } from '../../lib/supabase';
+import { formatDate } from '../../lib/format';
 
 if (!isAuthenticated(Astro.cookies)) return Astro.redirect('/admin/login');
 
@@ -107,7 +108,7 @@ const timelineLabels: Record<string, string> = {
                 <td>{l.timeline ? <span class="badge badge-amber">{timelineLabels[l.timeline] ?? l.timeline}</span> : <span style="color:#b5b5b0">--</span>}</td>
                 <td>{l.interes ? <span class="badge badge-blue">{l.interes}</span> : l.tipo_propiedad ? <span class="badge badge-blue">{l.tipo_propiedad}</span> : <span style="color:#b5b5b0">--</span>}</td>
                 <td style="max-width:220px;white-space:normal;color:#5b5650">{l.mensaje || <span style="color:#b5b5b0">--</span>}</td>
-                <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{l.created_at}</td>
+                <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{formatDate(l.created_at)}</td>
                 <td>
                   <button class="btn btn-danger btn-sm delete-lead" data-id={l.id}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
