@@ -8,8 +8,11 @@ import { defineMiddleware } from 'astro:middleware';
 // browser's back/forward cache and any CDN caching for the public pages,
 // making every navigation pay a full Supabase round-trip. Admin/API routes
 // (where edits happen and freshness matters most) keep no-store; public
-// pages get a short edge cache with stale-while-revalidate so admin changes
-// still show up within ~30s without making every click a cold fetch.
+// pages get an edge cache with a wide stale-while-revalidate window so
+// almost every navigation is served instantly from the edge (revalidated
+// against Supabase in the background) instead of blocking on a live query.
+// Admin edits/deletes still land within ~60s; anything already served
+// keeps being refreshed silently for up to 30 minutes after that.
 export const onRequest = defineMiddleware(async (context, next) => {
   const response = await next();
   const isImage = context.url.pathname.startsWith('/_image');
@@ -18,7 +21,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'Cache-Control',
     isImage
       ? 'public, max-age=31536000, immutable'
-      : isAdminOrApi ? 'no-store' : 'public, max-age=0, s-maxage=30, stale-while-revalidate=300',
+      : isAdminOrApi ? 'no-store' : 'public, max-age=0, s-maxage=60, stale-while-revalidate=1800',
   );
   return response;
 });

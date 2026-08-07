@@ -11,9 +11,12 @@ const adapter = process.env.VERCEL ? vercel() : node({ mode: 'standalone' });
 export default defineConfig({
   output: 'server',
   adapter,
-  // prefetchAll is required so every link gets the hover strategy — without it,
+  // prefetchAll is required so every link gets the tap strategy — without it,
   // only links with an explicit data-astro-prefetch attribute are prefetched.
-  prefetch: { defaultStrategy: 'hover', prefetchAll: true },
+  // 'tap' fires on mousedown/touchstart instead of hover, so it also covers
+  // touch devices (no hover event at all) and fast desktop clicks that don't
+  // dwell long enough for 'hover' to kick in.
+  prefetch: { defaultStrategy: 'tap', prefetchAll: true },
   integrations: [react()],
   image: {
     // picsum.photos 302s to fastly.picsum.photos, and Astro checks the
