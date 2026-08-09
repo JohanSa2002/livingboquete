@@ -14,6 +14,12 @@ const leads = data ?? [];
 const ownerLeads = leads.filter(l => l.type === 'propietario');
 const guideLeads = leads.filter(l => l.type !== 'propietario');
 
+const { data: rentalRows } = await getSupabase()
+  .from('rentals')
+  .select('id, data')
+  .order('created_at', { ascending: false });
+const rentals = (rentalRows ?? []).map(r => ({ id: r.id, name: (r.data as any).name?.es || r.id }));
+
 const timelineLabels: Record<string, string> = {
   '0-6': '0-6 meses',
   '6-12': '6-12 meses',
@@ -109,14 +115,24 @@ const timelineLabels: Record<string, string> = {
                 <td>{l.interes ? <span class="badge badge-blue">{l.interes}</span> : l.tipo_propiedad ? <span class="badge badge-blue">{l.tipo_propiedad}</span> : <span style="color:#b5b5b0">--</span>}</td>
                 <td style="max-width:220px;white-space:normal;color:#5b5650">{l.mensaje || <span style="color:#b5b5b0">--</span>}</td>
                 <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{formatDate(l.created_at)}</td>
-                <td>
-                  <button class="btn btn-danger btn-sm delete-lead" data-id={l.id}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                    Eliminar
-                  </button>
+                <td style="white-space:nowrap">
+                  <div style="display:flex;gap:6px;justify-content:flex-end">
+                    <button class="btn btn-edit btn-sm send-pdf-btn" data-id={l.id} data-name={l.nombre} data-email={l.email}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16v16H4z" opacity="0"/>
+                        <path d="M22 2 11 13"/>
+                        <path d="M22 2 15 22l-4-9-9-4 20-7z"/>
+                      </svg>
+                      Enviar PDF
+                    </button>
+                    <button class="btn btn-danger btn-sm delete-lead" data-id={l.id}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                      Eliminar
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -125,6 +141,63 @@ const timelineLabels: Record<string, string> = {
       </div>
     )}
   </div>
+
+  <!-- Modal: enviar ficha de propiedad en PDF -->
+  <div id="pdf-modal" class="modal-overlay">
+    <div class="modal-container" style="max-width:520px">
+      <div class="modal-header">
+        <h2>Enviar ficha en PDF</h2>
+        <button class="modal-close" id="pdf-modal-close-x" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:#6e6e69;margin:-6px 0 4px">
+          Se enviará a <strong id="pdf-modal-lead-name"></strong> (<span id="pdf-modal-lead-email"></span>)
+        </p>
+        <div class="f-group">
+          <label class="f-label">Propiedad</label>
+          <select class="f-select" id="pdf-rental-select">
+            <option value="">Selecciona una propiedad</option>
+            {rentals.map(r => <option value={r.id}>{r.name}</option>)}
+          </select>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Información adicional (opcional)</label>
+          <textarea class="f-textarea" id="pdf-note" placeholder="Escribe aquí lo que el lead pidió (financiamiento, disponibilidad, etc.)"></textarea>
+        </div>
+        <p id="pdf-status" style="font-size:12.5px;color:#C8964A;min-height:16px;margin:0"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="pdf-modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="pdf-modal-send">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <style is:global>
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center; padding:20px; }
+    .modal-container { background:#fff; border-radius:18px; width:100%; max-width:720px; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 24px 68px rgba(0,0,0,.15); animation:modal-in .2s ease; }
+    @keyframes modal-in { from { opacity:0; transform:scale(.97) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
+    .modal-header { padding:22px 26px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #f3f3f2; }
+    .modal-header h2 { font-size:17px; font-weight:700; color:#1a1918; }
+    .modal-close { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:none; background:transparent; color:#8c8c87; cursor:pointer; border-radius:8px; }
+    .modal-close:hover { background:#f5f5f4; color:#3d3d39; }
+    .modal-body { padding:24px 26px; flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:16px; }
+    .modal-footer { padding:16px 26px 22px; display:flex; gap:10px; justify-content:flex-end; border-top:1px solid #f3f3f2; }
+
+    .f-group { display:flex; flex-direction:column; gap:6px; }
+    .f-label { font-size:12px; font-weight:600; color:#6e6e69; text-transform:uppercase; letter-spacing:.05em; }
+    .f-input, .f-textarea, .f-select {
+      width:100%; padding:10px 14px; border:1px solid #dddcdb; border-radius:10px;
+      font-size:14px; font-family:inherit; color:#1a1918; background:#fafaf9; outline:none; transition:all .15s;
+    }
+    .f-input:focus, .f-textarea:focus, .f-select:focus { border-color:#C8964A; background:#fff; box-shadow:0 0 0 3px rgba(200,150,74,.1); }
+    .f-textarea { min-height:90px; resize:vertical; line-height:1.5; }
+    .f-select { cursor:pointer; }
+  </style>
 </AdminLayout>
 
 <script>
@@ -152,5 +225,66 @@ const timelineLabels: Record<string, string> = {
       });
       (btn as HTMLElement).closest('tr')?.remove();
     });
+  });
+
+  // Enviar ficha de propiedad en PDF
+  const pdfModal = document.getElementById('pdf-modal') as HTMLElement;
+  const pdfLeadName = document.getElementById('pdf-modal-lead-name') as HTMLElement;
+  const pdfLeadEmail = document.getElementById('pdf-modal-lead-email') as HTMLElement;
+  const pdfRentalSelect = document.getElementById('pdf-rental-select') as HTMLSelectElement;
+  const pdfNote = document.getElementById('pdf-note') as HTMLTextAreaElement;
+  const pdfStatus = document.getElementById('pdf-status') as HTMLElement;
+  const pdfSendBtn = document.getElementById('pdf-modal-send') as HTMLButtonElement;
+  let currentLeadId: number | null = null;
+
+  function closePdfModal() {
+    pdfModal.style.display = 'none';
+    pdfRentalSelect.value = '';
+    pdfNote.value = '';
+    pdfStatus.textContent = '';
+  }
+
+  document.querySelectorAll('.send-pdf-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const el = btn as HTMLElement;
+      currentLeadId = Number(el.dataset.id);
+      pdfLeadName.textContent = el.dataset.name || '';
+      pdfLeadEmail.textContent = el.dataset.email || '';
+      pdfStatus.textContent = '';
+      pdfModal.style.display = 'flex';
+    });
+  });
+
+  document.getElementById('pdf-modal-cancel')?.addEventListener('click', closePdfModal);
+  document.getElementById('pdf-modal-close-x')?.addEventListener('click', closePdfModal);
+  pdfModal.addEventListener('click', (e) => { if (e.target === pdfModal) closePdfModal(); });
+
+  pdfSendBtn.addEventListener('click', async () => {
+    if (!currentLeadId) return;
+    if (!pdfRentalSelect.value) {
+      pdfStatus.style.color = '#dc2626';
+      pdfStatus.textContent = 'Selecciona una propiedad';
+      return;
+    }
+    pdfSendBtn.disabled = true;
+    pdfStatus.style.color = '#C8964A';
+    pdfStatus.textContent = 'Generando y enviando...';
+    try {
+      const res = await fetch('/api/send-brochure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: currentLeadId, rentalId: pdfRentalSelect.value, note: pdfNote.value }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al enviar');
+      pdfStatus.style.color = '#059669';
+      pdfStatus.textContent = 'PDF enviado correctamente';
+      setTimeout(closePdfModal, 1200);
+    } catch (err) {
+      pdfStatus.style.color = '#dc2626';
+      pdfStatus.textContent = err instanceof Error ? err.message : 'Error al enviar';
+    } finally {
+      pdfSendBtn.disabled = false;
+    }
   });
 </script>

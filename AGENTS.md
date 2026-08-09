@@ -16,6 +16,10 @@ The admin CMS (places/events/posts/rentals/gallery) and the leads form are backe
 
 Image uploads in the admin CMS go to a public Supabase Storage bucket named `images` (`src/pages/api/upload.ts`, admin `type: 'image'` fields in `src/pages/admin/[section].astro`). Create the bucket once per project with `npm run setup-storage` (idempotent).
 
+## Email (property PDF brochure)
+
+From `/admin/leads`, the "Enviar PDF" button lets the admin pick an existing rental and an optional note, then emails the lead a branded PDF brochure of that property. The PDF is built at request time with `@react-pdf/renderer` (`src/lib/pdf/PropertyBrochure.tsx`) from the rental's Supabase data, and sent via Resend (`src/lib/email.ts`) from `src/pages/api/send-brochure.ts`. Requires `RESEND_API_KEY` (Resend dashboard) and `EMAIL_FROM` — the `EMAIL_FROM` address's domain must be verified in Resend or sends will fail. `EMAIL_REPLY_TO` is optional and doesn't need domain verification (Resend only enforces that for "from"), so it can point at any real inbox — e.g. a Gmail account the team already checks — to receive lead replies.
+
 ## Vercel
 
 `astro.config.mjs` picks the `@astrojs/vercel` adapter automatically when `process.env.VERCEL` is set (i.e. on Vercel's build), and falls back to `@astrojs/node` otherwise (local dev, Docker). Set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_SECRET`, and `ADMIN_PASS` as environment variables in the Vercel project settings.
