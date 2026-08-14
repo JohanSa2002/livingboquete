@@ -12,6 +12,9 @@ if (!id) return Astro.redirect('/alquiler');
 const { data: stayRow } = await getSupabase().from('rentals').select('data').eq('id', id).maybeSingle();
 if (!stayRow) return Astro.redirect('/alquiler');
 const stay = stayRow.data;
+const whatsappPhone = stay.host.phone.replace(/\D/g, '');
+const whatsappMessage = `Hola, vi tu anuncio de ${stay.name.es} en MIKA Homes y quiero obtener más información sobre la propiedad.`;
+const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 
 // Availability text: no move-in date means available right now.
 const today = new Date();
@@ -226,6 +229,16 @@ if (!isAvailableNow) {
               <span class="lang-es">Contactar al anfitrión</span><span class="lang-en" hidden>Contact the host</span>
             </div>
             <div style="font-weight:700;font-size:15px;color:#251D14;margin-bottom:10px">{stay.host.name}</div>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="whatsapp-contact"
+              aria-label={`Escribir por WhatsApp a ${stay.host.name} sobre ${stay.name.es}`}
+            >
+              <Icon name="phone" size={18} />
+              <span class="lang-es">Consultar por WhatsApp</span><span class="lang-en" hidden>Ask on WhatsApp</span>
+            </a>
             <div style="display:flex;flex-direction:column;gap:8px">
               <a href={`tel:${stay.host.phone.replace(/[^+\d]/g, '')}`} style="display:flex;align-items:center;gap:9px;padding:8px 0;color:#3D3328;text-decoration:none;font-size:14.5px;font-weight:600">
                 <Icon name="phone" size={16} />{stay.host.phone}
@@ -364,6 +377,36 @@ if (!isAvailableNow) {
   .gallery-cell:hover::after,
   .gallery-cell:focus-visible::after {
     background: rgba(20, 15, 10, .15);
+  }
+
+  .whatsapp-contact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 10px;
+    padding: 13px 16px;
+    border-radius: 11px;
+    background: #25D366;
+    color: #12341f;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-decoration: none;
+    transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease;
+  }
+
+  .whatsapp-contact:hover {
+    background: #20c65c;
+    box-shadow: 0 8px 16px -10px rgba(20, 120, 55, .8);
+    transform: translateY(-1px);
+  }
+
+  .whatsapp-contact:focus-visible {
+    outline: 3px solid rgba(37, 211, 102, .42);
+    outline-offset: 3px;
   }
 
   #gallery-lightbox {
