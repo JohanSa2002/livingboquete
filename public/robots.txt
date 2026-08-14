@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /admin/
 
-Sitemap: https://mikahomes.com/sitemap-index.xml
+Sitemap: https://www.mikahomes.com/sitemap-index.xml

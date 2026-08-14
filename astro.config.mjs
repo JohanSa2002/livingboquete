@@ -10,7 +10,7 @@ import sitemap from '@astrojs/sitemap';
 const adapter = process.env.VERCEL ? vercel() : node({ mode: 'standalone' });
 
 export default defineConfig({
-  site: 'https://mikahomes.com',
+  site: 'https://www.mikahomes.com',
   output: 'server',
   adapter,
   // prefetchAll is required so every link gets the tap strategy — without it,
