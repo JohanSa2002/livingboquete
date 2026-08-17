@@ -19,6 +19,13 @@ export default defineConfig({
   // touch devices (no hover event at all) and fast desktop clicks that don't
   // dwell long enough for 'hover' to kick in.
   prefetch: { defaultStrategy: 'tap', prefetchAll: true },
+  // Astro's default ('auto') only inlines a page's CSS below ~4KB raw —
+  // Layout.astro's and index.astro's stylesheets both exceed that, so they
+  // were shipped as separate render-blocking <link> requests. 'always'
+  // inlines all page styles into the HTML response instead, trading a bit
+  // of per-navigation payload for removing those blocking round trips
+  // entirely (Lighthouse "render-blocking requests").
+  build: { inlineStylesheets: 'always' },
   integrations: [
     react(),
     sitemap({

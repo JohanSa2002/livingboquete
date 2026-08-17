@@ -35,7 +35,7 @@ const homePosts = POSTS.slice(0, 3);
 const galleryItems = await Promise.all(
   GALLERY.map(async (g: any) => {
     const [thumb, full] = await Promise.all([
-      getImage({ src: g.img, width: 600, height: 600 }),
+      getImage({ src: g.img, width: 480, height: 480, quality: 70 }),
       getImage({ src: g.img, width: 1600, height: 1600 }),
     ]);
     return { ...g, img: thumb.src, fullImg: full.src };
@@ -143,7 +143,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
                 aria-hidden={isClone ? 'true' : undefined}
               >
                 <div class="attractions-media">
-                  <Image src={p.img} width={480} height={360} densities={[1, 2]} alt={p.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+                  <Image src={p.img} width={340} height={255} densities={[1, 2]} quality={68} alt={p.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
                   <span class="attractions-badge">
                     <span class="lang-es">{p.cat.es}</span><span class="lang-en" hidden>{p.cat.en}</span>
                   </span>
@@ -269,7 +269,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
       </div>
     </div>
     <GalleryMasonry
-      client:idle
+      client:visible
       items={galleryItems}
       categories={GALLERY_CATS}
     />
@@ -653,9 +653,14 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
         state.isOpen = true;
         state.originEl = source;
+
+        // Measured before populateModal() writes the modal's innerHTML —
+        // reading layout (getBoundingClientRect) right after a DOM mutation
+        // forces a synchronous reflow, so the read goes first even though
+        // `source` itself isn't touched by populateModal().
+        const rect = source.getBoundingClientRect();
         populateModal(item, type);
 
-        const rect = source.getBoundingClientRect();
         document.body.style.overflow = 'hidden';
         // Lenis (see Layout.astro) drives scroll itself and ignores the
         // native overflow lock above, so the background page kept scrolling
@@ -772,6 +777,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
       setWidth: number;
       step: number;
       cardWidth: number;
+      viewportWidth: number;
       speedPxPerSec: number;
       speedFactor: number;
       targetFactor: number;
@@ -807,6 +813,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
       if (!first || !second) return;
       ctx.step = second.offsetLeft - first.offsetLeft;
       ctx.cardWidth = first.offsetWidth;
+      ctx.viewportWidth = ctx.viewport.clientWidth;
       ctx.setWidth = ctx.step * ctx.realCount;
       const durationSec = window.innerWidth < 768 ? 55 : 40;
       ctx.speedPxPerSec = ctx.step > 0 ? ctx.setWidth / durationSec : 0;
@@ -842,7 +849,13 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
         // "Predominant" card = whichever one currently sits nearest the
         // horizontal center of the viewport (not just the leading edge).
-        const viewportCenter = traveled + ctx.viewport.clientWidth / 2;
+        // Uses the cached width from measure() rather than a live
+        // ctx.viewport.clientWidth read — this function runs every animation
+        // frame right after applyTransform() writes track.style.transform,
+        // and a geometry read immediately after a style write in the same
+        // task forces a synchronous layout recalc (Lighthouse "forced
+        // reflow") on every single frame of the auto-scroll.
+        const viewportCenter = traveled + ctx.viewportWidth / 2;
         const centeredTraveled = ((viewportCenter % ctx.setWidth) + ctx.setWidth) % ctx.setWidth;
         const idx = Math.round((centeredTraveled - ctx.cardWidth / 2) / ctx.step + ctx.realCount) % ctx.realCount;
 
@@ -915,7 +928,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
       const ctx: Ctx = {
         root, viewport, track, allCards, realCards, realCount, dots, progressBar,
         playBtn, playIcon,
-        x: 0, setWidth: 0, step: 0, cardWidth: 0, speedPxPerSec: 0,
+        x: 0, setWidth: 0, step: 0, cardWidth: 0, viewportWidth: 0, speedPxPerSec: 0,
         speedFactor: reduceMotion ? 0 : 1, targetFactor: reduceMotion ? 0 : 1,
         userPaused: false, dragging: false, dragMoved: 0, dragStartClientX: 0, dragStartX: 0,
         activeIndex: -1, reduceMotion, resumeTimer: null,
