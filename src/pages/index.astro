@@ -191,7 +191,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
           <Image src={e.img} width={420} height={300} densities={[1, 2]} alt={e.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
           <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,28,18,.12),rgba(18,20,12,.85))"></div>
           <div style="position:absolute;top:15px;left:15px;background:#F7F1E6;border-radius:13px;text-align:center;padding:9px 13px;line-height:1">
-            <div style="font-family:'Manrope';font-weight:800;font-size:25px;color:#B95C36">{e.d}</div>
+            <div style="font-family:'Manrope';font-weight:800;font-size:25px;color:#8E4A2A">{e.d}</div>
             <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#5A4F42;margin-top:2px">
               <span class="lang-es">{e.m.es}</span><span class="lang-en" hidden>{e.m.en}</span>
             </div>
@@ -237,7 +237,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
               <Image src={b.img} width={420} height={294} densities={[1, 2]} alt={b.title.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
             </div>
             <div style="display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--color-ink-faint);margin-bottom:9px">
-              <span style="color:#B95C36;font-weight:700">
+              <span style="color:#8E4A2A;font-weight:700">
                 <span class="lang-es">{b.cat.es}</span><span class="lang-en" hidden>{b.cat.en}</span>
               </span>
               <span>·</span>
@@ -1053,7 +1053,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 <style>
   .place-card { transition: transform .25s, box-shadow .25s; cursor: pointer; }
   .place-card:hover { transform: translateY(-5px); box-shadow: 0 22px 40px -22px rgba(37,29,20,.4); }
-  .place-card:focus-visible, .event-card:focus-visible { outline: 3px solid #B95C36; outline-offset: 3px; }
+  .place-card:focus-visible, .event-card:focus-visible { outline: 3px solid #8E4A2A; outline-offset: 3px; }
 
   .event-card { cursor: pointer; transition: transform .25s; }
   .event-card:hover { transform: translateY(-5px); }
@@ -1102,7 +1102,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
   }
   .attractions-card.is-active { opacity: 1; transform: scale(1.02); box-shadow: var(--shadow-md); }
   .attractions-card:hover { opacity: 1; transform: translateY(-6px) scale(1.02); box-shadow: var(--shadow-md); }
-  .attractions-card:focus-visible { outline: 3px solid #B95C36; outline-offset: 3px; }
+  .attractions-card:focus-visible { outline: 3px solid #8E4A2A; outline-offset: 3px; }
 
   .attractions-media { position: relative; aspect-ratio: 4/3; overflow: hidden; flex: none; }
   .attractions-badge {
@@ -1132,8 +1132,8 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     background: rgba(37,29,20,.18);
     transition: background .25s, transform .25s;
   }
-  .attractions-dot.is-active::after { background: #B95C36; transform: scale(1.35); }
-  .attractions-dot:focus-visible { outline: 2px solid #B95C36; outline-offset: 2px; }
+  .attractions-dot.is-active::after { background: #8E4A2A; transform: scale(1.35); }
+  .attractions-dot:focus-visible { outline: 2px solid #8E4A2A; outline-offset: 2px; }
 
   @media (min-width: 768px) and (max-width: 1279px) {
     .attractions-card { width: 42vw; max-width: 320px; min-width: 260px; height: 420px; }
@@ -1221,7 +1221,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     padding: 9px 13px;
     line-height: 1;
   }
-  .detail-date-d { display: block; font-family: 'Manrope'; font-weight: 800; font-size: 24px; color: #B95C36; }
+  .detail-date-d { display: block; font-family: 'Manrope'; font-weight: 800; font-size: 24px; color: #8E4A2A; }
   .detail-date-m { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #5A4F42; margin-top: 2px; }
 
   .detail-body-content {
@@ -1250,7 +1250,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
   }
   /* Injected client-side into #detail-meta / #detail-tips-list, so these must stay unscoped. */
   :global(.detail-meta-row + .detail-meta-row) { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(37,29,20,.08); }
-  :global(.detail-meta-label) { display: block; font-weight: 700; color: #B95C36; text-transform: uppercase; letter-spacing: .05em; font-size: 11px; margin-bottom: 3px; }
+  :global(.detail-meta-label) { display: block; font-weight: 700; color: #8E4A2A; text-transform: uppercase; letter-spacing: .05em; font-size: 11px; margin-bottom: 3px; }
   :global(.detail-meta-value) { display: block; color: #251D14; font-size: 14px; line-height: 1.4; }
 
   .detail-tips-label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #5A4F42; margin-bottom: 10px; }
@@ -1285,7 +1285,7 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     box-sizing: border-box;
     transition: border-color .2s;
   }
-  .lead-input:focus, .lead-select:focus { border-color: #B95C36; }
+  .lead-input:focus, .lead-select:focus { border-color: #8E4A2A; }
   .lead-input::placeholder { color: #A99C86; }
   .lead-select { appearance: auto; cursor: pointer; }
 

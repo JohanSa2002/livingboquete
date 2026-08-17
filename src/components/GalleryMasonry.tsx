@@ -75,8 +75,8 @@ export default function GalleryMasonry({ items, categories }: Props) {
                 borderRadius: 999,
                 fontSize: 14,
                 fontWeight: 700,
-                border: `1px solid ${isActive ? '#B95C36' : 'rgba(37,29,20,.16)'}`,
-                background: isActive ? '#B95C36' : 'transparent',
+                border: `1px solid ${isActive ? '#8E4A2A' : 'rgba(37,29,20,.16)'}`,
+                background: isActive ? '#8E4A2A' : 'transparent',
                 color: isActive ? '#F7F1E6' : '#251D14',
                 transition: 'all .2s',
               }}
