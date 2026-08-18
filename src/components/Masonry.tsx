@@ -84,6 +84,27 @@ const Masonry = ({
   );
 
   const [containerRef, { width }] = useMeasure();
+  const [isInView, setIsInView] = useState(false);
+
+  // client:visible already defers hydration until this section is near the
+  // viewport, but that only gates *mounting* — once mounted, grid layout
+  // resolves almost instantly, which used to fire the entrance animation
+  // right away regardless of scroll position. Gating on our own observer
+  // guarantees items fly in only once the user actually scrolls to them.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        setIsInView(true);
+        observer.disconnect();
+      },
+      { rootMargin: '0px 0px -10% 0px', threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const getInitialPosition = (item: GridItem) => {
     const containerRect = containerRef.current?.getBoundingClientRect();
@@ -160,14 +181,20 @@ const Masonry = ({
           ...(blurToFocus && { filter: 'blur(10px)' }),
         };
 
-        gsap.fromTo(selector, initialState, {
-          opacity: 1,
-          ...animationProps,
-          ...(blurToFocus && { filter: 'blur(0px)' }),
-          duration: 0.8,
-          ease: 'power3.out',
-          delay: index * stagger,
-        });
+        if (isInView) {
+          gsap.fromTo(selector, initialState, {
+            opacity: 1,
+            ...animationProps,
+            ...(blurToFocus && { filter: 'blur(0px)' }),
+            duration: 0.8,
+            ease: 'power3.out',
+            delay: index * stagger,
+          });
+        } else {
+          // Not on screen yet — park it in the pre-entrance state instead of
+          // animating, so nothing plays until the user scrolls here.
+          gsap.set(selector, initialState);
+        }
       } else {
         gsap.to(selector, {
           ...animationProps,
@@ -178,8 +205,8 @@ const Masonry = ({
       }
     });
 
-    hasMounted.current = true;
-  }, [grid, stagger, animateFrom, blurToFocus, duration, ease]);
+    if (isInView) hasMounted.current = true;
+  }, [grid, isInView, stagger, animateFrom, blurToFocus, duration, ease]);
 
   const handleMouseEnter = (e: React.MouseEvent, item: GridItem) => {
     const selector = `[data-key="${item.id}"]`;
