@@ -46,6 +46,15 @@ create table if not exists leads (
   created_at timestamptz not null default now()
 );
 
+-- Public lists and admin views sort every content table by creation time.
+-- These indexes keep those reads predictable as the catalogue grows.
+create index if not exists places_created_at_idx on places (created_at);
+create index if not exists events_created_at_idx on events (created_at);
+create index if not exists posts_created_at_idx on posts (created_at desc);
+create index if not exists rentals_created_at_idx on rentals (created_at);
+create index if not exists gallery_created_at_idx on gallery (created_at);
+create index if not exists leads_created_at_idx on leads (created_at desc);
+
 -- RLS is enabled with no policies: only requests authenticated with the
 -- Supabase service_role key (used server-side in src/lib/supabase.ts) can
 -- read or write these tables. The anon/public key has no access.

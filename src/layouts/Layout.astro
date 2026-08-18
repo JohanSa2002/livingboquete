@@ -61,14 +61,10 @@ const {
   <Footer />
 
   <script>
-    // Smooth scroll (Lenis) driven by the GSAP ticker, so Lenis and any
-    // ScrollTrigger animations stay on a single clock. Native scroll is
-    // preserved, so position:sticky and scroll-driven CSS keep working.
+    // Smooth scroll uses the browser's animation frame directly. Keeping
+    // GSAP/ScrollTrigger out of the shared layout avoids downloading both
+    // libraries on public pages that do not use a GSAP animation.
     import Lenis from 'lenis';
-    import { gsap } from 'gsap';
-    import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-    gsap.registerPlugin(ScrollTrigger);
 
     const win = window as unknown as { __lenis?: Lenis };
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -78,19 +74,17 @@ const {
     if (!win.__lenis && !reduceMotion) {
       const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
       win.__lenis = lenis;
-      lenis.on('scroll', ScrollTrigger.update);
-      gsap.ticker.add((time) => lenis.raf(time * 1000));
-      gsap.ticker.lagSmoothing(0);
+      const animate = (time: number) => {
+        lenis.raf(time);
+        requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
     }
 
-    // After each view transition: jump to top and recompute trigger positions.
+    // After each view transition, jump to the top of the next page.
     document.addEventListener('astro:after-swap', () => {
       win.__lenis?.scrollTo(0, { immediate: true });
     });
-    document.addEventListener('astro:page-load', () => {
-      ScrollTrigger.refresh();
-    });
-
     // Smooth Scroll Entrance Animations for Titles, Subtitles & Section Intros.
     // NOTE: We only target individual heading/label elements — NOT section.rv
     // wrappers. Applying transform to sections creates compositor layers that

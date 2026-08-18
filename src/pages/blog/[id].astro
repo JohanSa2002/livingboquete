@@ -5,14 +5,23 @@ import { Image } from 'astro:assets';
 
 const { id } = Astro.params;
 
-const { data: postRows } = await getSupabase()
+const { data: postRow } = await getSupabase()
   .from('posts')
   .select('data')
-  .order('created_at', { ascending: false });
-const POSTS = (postRows ?? []).map((r: any) => r.data);
-const post = POSTS.find((p: any) => p.id === id);
+  .eq('id', id)
+  .maybeSingle();
+const post = postRow?.data;
 if (!post) return Astro.redirect('/blog');
-const related = POSTS.filter((p: any) => p.id !== id).slice(0, 3);
+
+// Related cards only need the three newest other posts. Fetching every post
+// here made an individual article grow linearly with the entire blog.
+const { data: relatedRows } = await getSupabase()
+  .from('posts')
+  .select('data')
+  .neq('id', id)
+  .order('created_at', { ascending: false })
+  .limit(3);
+const related = (relatedRows ?? []).map((row: any) => row.data);
 ---
 
 <Layout activeKey="blog" title={`${post.title.es} · MIKA Homes`} titleEn={`${post.title.en} · MIKA Homes`}>

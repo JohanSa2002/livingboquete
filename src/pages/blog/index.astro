@@ -132,6 +132,9 @@ const POSTS = (postRows ?? []).map((r: any) => r.data);
       top: 0;
       bottom: auto;
       background-attachment: scroll;
+      /* Smaller pre-encoded variant — mobile viewports never need the
+         1672px-wide desktop asset, and this is fetched at first paint. */
+      background-image: url('/fondoblogs-mobile.webp');
     }
   }
   @media (prefers-reduced-motion: reduce) {

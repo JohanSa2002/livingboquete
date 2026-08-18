@@ -9,7 +9,7 @@ const currentPath = Astro.url.pathname;
   <div class="header-inner">
     <!-- Logo -->
     <div class="header-zone-start" style="display:flex;align-items:center;gap:14px">
-      <a href="/" style="display:flex;align-items:center;cursor:pointer;text-decoration:none;color:var(--color-ink)">
+      <a href="/" data-astro-prefetch="load" style="display:flex;align-items:center;cursor:pointer;text-decoration:none;color:var(--color-ink)">
         <span class="logo-frame" style="--s:0.19008264462809917;width:calc(811px * var(--s));height:46px;overflow:hidden;position:relative;display:block;flex:none">
           <img
             src="/logo-mika-dark.webp"
@@ -28,6 +28,7 @@ const currentPath = Astro.url.pathname;
         return (
           <a
             href={item.href}
+            data-astro-prefetch="load"
             class:list={['nav-link', { 'is-active': isActive }]}
             aria-current={isActive ? 'page' : undefined}
           >
@@ -124,6 +125,7 @@ const currentPath = Astro.url.pathname;
     {NAV.map((item, index) => (
       <a
         href={item.href}
+        data-astro-prefetch="load"
         class="mobile-nav-link"
         style={`--menu-index:${index + 1};cursor:pointer;padding:14px 8px;font-family:var(--font-display);font-weight:700;font-size:21px;color:var(--color-ink);text-decoration:none;border-bottom:1px solid var(--color-border-soft)`}
       >

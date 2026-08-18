@@ -3,8 +3,12 @@ import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import { TYPE_LABELS, AMEN_LABELS } from '../../data/data';
 import { getSupabase } from '../../lib/supabase';
-import { Image } from 'astro:assets';
+import { Image, type ImageMetadata } from 'astro:assets';
 import heroPoster from '../../assets/hero-poster.webp';
+import vistaAlVolcan from '../../assets/vista-al-volcan.webp';
+import casaPerro from '../../assets/casa-perro.webp';
+import casaAmueblada from '../../assets/casa-amueblada.webp';
+import casaCompleta from '../../assets/casa-completa.webp';
 
 const { data: rentalRows } = await getSupabase()
   .from('rentals')
@@ -53,13 +57,13 @@ type Lifestyle = {
   es: string; en: string;
   taglineEs: string; taglineEn: string;
   icon: IconName;
-  img: string;
+  img: ImageMetadata;
 };
 const LIFESTYLES: Lifestyle[] = [
-  { key: 'view', kind: 'amen', es: 'Vista al volcán', en: 'Volcano views', taglineEs: 'Amanece frente al Barú', taglineEn: 'Wake up facing Barú', icon: 'mountain', img: '/vista-al-volcan.webp' },
-  { key: 'pets', kind: 'amen', es: 'Con tu mascota', en: 'With your pet', taglineEs: 'Ellos también se mudan', taglineEn: 'They move in too', icon: 'paw', img: '/casa-perro.webp' },
-  { key: 'furnished', kind: 'amen', es: 'Llega y vive', en: 'Move-in ready', taglineEs: 'Amueblado, sin vueltas', taglineEn: 'Furnished, zero hassle', icon: 'sofa', img: '/casa-amueblada.webp' },
-  { key: 'casa', kind: 'type', es: 'Casa entera', en: 'Whole house', taglineEs: 'Tu espacio, tus reglas', taglineEn: 'Your space, your rules', icon: 'flame', img: '/casa-completa.webp' },
+  { key: 'view', kind: 'amen', es: 'Vista al volcán', en: 'Volcano views', taglineEs: 'Amanece frente al Barú', taglineEn: 'Wake up facing Barú', icon: 'mountain', img: vistaAlVolcan },
+  { key: 'pets', kind: 'amen', es: 'Con tu mascota', en: 'With your pet', taglineEs: 'Ellos también se mudan', taglineEn: 'They move in too', icon: 'paw', img: casaPerro },
+  { key: 'furnished', kind: 'amen', es: 'Llega y vive', en: 'Move-in ready', taglineEs: 'Amueblado, sin vueltas', taglineEn: 'Furnished, zero hassle', icon: 'sofa', img: casaAmueblada },
+  { key: 'casa', kind: 'type', es: 'Casa entera', en: 'Whole house', taglineEs: 'Tu espacio, tus reglas', taglineEn: 'Your space, your rules', icon: 'flame', img: casaCompleta },
 ];
 const lifestyleData = LIFESTYLES.map(ls => {
   const matches = ls.kind === 'amen'
@@ -146,7 +150,14 @@ const VOICES = RENTALS
     <div class="stays-life-grid">
       {lifestyleData.map((ls, i) => (
         <button class="stays-life-card rv" data-shortcut={ls.key} data-shortcut-kind={ls.kind} style={`animation-delay:${i * 0.06}s`}>
-          <img src={ls.img} alt={ls.es} loading="lazy" />
+          <Image
+            src={ls.img}
+            alt={ls.es}
+            widths={[320, 480, 640]}
+            sizes="(max-width: 560px) calc(100vw - 40px), (max-width: 880px) calc(50vw - 30px), 290px"
+            quality={62}
+            loading="lazy"
+          />
           <div class="stays-life-veil"></div>
           <div class="stays-life-body">
             <span class="stays-life-icon"><Icon name={ls.icon} size={18} /></span>
