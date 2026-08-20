@@ -48,7 +48,16 @@ export interface Rental {
   sqmLot: number;
   minMonths: number;
   verified: boolean;
+  // Optional: only rendered on the PDP's verification tooltip when actually
+  // set — a generic "verified" claim shows instead of a fabricated date.
+  verifiedDate?: string;
   availableFrom: string;
+  // Optional: the PDP only renders a cost breakdown when these are actually
+  // filled in from the admin — never shows a fabricated deposit/utilities
+  // figure for a listing that hasn't specified one.
+  deposit?: number;
+  utilitiesMin?: number;
+  utilitiesMax?: number;
   rating: number;
   reviews: number;
   name: Bilingual;

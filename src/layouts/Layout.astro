@@ -4,35 +4,61 @@ import 'lenis/dist/lenis.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { ClientRouter } from 'astro:transitions';
+import { swapLocale, type Locale } from '../lib/i18n';
 
 interface Props {
+  lang: Locale;
   title?: string;
   titleEn?: string;
   description?: string;
   descriptionEn?: string;
   activeKey?: string;
+  image?: string;
 }
 
 const {
+  lang,
   title = 'MIKA Homes',
   titleEn = 'MIKA Homes',
   description = 'Descubre Boquete: volcán Barú, café Geisha, quetzales, aventura y cultura en las tierras altas de Chiriquí, Panamá.',
   descriptionEn = 'Discover Boquete: Barú Volcano, Geisha coffee, quetzals, adventure and culture in the Chiriquí highlands, Panama.',
   activeKey = 'home',
+  image,
 } = Astro.props;
+
+const pageTitle = lang === 'en' ? titleEn : title;
+const pageDescription = lang === 'en' ? descriptionEn : description;
+
+// Canonical always points at the clean path (no query string / hash) so
+// filtered or hash-anchored URLs don't get indexed as separate pages.
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = new URL(image ?? '/logo-mika-dark.webp', Astro.site).href;
+const esUrl = new URL(swapLocale(Astro.url.pathname, 'es'), Astro.site);
+const enUrl = new URL(swapLocale(Astro.url.pathname, 'en'), Astro.site);
 ---
 
 <!doctype html>
-<html lang="es" data-lang="es">
+<html lang={lang} data-lang={lang}>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{title}</title>
-  <meta name="description" content={description} />
-  <meta name="title-en" content={titleEn} />
-  <meta name="title-es" content={title} />
-  <meta name="desc-en" content={descriptionEn} />
-  <meta name="desc-es" content={description} />
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDescription} />
+  <link rel="canonical" href={canonicalUrl} />
+  <link rel="alternate" hreflang="es" href={esUrl} />
+  <link rel="alternate" hreflang="en" href={enUrl} />
+  <link rel="alternate" hreflang="x-default" href={esUrl} />
+  <meta property="og:site_name" content="MIKA Homes" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'es_PA'} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={pageDescription} />
+  <meta property="og:image" content={ogImageUrl} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={pageDescription} />
+  <meta name="twitter:image" content={ogImageUrl} />
   <link rel="icon" type="image/webp" href="/favicon.webp" />
   <ClientRouter />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -54,11 +80,11 @@ const {
   </noscript>
 </head>
 <body>
-  <Header activeKey={activeKey} />
+  <Header activeKey={activeKey} lang={lang} />
   <main>
     <slot />
   </main>
-  <Footer />
+  <Footer lang={lang} />
 
   <script>
     // Smooth scroll uses the browser's animation frame directly. Keeping
@@ -202,43 +228,11 @@ const {
   </script>
 
   <script>
-    // Language switcher
-    const LANG_KEYS = ['es', 'en'] as const;
-    type Lang = typeof LANG_KEYS[number];
-
-    function applyLang(lang: Lang) {
-      const html = document.documentElement;
-      html.setAttribute('data-lang', lang);
-      html.setAttribute('lang', lang);
-      localStorage.setItem('bq-lang', lang);
-
-      // Update toggle buttons
-      document.querySelectorAll<HTMLElement>('[data-lang-btn]').forEach(btn => {
-        const isActive = btn.dataset.langBtn === lang;
-        btn.style.background = isActive ? 'var(--color-forest)' : 'transparent';
-        btn.style.color = isActive ? 'var(--color-sand)' : 'var(--color-ink-soft)';
-      });
-
-      // Update page title and meta description
-      const titleMeta = document.querySelector<HTMLMetaElement>(`meta[name="title-${lang}"]`);
-      if (titleMeta) document.title = titleMeta.content;
-      const descMeta = document.querySelector<HTMLMetaElement>(`meta[name="desc-${lang}"]`);
-      const descTag = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-      if (descMeta && descTag) descTag.content = descMeta.content;
-    }
-
-    // Init
-    const saved = localStorage.getItem('bq-lang') as Lang | null;
-    const lang: Lang = (saved && LANG_KEYS.includes(saved)) ? saved : 'es';
-    applyLang(lang);
-
-    // Listen for clicks on lang buttons
-    document.addEventListener('click', (e: MouseEvent) => {
-      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-lang-btn]');
-      if (btn?.dataset.langBtn) applyLang(btn.dataset.langBtn as Lang);
-    });
-
-    // Scroll to hash, centering within the visible area below the sticky header
+    // Language is now decided by the URL (/es/... vs /en/...), not a client
+    // toggle — Header renders real links to the equivalent path in the other
+    // language (see swapLocale in src/lib/i18n.ts), so there is nothing to
+    // apply here. This script only handles scrolling to a hash target,
+    // independent of language.
     function scrollToHash() {
       const hash = window.location.hash;
       if (!hash) return;

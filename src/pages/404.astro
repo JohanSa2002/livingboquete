@@ -1,9 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Icon from '../components/Icon.astro';
+import { detectLocale } from '../lib/i18n';
+
+// 404 sits outside the [lang] route tree (it's Astro's catch-all for any
+// unmatched path), so there's no URL segment to read the locale from —
+// best-effort guess from the browser's language instead.
+const lang = detectLocale(Astro.request);
 ---
 
 <Layout
+  lang={lang}
   title="Página no encontrada · MIKA Homes"
   titleEn="Page not found · MIKA Homes"
   description="La página que buscas no existe o fue movida."
@@ -21,12 +28,12 @@ import Icon from '../components/Icon.astro';
         <span class="lang-en" hidden>We couldn't find what you're looking for. The link may be broken or the page may have moved.</span>
       </p>
       <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
-        <a href="/" class="btn btn-primary">
+        <a href={`/${lang}`} class="btn btn-primary">
           <Icon name="mountain" size={18} />
           <span class="lang-es">Volver al inicio</span>
           <span class="lang-en" hidden>Back to home</span>
         </a>
-        <a href="/alquiler" class="btn btn-secondary">
+        <a href={`/${lang}/alquiler`} class="btn btn-secondary">
           <span class="lang-es">Ver alquileres</span>
           <span class="lang-en" hidden>See rentals</span>
         </a>

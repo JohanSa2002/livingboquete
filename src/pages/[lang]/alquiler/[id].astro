@@ -1,0 +1,1118 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Icon from '../../../components/Icon.astro';
+import YouTubeFacade from '../../../components/YouTubeFacade.astro';
+import { TYPE_LABELS, AMEN_LABELS } from '../../../data/data';
+import { getSupabase } from '../../../lib/supabase';
+import { Image } from 'astro:assets';
+import 'leaflet/dist/leaflet.css';
+import { isLocale, DEFAULT_LOCALE } from '../../../lib/i18n';
+
+const { lang: langParam, id } = Astro.params;
+if (!isLocale(langParam)) {
+  return Astro.redirect(Astro.url.pathname.replace(/^\/[^/]+/, `/${DEFAULT_LOCALE}`) + Astro.url.search);
+}
+const lang = langParam;
+if (!id) return Astro.redirect(`/${lang}/alquiler`);
+const { data: stayRow } = await getSupabase().from('rentals').select('data').eq('id', id).maybeSingle();
+if (!stayRow) return Astro.redirect(`/${lang}/alquiler`);
+const stay = stayRow.data;
+
+// Same stroke-icon set used on /alquiler's cards — kept local instead of in
+// data.ts so the data layer doesn't have to import Icon.astro's name union.
+type IconName = 'wifi' | 'kitchen' | 'mountain' | 'car' | 'flame' | 'waves' | 'paw' | 'sofa';
+const AMEN_ICON: Record<string, IconName> = {
+  wifi: 'wifi', kitchen: 'kitchen', view: 'mountain', parking: 'car',
+  fireplace: 'flame', pool: 'waves', pets: 'paw', furnished: 'sofa',
+};
+
+// Similar listings: same zone first, then overlapping amenities/type — best
+// effort with the catalog we actually have, not a real recommendation engine.
+const { data: otherRows } = await getSupabase().from('rentals').select('data').neq('id', id);
+const OTHERS = (otherRows ?? []).map((r: any) => r.data);
+function similarityScore(other: any) {
+  let score = 0;
+  if (other.loc?.es === stay.loc?.es) score += 3;
+  if (other.type === stay.type) score += 1;
+  score += (other.amen ?? []).filter((a: string) => stay.amen.includes(a)).length;
+  return score;
+}
+const SIMILAR = OTHERS
+  .map((r: any) => ({ ...r, __score: similarityScore(r) }))
+  .sort((a: any, b: any) => b.__score - a.__score)
+  .slice(0, 4);
+
+const hasCostBreakdown = (stay.deposit ?? 0) > 0 || (stay.utilitiesMin ?? 0) > 0;
+const firstMonthTotal = stay.price + (stay.deposit ?? 0);
+
+const verifiedDateFmt = stay.verifiedDate
+  ? {
+      es: new Date(`${stay.verifiedDate}T00:00:00`).toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' }),
+      en: new Date(`${stay.verifiedDate}T00:00:00`).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }),
+    }
+  : null;
+// Only render photos that belong to this listing. The former fallback used
+// Picsum for four fabricated gallery cells, which meant every visit had to
+// wait for several third-party image requests before the gallery felt ready.
+// `images` is optional so existing listings that only have `img` continue to
+// work, while future listings can supply additional real photos.
+const galleryImages = [stay.img, ...(Array.isArray(stay.images) ? stay.images : [])]
+  .filter((image): image is string => typeof image === 'string' && image.length > 0)
+  .filter((image, index, images) => images.indexOf(image) === index);
+const whatsappPhone = stay.host.phone.replace(/\D/g, '');
+const whatsappMessage = `Hola, vi tu anuncio de ${stay.name.es} en MIKA Homes y quiero obtener más información sobre la propiedad.`;
+const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+
+// Availability text: no move-in date means available right now.
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const availableFromDate = stay.availableFrom ? new Date(stay.availableFrom) : null;
+const isAvailableNow = !availableFromDate || availableFromDate <= today;
+let availability = { es: 'Disponible ahora', en: 'Available now' };
+if (!isAvailableNow) {
+  const diffDays = Math.ceil((availableFromDate.getTime() - today.getTime()) / 86400000);
+  if (diffDays < 30) {
+    availability = {
+      es: `Disponible en ${diffDays} día${diffDays === 1 ? '' : 's'}`,
+      en: `Available in ${diffDays} day${diffDays === 1 ? '' : 's'}`,
+    };
+  } else {
+    const diffMonths = Math.round(diffDays / 30);
+    availability = {
+      es: `Disponible en ${diffMonths} mes${diffMonths === 1 ? '' : 'es'}`,
+      en: `Available in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`,
+    };
+  }
+}
+---
+
+<Layout
+  activeKey="stays"
+  lang={lang}
+  title={`${stay.name.es} · MIKA Homes`}
+  titleEn={`${stay.name.en} · MIKA Homes`}
+  description={stay.short?.es ?? stay.desc.es}
+  descriptionEn={stay.short?.en ?? stay.desc.en}
+  image={stay.img}
+>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Accommodation',
+    name: stay.name.es,
+    description: stay.desc.es,
+    image: galleryImages,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: stay.loc.es,
+      addressRegion: 'Chiriquí',
+      addressCountry: 'PA',
+    },
+    geo: { '@type': 'GeoCoordinates', latitude: stay.lat, longitude: stay.lng },
+    numberOfRooms: stay.beds,
+    numberOfBathroomsTotal: stay.baths,
+    occupancy: { '@type': 'QuantitativeValue', maxValue: stay.guests },
+    aggregateRating: stay.reviews > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: stay.rating,
+      reviewCount: stay.reviews,
+    } : undefined,
+    offers: {
+      '@type': 'Offer',
+      price: stay.price,
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+    },
+  })} />
+
+  <div class="rental-bg">
+
+  <div class="rental-bg-canvas" aria-hidden="true"></div>
+
+  <div class="rental-bg-content">
+
+  <!-- GALLERY HERO -->
+  <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:54px 26px 0">
+    <a href={`/${lang}/alquiler`} style="display:inline-flex;align-items:center;gap:7px;color:#8E4A2A;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:18px">
+      ← <span class="lang-es">Volver a alojamientos</span><span class="lang-en" hidden>Back to stays</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <h1 style="font-family:'Manrope';font-weight:800;font-size:clamp(32px,4.6vw,52px);line-height:1.02;letter-spacing:-.02em;margin:0;color:#251D14">
+        <span class="lang-es">{stay.name.es}</span><span class="lang-en" hidden>{stay.name.en}</span>
+      </h1>
+      {stay.verified && (
+        <span class="verified-badge" tabindex="0" style="position:relative;display:inline-flex;align-items:center;gap:5px;background:#2C3A2A;color:#E6B87C;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;flex:none;cursor:default">
+          <Icon name="check" size={13} />
+          <span class="lang-es">Verificada</span><span class="lang-en" hidden>Verified</span>
+          <span class="verified-tooltip" role="tooltip">
+            {verifiedDateFmt ? (
+              <>
+                <span class="lang-es">Equipo MIKA Homes visitó y confirmó esta propiedad el {verifiedDateFmt.es}.</span>
+                <span class="lang-en" hidden>MIKA Homes team visited and confirmed this property on {verifiedDateFmt.en}.</span>
+              </>
+            ) : (
+              <>
+                <span class="lang-es">Equipo MIKA Homes visitó y confirmó esta propiedad en persona.</span>
+                <span class="lang-en" hidden>MIKA Homes team visited and confirmed this property in person.</span>
+              </>
+            )}
+          </span>
+        </span>
+      )}
+    </div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-bottom:14px;font-size:15px;color:#5A4F42">
+      <span style="display:flex;align-items:center;gap:5px;font-weight:700;color:#251D14"><span style="color:#C8964A">★</span>{stay.rating.toFixed(1)}</span>
+      <span>·</span>
+      <span>{stay.reviews} <span class="lang-es">reseñas</span><span class="lang-en" hidden>reviews</span></span>
+      <span>·</span>
+      <span><span class="lang-es">{stay.loc.es}</span><span class="lang-en" hidden>{stay.loc.en}</span></span>
+    </div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;margin-bottom:24px;font-size:15px;color:#5A4F42">
+      <span style="display:flex;align-items:center;gap:6px"><Icon name="users" size={16} />{stay.guests} <span class="lang-es">huéspedes</span><span class="lang-en" hidden>guests</span></span>
+      <span style="display:flex;align-items:center;gap:6px"><Icon name="bed" size={16} />{stay.beds} <span class="lang-es">habitaciones</span><span class="lang-en" hidden>bedrooms</span></span>
+      <span style="display:flex;align-items:center;gap:6px"><Icon name="bath" size={16} />{stay.baths} <span class="lang-es">baños</span><span class="lang-en" hidden>bathrooms</span></span>
+      {stay.parking > 0 && (
+        <span style="display:flex;align-items:center;gap:6px"><Icon name="car" size={16} />{stay.parking} <span class="lang-es">parqueos</span><span class="lang-en" hidden>parking</span></span>
+      )}
+    </div>
+
+    <!-- Video + photo grid -->
+    <div class="media-split" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:40px">
+      <div class="video-box" style="border-radius:20px;overflow:hidden;aspect-ratio:16/9">
+        <YouTubeFacade url={stay.video} title={stay.name.es} />
+      </div>
+      <div class="gallery-grid" style={`display:grid;grid-template-columns:${galleryImages.length > 1 ? '1.6fr 1fr 1fr' : '1fr'};grid-template-rows:1fr 1fr;gap:12px;aspect-ratio:16/9;border-radius:20px;overflow:hidden`}>
+        <button type="button" class="gallery-cell" data-lightbox-trigger style="grid-row:1/3;position:relative">
+          <Image src={stay.img} width={900} height={620} densities={[1, 2]} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+        </button>
+        {galleryImages.slice(1, 5).map((image) => (
+          <button type="button" class="gallery-cell" data-lightbox-trigger style="position:relative">
+            <Image src={image} width={600} height={400} densities={[1, 2]} alt={stay.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Photo lightbox -->
+  <div id="gallery-lightbox" class="hidden" style="position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center">
+    <button id="gallery-lightbox-close" aria-label="Cerrar" style="position:absolute;top:20px;right:24px;background:transparent;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1">&times;</button>
+    <img id="gallery-lightbox-img" src="" alt="" style="max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px" />
+  </div>
+
+  <!-- CONTENT -->
+  <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:0 26px 40px">
+    <div class="split-2" style="display:grid;grid-template-columns:1.5fr 1fr;gap:48px;align-items:start">
+
+      <!-- Left: description + amenities + reviews -->
+      <div style="background:#F7F1E6;border:1px solid rgba(37,29,20,.09);border-radius:20px;padding:32px;box-shadow:0 12px 30px -22px rgba(37,29,20,.35)">
+        <p style="font-size:17px;line-height:1.72;color:#3D3328;margin:0 0 30px">
+          <span class="lang-es">{stay.desc.es}</span><span class="lang-en" hidden>{stay.desc.en}</span>
+        </p>
+
+        <!-- Amenities -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px">
+          <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
+            <span class="lang-es">Lo que incluye</span><span class="lang-en" hidden>What's included</span>
+          </h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            {stay.amen.map(key => (
+              <div style="display:flex;align-items:center;gap:10px;font-size:15px;color:#3D3328">
+                <span style="display:flex;align-items:center;justify-content:center;color:#2C3A2A">
+                  <Icon name={AMEN_ICON[key] ?? 'sofa'} size={19} />
+                </span>
+                <span class="lang-es">{AMEN_LABELS[key]?.es}</span>
+                <span class="lang-en" hidden>{AMEN_LABELS[key]?.en}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- House rules: only what we actually have real data for — no
+             fabricated smoking/visitor policy the property hasn't set. -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px">
+          <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
+            <span class="lang-es">Reglas de la casa</span><span class="lang-en" hidden>House rules</span>
+          </h3>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:15px;color:#3D3328">
+            <div style="display:flex;align-items:center;gap:10px">
+              <Icon name="paw" size={17} />
+              {stay.amen.includes('pets')
+                ? <><span class="lang-es">Acepta mascotas</span><span class="lang-en" hidden>Pets allowed</span></>
+                : <><span class="lang-es">No acepta mascotas</span><span class="lang-en" hidden>No pets</span></>
+              }
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <Icon name="bed" size={17} />
+              <span class="lang-es">Estadía mínima: {stay.minMonths} {stay.minMonths === 1 ? 'mes' : 'meses'}</span>
+              <span class="lang-en" hidden>Minimum stay: {stay.minMonths} {stay.minMonths === 1 ? 'month' : 'months'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Host -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px;display:flex;align-items:center;gap:16px">
+          <div style="width:54px;height:54px;border-radius:50%;background:#2C3A2A;color:#E6B87C;display:flex;align-items:center;justify-content:center;font-family:'Manrope';font-weight:800;font-size:22px;flex:none">{stay.host.name[0]}</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:'Manrope';font-weight:700;font-size:18px;color:#251D14">{stay.host.name}</span>
+              {stay.verified && (
+                <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#2F7A3D" title="Identidad y propiedad verificadas">
+                  <Icon name="check" size={13} />
+                  <span class="lang-es">Anfitrión verificado</span><span class="lang-en" hidden>Verified host</span>
+                </span>
+              )}
+            </div>
+            <div style="font-size:14px;color:var(--color-ink-faint)">
+              <span class="lang-es">{stay.host.line.es}</span><span class="lang-en" hidden>{stay.host.line.en}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px;margin-bottom:30px">
+          <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:0 0 16px;color:#251D14">
+            <span class="lang-es">Ubicación</span><span class="lang-en" hidden>Location</span>
+          </h3>
+          <div id="map" data-lat={stay.lat} data-lng={stay.lng} data-name={stay.name.es} style="width:100%;height:300px;border-radius:16px;overflow:hidden;border:1px solid rgba(37,29,20,.1)"></div>
+        </div>
+
+        <!-- Reviews -->
+        <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:24px">
+          <h3 style="font-family:'Manrope';font-weight:700;font-size:21px;margin:0 0 18px;color:#251D14">
+            <span class="lang-es">Reseñas</span><span class="lang-en" hidden>Reviews</span>
+          </h3>
+          <div style="display:flex;flex-direction:column;gap:18px">
+            {(stay.reviewsList ?? []).map(rv => (
+              <div style="background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:16px;padding:20px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:38px;height:38px;border-radius:50%;background:#EFE7D6;color:#8E4A2A;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px">{rv.name[0]}</div>
+                    <div>
+                      <div style="font-weight:700;font-size:15px;color:#251D14">{rv.name}</div>
+                      <div style="font-size:12.5px;color:var(--color-ink-faint)">
+                        <span class="lang-es">{rv.date.es}</span><span class="lang-en" hidden>{rv.date.en}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span style="font-weight:700;color:#C8964A">★ {rv.rating.toFixed(1)}</span>
+                </div>
+                <p style="font-size:15px;line-height:1.6;color:#3D3328;margin:0">
+                  <span class="lang-es">{rv.text.es}</span><span class="lang-en" hidden>{rv.text.en}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: booking card -->
+      <div class="booking-col" style="position:sticky;top:92px">
+        <div style="background:#fff;border:1px solid rgba(37,29,20,.1);border-radius:20px;padding:28px;box-shadow:0 12px 30px -22px rgba(37,29,20,.5)">
+          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px">
+            <span style="font-family:'Manrope';font-weight:800;font-size:28px;color:#251D14">${stay.price}</span>
+            <span style="font-size:15px;color:var(--color-ink-faint)">/ <span class="lang-es">mes</span><span class="lang-en" hidden>month</span></span>
+          </div>
+
+          <div style={`display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:14px;font-weight:700;color:${isAvailableNow ? '#2F7A3D' : '#B9822E'}`}>
+            <span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex:none"></span>
+            <span class="lang-es">{availability.es}</span><span class="lang-en" hidden>{availability.en}</span>
+          </div>
+
+          <a href={`/${lang}/como-funciona`} style="display:inline-block;margin-bottom:20px;font-size:13px;font-weight:600;color:var(--color-ink-faint);text-decoration:underline;text-underline-offset:2px">
+            <span class="lang-es">¿Cómo funciona el contrato y el depósito?</span>
+            <span class="lang-en" hidden>How do the contract and deposit work?</span>
+          </a>
+
+          {hasCostBreakdown && (
+            <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:18px;margin-bottom:6px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-ink-faint);margin-bottom:12px">
+                <span class="lang-es">Costos al mudarte</span><span class="lang-en" hidden>Move-in costs</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#5A4F42">
+                <div style="display:flex;justify-content:space-between">
+                  <span class="lang-es">Renta mensual</span><span class="lang-en" hidden>Monthly rent</span>
+                  <span style="font-weight:700;color:#251D14">${stay.price}</span>
+                </div>
+                {(stay.deposit ?? 0) > 0 && (
+                  <div style="display:flex;justify-content:space-between">
+                    <span class="lang-es">Depósito (reembolsable)</span><span class="lang-en" hidden>Deposit (refundable)</span>
+                    <span style="font-weight:700;color:#251D14">${stay.deposit}</span>
+                  </div>
+                )}
+                {(stay.utilitiesMin ?? 0) > 0 && (
+                  <div style="display:flex;justify-content:space-between">
+                    <span class="lang-es">Servicios estimados</span><span class="lang-en" hidden>Estimated utilities</span>
+                    <span style="font-weight:700;color:#251D14">
+                      ${stay.utilitiesMin}{(stay.utilitiesMax ?? 0) > (stay.utilitiesMin ?? 0) ? `–$${stay.utilitiesMax}` : ''}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {(stay.deposit ?? 0) > 0 && (
+                <div style="display:flex;justify-content:space-between;border-top:1px dashed rgba(37,29,20,.18);margin-top:12px;padding-top:12px;font-size:14.5px">
+                  <span class="lang-es" style="font-weight:700;color:#251D14">Primer pago</span>
+                  <span class="lang-en" hidden style="font-weight:700;color:#251D14">First payment</span>
+                  <span style="font-weight:800;color:#251D14">${firstMonthTotal}</span>
+                </div>
+              )}
+              {(stay.utilitiesMin ?? 0) > 0 && (
+                <p style="font-size:12px;color:var(--color-ink-faint);margin:10px 0 0;line-height:1.5">
+                  <span class="lang-es">Estimado de agua y luz — puede variar según consumo.</span>
+                  <span class="lang-en" hidden>Water and electricity estimate — may vary with usage.</span>
+                </p>
+              )}
+            </div>
+          )}
+
+          <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:18px;display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+            {stay.verified && (
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5A4F42">
+                <span style="display:flex;align-items:center;gap:7px"><Icon name="check" size={15} /><span class="lang-es">Propiedad verificada</span><span class="lang-en" hidden>Verified property</span></span>
+              </div>
+            )}
+            {stay.minMonths > 1 && (
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5A4F42">
+                <span class="lang-es">Estadía mínima</span><span class="lang-en" hidden>Minimum stay</span>
+                <span style="font-weight:700;color:#251D14">{stay.minMonths} <span class="lang-es">meses</span><span class="lang-en" hidden>months</span></span>
+              </div>
+            )}
+            {stay.sqmBuilt > 0 && (
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5A4F42">
+                <span style="display:flex;align-items:center;gap:7px"><Icon name="ruler" size={15} /><span class="lang-es">Construcción</span><span class="lang-en" hidden>Built area</span></span>
+                <span style="font-weight:700;color:#251D14">{stay.sqmBuilt} m²</span>
+              </div>
+            )}
+            {stay.sqmLot > 0 && (
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5A4F42">
+                <span class="lang-es">Terreno</span><span class="lang-en" hidden>Lot size</span>
+                <span style="font-weight:700;color:#251D14">{stay.sqmLot} m²</span>
+              </div>
+            )}
+          </div>
+
+          <div style="border-top:1px solid rgba(37,29,20,.12);padding-top:18px">
+            <button type="button" id="request-open" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:8px">
+              <span class="lang-es">Solicitar información</span><span class="lang-en" hidden>Request information</span>
+            </button>
+            <p style="text-align:center;font-size:12px;color:var(--color-ink-faint);margin:0 0 18px">
+              <span class="lang-es">No se cobra nada ahora. Sin comisión.</span>
+              <span class="lang-en" hidden>Nothing charged now. No commission.</span>
+            </p>
+
+            <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-ink-faint);margin-bottom:10px">
+              <span class="lang-es">O contacta directo</span><span class="lang-en" hidden>Or reach out directly</span>
+            </div>
+            <div style="font-weight:700;font-size:15px;color:#251D14;margin-bottom:10px">{stay.host.name}</div>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="whatsapp-contact"
+              aria-label={`Escribir por WhatsApp a ${stay.host.name} sobre ${stay.name.es}`}
+            >
+              <Icon name="phone" size={18} />
+              <span class="lang-es">Consultar por WhatsApp</span><span class="lang-en" hidden>Ask on WhatsApp</span>
+            </a>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <a href={`tel:${stay.host.phone.replace(/[^+\d]/g, '')}`} style="display:flex;align-items:center;gap:9px;padding:8px 0;color:#3D3328;text-decoration:none;font-size:14.5px;font-weight:600">
+                <Icon name="phone" size={16} />{stay.host.phone}
+              </a>
+              <a href={`mailto:${stay.host.email}`} style="display:flex;align-items:center;gap:9px;padding:8px 0;color:#3D3328;text-decoration:none;font-size:14.5px;font-weight:600">
+                <Icon name="mail" size={16} />{stay.host.email}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUEST MODAL: 3-step, no account — see the script below for the
+       state machine and src/pages/api/leads.ts for where it lands
+       (type: 'alquiler', visible in /admin/leads). -->
+  <div id="request-backdrop" class="request-backdrop hidden">
+    <div id="request-modal" class="request-modal" role="dialog" aria-modal="true" aria-labelledby="request-title">
+      <button type="button" id="request-close" class="request-close" aria-label="Cerrar"><Icon name="close" size={18} /></button>
+
+      <div class="request-dots" aria-hidden="true">
+        <span class="request-dot is-active" data-dot="1"></span>
+        <span class="request-dot" data-dot="2"></span>
+        <span class="request-dot" data-dot="3"></span>
+      </div>
+
+      <!-- Step 1: move -->
+      <div class="request-step" data-step="1">
+        <h3 id="request-title"><span class="lang-es">Tu mudanza</span><span class="lang-en" hidden>Your move</span></h3>
+        <div class="f-group">
+          <label for="req-move-in"><span class="lang-es">Fecha de entrada</span><span class="lang-en" hidden>Move-in date</span></label>
+          <input type="date" id="req-move-in" class="f-input" />
+        </div>
+        <div class="f-group">
+          <span class="f-label-text"><span class="lang-es">Duración mínima</span><span class="lang-en" hidden>Minimum stay</span></span>
+          <div role="group" aria-label="Duración mínima" class="f-chip-row">
+            {[
+              { v: '1-3', es: '1–3 meses', en: '1–3 months' },
+              { v: '3-6', es: '3–6 meses', en: '3–6 months' },
+              { v: '6-12', es: '6–12 meses', en: '6–12 months' },
+              { v: '12+', es: '12+ meses', en: '12+ months' },
+            ].map(d => (
+              <button type="button" class="chip req-duracion" data-duracion={d.v}>
+                <span class="lang-es">{d.es}</span><span class="lang-en" hidden>{d.en}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div class="f-group">
+          <label for="req-personas"><span class="lang-es">Personas</span><span class="lang-en" hidden>Occupants</span></label>
+          <select id="req-personas" class="f-input">
+            {[1,2,3,4,5,6,7,8].map(n => <option value={n} selected={n === stay.guests}>{n}</option>)}
+          </select>
+        </div>
+        <div class="f-group">
+          <span class="f-label-text"><span class="lang-es">¿Viajas con mascota?</span><span class="lang-en" hidden>Traveling with a pet?</span></span>
+          <div role="group" aria-label="Mascotas" class="f-chip-row">
+            <button type="button" class="chip req-mascotas" data-mascotas="true"><span class="lang-es">Sí</span><span class="lang-en" hidden>Yes</span></button>
+            <button type="button" class="chip req-mascotas" data-mascotas="false"><span class="lang-es">No</span><span class="lang-en" hidden>No</span></button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary request-next" data-goto="2" style="width:100%;justify-content:center">
+          <span class="lang-es">Siguiente</span><span class="lang-en" hidden>Next</span>
+          <Icon name="chevron-right" size={16} />
+        </button>
+      </div>
+
+      <!-- Step 2: about you -->
+      <div class="request-step hidden" data-step="2">
+        <h3><span class="lang-es">Sobre ti</span><span class="lang-en" hidden>About you</span></h3>
+        <div class="f-group">
+          <label for="req-nombre"><span class="lang-es">Nombre completo</span><span class="lang-en" hidden>Full name</span></label>
+          <input id="req-nombre" class="f-input" aria-describedby="req-nombre-error" />
+          <span id="req-nombre-error" class="f-error" role="alert" hidden>
+            <span class="lang-es">Ingresa tu nombre</span><span class="lang-en" hidden>Enter your name</span>
+          </span>
+        </div>
+        <div class="f-group">
+          <label for="req-email"><span class="lang-es">Correo</span><span class="lang-en" hidden>Email</span></label>
+          <input id="req-email" type="email" class="f-input" aria-describedby="req-contact-error" />
+        </div>
+        <div class="f-group">
+          <label for="req-celular"><span class="lang-es">O WhatsApp</span><span class="lang-en" hidden>Or WhatsApp</span></label>
+          <input id="req-celular" type="tel" class="f-input" aria-describedby="req-contact-error" />
+          <span id="req-contact-error" class="f-error" role="alert" hidden>
+            <span class="lang-es">Ingresa un correo válido o un WhatsApp — con uno basta</span>
+            <span class="lang-en" hidden>Enter a valid email or a WhatsApp number — either one works</span>
+          </span>
+        </div>
+        <div class="f-group">
+          <label for="req-mensaje"><span class="lang-es">Mensaje (opcional)</span><span class="lang-en" hidden>Message (optional)</span></label>
+          <textarea id="req-mensaje" rows="3" class="f-input f-textarea"></textarea>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button type="button" class="btn btn-ghost request-prev" data-goto="1"><span class="lang-es">Atrás</span><span class="lang-en" hidden>Back</span></button>
+          <button type="button" class="btn btn-primary request-next" data-goto="3" style="flex:1;justify-content:center">
+            <span class="lang-es">Revisar</span><span class="lang-en" hidden>Review</span>
+            <Icon name="chevron-right" size={16} />
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: confirm -->
+      <div class="request-step hidden" data-step="3">
+        <h3><span class="lang-es">Confirmar solicitud</span><span class="lang-en" hidden>Confirm request</span></h3>
+        <div id="req-summary" class="req-summary"></div>
+        <p style="font-size:12.5px;color:var(--color-ink-faint);margin:14px 0 16px">
+          <span class="lang-es">{stay.host.name} suele responder en menos de 24 horas.</span>
+          <span class="lang-en" hidden>{stay.host.name} usually replies within 24 hours.</span>
+        </p>
+        <div style="display:flex;gap:10px">
+          <button type="button" class="btn btn-ghost request-prev" data-goto="2"><span class="lang-es">Atrás</span><span class="lang-en" hidden>Back</span></button>
+          <button type="button" id="req-submit" class="btn btn-primary" style="flex:1;justify-content:center">
+            <span class="lang-es">Enviar solicitud</span><span class="lang-en" hidden>Send request</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Success -->
+      <div class="request-step hidden" data-step="success">
+        <div class="req-success-icon"><Icon name="check" size={22} /></div>
+        <h3><span class="lang-es">¡Solicitud enviada!</span><span class="lang-en" hidden>Request sent!</span></h3>
+        <p>
+          <span class="lang-es">Le avisamos a {stay.host.name}. Debería responderte por el correo o WhatsApp que dejaste en menos de 24 horas.</span>
+          <span class="lang-en" hidden>We let {stay.host.name} know. They should reply by the email or WhatsApp you left within 24 hours.</span>
+        </p>
+        <button type="button" id="req-done" class="btn btn-primary" style="width:100%;justify-content:center">
+          <span class="lang-es">Cerrar</span><span class="lang-en" hidden>Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMILAR LISTINGS -->
+  {SIMILAR.length > 0 && (
+    <section class="pad-sec" style="max-width:1100px;margin:0 auto;padding:0 26px 64px">
+      <h2 style="font-family:'Manrope';font-weight:800;font-size:26px;margin:0 0 20px;color:#251D14">
+        <span class="lang-es">Propiedades similares</span><span class="lang-en" hidden>Similar properties</span>
+      </h2>
+      <div class="similar-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+        {SIMILAR.map((p: any) => (
+          <a href={`/${lang}/alquiler/${p.id}`} style="text-decoration:none;color:inherit;display:block;background:#fff;border:1px solid rgba(37,29,20,.09);border-radius:16px;overflow:hidden;box-shadow:0 8px 20px -16px rgba(37,29,20,.4)">
+            <div style="position:relative;aspect-ratio:4/3;overflow:hidden">
+              <Image src={p.img} width={320} height={240} densities={[1, 2]} alt={p.name.es} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="lazy" />
+            </div>
+            <div style="padding:14px 16px 16px">
+              <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-ink-faint);margin-bottom:5px">
+                <Icon name="location" size={12} />
+                <span class="lang-es">{p.loc.es}</span><span class="lang-en" hidden>{p.loc.en}</span>
+              </div>
+              <div style="font-family:'Manrope';font-weight:700;font-size:15px;color:#251D14;margin-bottom:8px;line-height:1.25">
+                <span class="lang-es">{p.name.es}</span><span class="lang-en" hidden>{p.name.en}</span>
+              </div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <span style="font-family:'Manrope';font-weight:800;font-size:16px;color:#251D14">${p.price}<span style="font-size:12px;font-weight:600;color:var(--color-ink-faint)"> / <span class="lang-es">mes</span><span class="lang-en" hidden>mo</span></span></span>
+                <span style="display:flex;align-items:center;gap:3px;font-size:12.5px;font-weight:700;color:#C8964A">★ {p.rating.toFixed(1)}</span>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  </div>
+
+  </div>
+
+</Layout>
+
+<script>
+  const mapEl = document.getElementById('map');
+  const lat = parseFloat(mapEl?.dataset.lat ?? '');
+  const lng = parseFloat(mapEl?.dataset.lng ?? '');
+  const stayName = mapEl?.dataset.name ?? '';
+
+  async function loadMap() {
+    if (!mapEl || !Number.isFinite(lat) || !Number.isFinite(lng) || mapEl.dataset.loaded) return;
+    mapEl.dataset.loaded = 'true';
+
+    try {
+      const [leafletModule, markerIcon2x, markerIcon, markerShadow] = await Promise.all([
+        import('leaflet'),
+        import('leaflet/dist/images/marker-icon-2x.png'),
+        import('leaflet/dist/images/marker-icon.png'),
+        import('leaflet/dist/images/marker-shadow.png'),
+      ]);
+      const L = leafletModule.default;
+      delete L.Icon.Default.prototype._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: (markerIcon2x.default as { src: string }).src,
+        iconUrl: (markerIcon.default as { src: string }).src,
+        shadowUrl: (markerShadow.default as { src: string }).src,
+      });
+      const map = L.map(mapEl, { scrollWheelZoom: false }).setView([lat, lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 18,
+      }).addTo(map);
+      L.marker([lat, lng]).addTo(map).bindPopup(`<strong>${stayName}</strong>`).openPopup();
+    } catch (err) {
+      console.error('No se pudo cargar el mapa:', err);
+      mapEl.style.display = 'flex';
+      mapEl.style.alignItems = 'center';
+      mapEl.style.justifyContent = 'center';
+      mapEl.innerHTML = `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener" style="color:#8E4A2A;font-weight:700;font-size:14px;text-decoration:none">Ver ubicación en Google Maps →</a>`;
+    }
+  }
+
+  if (mapEl && Number.isFinite(lat) && Number.isFinite(lng)) {
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      observer.disconnect();
+      void loadMap();
+    }, { rootMargin: '300px 0px' });
+    observer.observe(mapEl);
+  }
+</script>
+
+<script>
+  // Photo gallery lightbox: click any thumbnail to see it full-size,
+  // reusing the same dark-backdrop pattern as the home gallery lightbox.
+  const lightbox = document.getElementById('gallery-lightbox');
+  const lightboxImg = document.getElementById('gallery-lightbox-img') as HTMLImageElement | null;
+
+  function openLightbox(img: HTMLImageElement) {
+    if (!lightbox || !lightboxImg) return;
+    lightboxImg.src = img.currentSrc || img.src;
+    lightboxImg.alt = img.alt;
+    lightbox.classList.remove('hidden');
+  }
+
+  function closeLightbox() {
+    lightbox?.classList.add('hidden');
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-lightbox-trigger]').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const img = trigger.querySelector('img');
+      if (img) openLightbox(img);
+    });
+  });
+
+  document.getElementById('gallery-lightbox-close')?.addEventListener('click', closeLightbox);
+  lightbox?.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+</script>
+
+<script is:inline define:vars={{ rentalId: stay.id, rentalName: stay.name.es, hostName: stay.host.name }}>
+  // 3-step "solicitar información" flow — collects structured details
+  // (move-in date, duration, occupants, pets) across step 1, contact info
+  // in step 2, then posts a single lead (type: 'alquiler') on step 3. See
+  // src/pages/api/leads.ts and /admin/leads for where it lands.
+  const backdrop = document.getElementById('request-backdrop');
+  const modal = document.getElementById('request-modal');
+  const openBtn = document.getElementById('request-open');
+  const closeBtn = document.getElementById('request-close');
+  const dots = Array.from(document.querySelectorAll('.request-dot'));
+  const steps = Array.from(document.querySelectorAll('.request-step'));
+  const durationChips = Array.from(document.querySelectorAll('.req-duracion'));
+  const mascotasChips = Array.from(document.querySelectorAll('.req-mascotas'));
+  const moveInInput = document.getElementById('req-move-in');
+  const personasSelect = document.getElementById('req-personas');
+  const nombreInput = document.getElementById('req-nombre');
+  const nombreError = document.getElementById('req-nombre-error');
+  const emailInput = document.getElementById('req-email');
+  const celularInput = document.getElementById('req-celular');
+  const contactError = document.getElementById('req-contact-error');
+  const mensajeInput = document.getElementById('req-mensaje');
+  const summaryEl = document.getElementById('req-summary');
+  const submitBtn = document.getElementById('req-submit');
+  const doneBtn = document.getElementById('req-done');
+
+  if (backdrop && modal && openBtn) {
+    let activeDuracion = '';
+    let activeMascotas = null; // true | false | null
+    let lastFocused = null;
+
+    function showStep(step) {
+      steps.forEach(el => el.classList.toggle('hidden', el.dataset.step !== String(step)));
+      dots.forEach(d => d.classList.toggle('is-active', d.dataset.dot === String(step)));
+      const visible = steps.find(el => el.dataset.step === String(step));
+      visible?.querySelector('input, select, textarea, button')?.focus();
+    }
+
+    function openModal() {
+      lastFocused = document.activeElement;
+      backdrop.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      showStep(1);
+    }
+    function closeModal() {
+      backdrop.classList.add('hidden');
+      document.body.style.overflow = '';
+      if (lastFocused instanceof HTMLElement) lastFocused.focus();
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !backdrop.classList.contains('hidden')) closeModal();
+    });
+
+    durationChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        activeDuracion = chip.dataset.duracion ?? '';
+        durationChips.forEach(c => c.classList.toggle('is-active', c === chip));
+      });
+    });
+    mascotasChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        activeMascotas = chip.dataset.mascotas === 'true';
+        mascotasChips.forEach(c => c.classList.toggle('is-active', c === chip));
+      });
+    });
+
+    function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+    function validateNombre() {
+      const ok = nombreInput.value.trim().length > 0;
+      nombreInput.setAttribute('aria-invalid', String(!ok));
+      if (nombreError) nombreError.hidden = ok;
+      return ok;
+    }
+    function validateContact() {
+      const email = emailInput.value.trim();
+      const celular = celularInput.value.trim();
+      const ok = (email.length > 0 && isValidEmail(email)) || celular.length > 0;
+      emailInput.setAttribute('aria-invalid', String(email.length > 0 && !isValidEmail(email)));
+      celularInput.setAttribute('aria-invalid', String(!ok));
+      if (contactError) contactError.hidden = ok;
+      return ok;
+    }
+    // Validate on blur, not while typing, per the same rule the rest of the
+    // site's lead forms follow.
+    nombreInput?.addEventListener('blur', validateNombre);
+    emailInput?.addEventListener('blur', validateContact);
+    celularInput?.addEventListener('blur', validateContact);
+
+    let messageAutoFilled = false;
+    function autoComposeMessage() {
+      if (messageAutoFilled || mensajeInput.value.trim().length > 0) return;
+      const parts = [`Hola ${hostName}, me interesa ${rentalName}.`];
+      if (moveInInput.value) parts.push(`Mudanza estimada: ${moveInInput.value}.`);
+      if (activeDuracion) parts.push(`Duración buscada: ${activeDuracion} meses.`);
+      if (personasSelect.value) parts.push(`Somos ${personasSelect.value}.`);
+      if (activeMascotas === true) parts.push('Viajamos con mascota.');
+      mensajeInput.value = parts.join(' ');
+      messageAutoFilled = true;
+    }
+
+    function buildSummary() {
+      const rows = [
+        [{ es: 'Propiedad', en: 'Property' }, rentalName],
+        [{ es: 'Fecha de entrada', en: 'Move-in' }, moveInInput.value || (document.documentElement.dataset.lang === 'en' ? 'Flexible' : 'Flexible')],
+        [{ es: 'Duración', en: 'Duration' }, activeDuracion ? `${activeDuracion} meses` : (document.documentElement.dataset.lang === 'en' ? 'Any' : 'Cualquiera')],
+        [{ es: 'Personas', en: 'Occupants' }, personasSelect.value],
+        [{ es: 'Mascotas', en: 'Pets' }, activeMascotas === true ? 'Sí' : activeMascotas === false ? 'No' : '—'],
+      ];
+      summaryEl.innerHTML = rows.map(([label, val]) =>
+        `<div class="req-summary-row"><span>${label.es}</span><b>${val}</b></div>`
+      ).join('');
+    }
+
+    document.querySelectorAll('.request-next').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const goto = btn.dataset.goto;
+        if (goto === '2') { autoComposeMessage(); showStep(2); return; }
+        if (goto === '3') {
+          const validName = validateNombre();
+          const validContact = validateContact();
+          if (!validName) { nombreInput.focus(); return; }
+          if (!validContact) { celularInput.focus(); return; }
+          buildSummary();
+          showStep(3);
+        }
+      });
+    });
+    document.querySelectorAll('.request-prev').forEach(btn => {
+      btn.addEventListener('click', () => showStep(btn.dataset.goto));
+    });
+
+    submitBtn?.addEventListener('click', async () => {
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+      const originalHtml = submitBtn.innerHTML;
+      submitBtn.textContent = document.documentElement.dataset.lang === 'en' ? 'Sending…' : 'Enviando…';
+      try {
+        const res = await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'alquiler',
+            nombre: nombreInput.value.trim(),
+            email: emailInput.value.trim() || null,
+            celular: celularInput.value.trim() || null,
+            mensaje: mensajeInput.value.trim() || null,
+            rental_id: rentalId,
+            rental_name: rentalName,
+            move_in: moveInInput.value || null,
+            duracion: activeDuracion || null,
+            personas: Number(personasSelect.value),
+            mascotas: activeMascotas,
+          }),
+        });
+        if (!res.ok) throw new Error('request failed');
+        showStep('success');
+      } catch {
+        alert('No pudimos enviar tu solicitud. Intenta de nuevo. / We could not send your request. Please try again.');
+        submitBtn.innerHTML = originalHtml;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-busy');
+      }
+    });
+
+    doneBtn?.addEventListener('click', closeModal);
+  }
+</script>
+
+<style>
+  .rental-bg {
+    position: relative;
+  }
+  .rental-bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    /* Flat wash, not a gradient: this layer is position:fixed, so it's
+       anchored to the viewport rather than the scrolling title block — a
+       gradient would drift in and out of strength as the page scrolls. */
+    background-image:
+      linear-gradient(rgba(245,240,232,.68), rgba(245,240,232,.68)),
+      url('/fondoalquiler.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .rental-bg-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Gallery cells are <button>s so photos are keyboard- and click-accessible;
+     reset default button chrome and add a hover cue that they open a lightbox. */
+  .gallery-cell {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  .gallery-cell::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 15, 10, 0);
+    transition: background-color .18s ease;
+  }
+  .gallery-cell:hover::after,
+  .gallery-cell:focus-visible::after {
+    background: rgba(20, 15, 10, .15);
+  }
+
+  .whatsapp-contact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 10px;
+    padding: 13px 16px;
+    border-radius: 11px;
+    background: #25D366;
+    color: #12341f;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-decoration: none;
+    transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease;
+  }
+
+  .whatsapp-contact:hover {
+    background: #20c65c;
+    box-shadow: 0 8px 16px -10px rgba(20, 120, 55, .8);
+    transform: translateY(-1px);
+  }
+
+  .whatsapp-contact:focus-visible {
+    outline: 3px solid rgba(37, 211, 102, .42);
+    outline-offset: 3px;
+  }
+
+  #gallery-lightbox {
+    transition: opacity .2s ease;
+  }
+
+  /* ---------- Request modal (3-step) ---------- */
+  .request-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    background: rgba(20,15,10,.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .request-modal {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px 26px 26px;
+    box-shadow: 0 30px 70px -20px rgba(0,0,0,.4);
+  }
+  .request-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    border: none;
+    background: transparent;
+    color: var(--color-ink-faint);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+  }
+  .request-close:hover { background: rgba(37,29,20,.06); }
+  .request-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 22px; }
+  .request-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--color-border);
+    transition: background-color .2s ease, transform .2s ease;
+  }
+  .request-dot.is-active { background: var(--color-forest); transform: scale(1.25); }
+  .request-step h3 {
+    font-family: 'Manrope';
+    font-weight: 800;
+    font-size: 21px;
+    color: #251D14;
+    margin: 0 0 18px;
+    text-align: center;
+  }
+  .req-success-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: #2C3A2A;
+    color: #E6B87C;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .request-step[data-step="success"] p {
+    text-align: center;
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: #5A4F42;
+    margin: 0 0 20px;
+  }
+
+  .f-group { margin-bottom: 16px; }
+  .f-group label, .f-label-text {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    margin-bottom: 7px;
+  }
+  .f-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 13px;
+    border-radius: 9px;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-ink);
+    font-size: 14.5px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .16s ease;
+  }
+  .f-input:focus { border-color: var(--color-wood); }
+  .f-input[aria-invalid="true"] { border-color: #C0392B; }
+  .f-textarea { resize: vertical; }
+  .f-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .f-error {
+    display: block;
+    font-size: 12.5px;
+    color: #C0392B;
+    margin-top: 6px;
+  }
+  .req-summary { display: flex; flex-direction: column; gap: 9px; font-size: 14px; color: #3D3328; }
+  .req-summary-row { display: flex; justify-content: space-between; gap: 12px; }
+  .req-summary-row b { color: #251D14; text-align: right; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .request-dot { transition: none; }
+  }
+
+  .verified-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 20;
+    width: 240px;
+    background: #251D14;
+    color: #F7F1E6;
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.5;
+    padding: 10px 13px;
+    border-radius: 10px;
+    box-shadow: 0 12px 24px -10px rgba(0,0,0,.45);
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .verified-badge:hover .verified-tooltip,
+  .verified-badge:focus-visible .verified-tooltip,
+  .verified-badge:focus-within .verified-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .verified-tooltip { transition: none; }
+  }
+
+  @media (max-width: 700px) {
+    .media-split {
+      grid-template-columns: 1fr !important;
+    }
+    .video-box {
+      aspect-ratio: 16/9 !important;
+    }
+    .gallery-grid {
+      display: flex !important;
+      aspect-ratio: auto !important;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .gallery-grid::-webkit-scrollbar { display: none; }
+    .gallery-cell {
+      flex: 0 0 84%;
+      aspect-ratio: 4/3;
+      scroll-snap-align: start;
+      border-radius: 16px;
+    }
+  }
+
+  @media (max-width: 880px) {
+    .booking-col {
+      position: static !important;
+      top: auto !important;
+    }
+    .similar-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+  @media (max-width: 480px) {
+    .similar-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+
+<script>
+  // Keeps the house background pinned to the viewport while scrolling,
+  // fading it out before the footer so it never overlaps it (same
+  // approach used for the blog article background).
+  const FADE_ZONE_PX = 220;
+
+  function updateRentalBgVisibility() {
+    const wrap = document.querySelector('.rental-bg');
+    const canvas = document.querySelector<HTMLElement>('.rental-bg-canvas');
+    if (!wrap || !canvas) return;
+    const distanceToFooter = wrap.getBoundingClientRect().bottom - window.innerHeight;
+    const opacity = Math.max(0, Math.min(1, distanceToFooter / FADE_ZONE_PX));
+    canvas.style.opacity = String(opacity);
+  }
+
+  window.addEventListener('scroll', updateRentalBgVisibility, { passive: true });
+  window.addEventListener('resize', updateRentalBgVisibility);
+  document.addEventListener('DOMContentLoaded', updateRentalBgVisibility);
+  document.addEventListener('astro:page-load', updateRentalBgVisibility);
+</script>

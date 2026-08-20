@@ -1,5 +1,10 @@
 ---
 import { NAV } from '../data/data';
+import type { Locale } from '../lib/i18n';
+
+interface Props { lang: Locale }
+const { lang } = Astro.props as Props;
+const localize = (href: string) => (href === '/' ? `/${lang}` : `/${lang}${href}`);
 ---
 
 <footer style="background:var(--color-forest-dark);color:#C9CDBE;margin-top:0">
@@ -32,11 +37,15 @@ import { NAV } from '../data/data';
       </h4>
       <div style="display:flex;flex-direction:column;gap:10px">
         {NAV.map(item => (
-          <a href={item.href} style="color:#C9CDBE;text-decoration:none;font-size:14.5px">
+          <a href={localize(item.href)} style="color:#C9CDBE;text-decoration:none;font-size:14.5px">
             <span class="lang-es">{item.label.es}</span>
             <span class="lang-en" hidden>{item.label.en}</span>
           </a>
         ))}
+        <a href={localize('/como-funciona')} style="color:#C9CDBE;text-decoration:none;font-size:14.5px">
+          <span class="lang-es">Cómo funciona</span>
+          <span class="lang-en" hidden>How it works</span>
+        </a>
       </div>
     </div>
 
@@ -51,7 +60,7 @@ import { NAV } from '../data/data';
         <span class="lang-en" hidden>Get the free guide and community updates.</span>
       </p>
       <a
-        href="/#contacto"
+        href={`${localize('/')}/#contacto`}
         style="display:inline-flex;align-items:center;gap:8px;background:var(--color-wood);border:none;color:#fff;font-weight:700;font-size:14px;padding:11px 16px;border-radius:10px;text-decoration:none;transition:background-color .16s ease"
       >
         <span class="lang-es">Suscribirme</span>

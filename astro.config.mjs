@@ -3,7 +3,6 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import node from '@astrojs/node';
 import vercel from '@astrojs/vercel';
-import sitemap from '@astrojs/sitemap';
 
 // Vercel sets its own env var during platform builds; falls back to the
 // Node standalone adapter for local dev and the Docker image (see Dockerfile).
@@ -26,12 +25,12 @@ export default defineConfig({
   // of per-navigation payload for removing those blocking round trips
   // entirely (Lighthouse "render-blocking requests").
   build: { inlineStylesheets: 'always' },
-  integrations: [
-    react(),
-    sitemap({
-      filter: (page) => !page.includes('/admin/'),
-    }),
-  ],
+  // @astrojs/sitemap can't discover routes on a full-SSR site with
+  // Supabase-driven dynamic pages (`[lang]/alquiler/[id]`, `[lang]/blog/[id]`)
+  // — it only scans pages emitted at build time, and there are none here.
+  // src/pages/sitemap.xml.ts replaces it with a real endpoint that queries
+  // Supabase at request time instead.
+  integrations: [react()],
   image: {
     // picsum.photos 302s to fastly.picsum.photos, and Astro checks the
     // post-redirect hostname against remotePatterns — both entries are needed.

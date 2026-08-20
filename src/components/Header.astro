@@ -1,15 +1,24 @@
 ---
 import { NAV } from '../data/data';
 import Icon from './Icon.astro';
-const { activeKey = 'home' } = Astro.props;
+import { swapLocale, type Locale } from '../lib/i18n';
+
+interface Props {
+  activeKey?: string;
+  lang: Locale;
+}
+const { activeKey = 'home', lang } = Astro.props as Props;
 const currentPath = Astro.url.pathname;
+const localize = (href: string) => (href === '/' ? `/${lang}` : `/${lang}${href}`);
+const esHref = swapLocale(currentPath, 'es') + Astro.url.search;
+const enHref = swapLocale(currentPath, 'en') + Astro.url.search;
 ---
 
 <header class="site-header">
   <div class="header-inner">
     <!-- Logo -->
     <div class="header-zone-start" style="display:flex;align-items:center;gap:14px">
-      <a href="/" data-astro-prefetch="load" style="display:flex;align-items:center;cursor:pointer;text-decoration:none;color:var(--color-ink)">
+      <a href={localize('/')} data-astro-prefetch="load" style="display:flex;align-items:center;cursor:pointer;text-decoration:none;color:var(--color-ink)">
         <span class="logo-frame" style="--s:0.19008264462809917;width:calc(811px * var(--s));height:46px;overflow:hidden;position:relative;display:block;flex:none">
           <img
             src="/logo-mika-dark.webp"
@@ -24,10 +33,11 @@ const currentPath = Astro.url.pathname;
     <nav class="desktop-nav">
       <span class="nav-pill" aria-hidden="true"></span>
       {NAV.map(item => {
-        const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
+        const href = localize(item.href);
+        const isActive = currentPath === href || (item.href !== '/' && currentPath.startsWith(href));
         return (
           <a
-            href={item.href}
+            href={href}
             data-astro-prefetch="load"
             class:list={['nav-link', { 'is-active': isActive }]}
             aria-current={isActive ? 'page' : undefined}
@@ -42,29 +52,31 @@ const currentPath = Astro.url.pathname;
     </nav>
 
     <div class="header-zone-end" style="display:flex;align-items:center;gap:12px">
-      <!-- Language toggle -->
+      <!-- Language toggle: real links to the equivalent path in the other
+           locale (see swapLocale), not a client-side content swap — the URL
+           is the source of truth for which language a page renders. -->
       <div class="lang-toggle-group desktop-lang-toggle" style="display:flex;border:1px solid var(--color-border);border-radius:var(--radius-pill);overflow:hidden;font-size:12px;font-weight:700">
-        <button
-          type="button"
-          data-lang-btn="es"
+        <a
+          href={esHref}
           aria-label="Español"
-          class="lang-toggle-btn"
-          style="border:none;cursor:pointer;padding:7px 12px;background:var(--color-forest);color:var(--color-sand);user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
-        >ES</button>
-        <button
-          type="button"
-          data-lang-btn="en"
+          aria-current={lang === 'es' ? 'true' : undefined}
+          class:list={['lang-toggle-btn', { 'is-active': lang === 'es' }]}
+          style="text-decoration:none;text-align:center;cursor:pointer;padding:7px 12px;user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
+        >ES</a>
+        <a
+          href={enHref}
           aria-label="English"
-          class="lang-toggle-btn"
-          style="border:none;cursor:pointer;padding:7px 12px;background:transparent;color:var(--color-ink-soft);user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
-        >EN</button>
+          aria-current={lang === 'en' ? 'true' : undefined}
+          class:list={['lang-toggle-btn', { 'is-active': lang === 'en' }]}
+          style="text-decoration:none;text-align:center;cursor:pointer;padding:7px 12px;user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
+        >EN</a>
       </div>
 
       <!-- CTA -->
-      <a href="/#contacto" class="btn btn-primary desktop-cta" style="padding:11px 20px;font-size:14px">
+      <a href={localize('/alquiler')} data-astro-prefetch="load" class="btn btn-primary desktop-cta" style="padding:11px 20px;font-size:14px">
         <span class="lang-stable">
-          <span class="lang-es">Empieza aquí</span>
-          <span class="lang-en" hidden>Start here</span>
+          <span class="lang-es">Ver alquileres</span>
+          <span class="lang-en" hidden>Browse rentals</span>
         </span>
       </a>
 
@@ -107,24 +119,24 @@ const currentPath = Astro.url.pathname;
       ><Icon name="close" size={22} /></button>
     </div>
     <div class="mobile-nav-link lang-toggle-group" style={`--menu-index:0;display:flex;border:1px solid var(--color-border);border-radius:var(--radius-pill);overflow:hidden;font-size:14px;font-weight:700;width:fit-content;padding:0;border-bottom:none;margin-bottom:8px`}>
-      <button
-        type="button"
-        data-lang-btn="es"
+      <a
+        href={esHref}
         aria-label="Español"
-        class="lang-toggle-btn"
-        style="border:none;cursor:pointer;padding:9px 16px;background:var(--color-forest);color:var(--color-sand);user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
-      >ES</button>
-      <button
-        type="button"
-        data-lang-btn="en"
+        aria-current={lang === 'es' ? 'true' : undefined}
+        class:list={['lang-toggle-btn', { 'is-active': lang === 'es' }]}
+        style="text-decoration:none;text-align:center;cursor:pointer;padding:9px 16px;user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
+      >ES</a>
+      <a
+        href={enHref}
         aria-label="English"
-        class="lang-toggle-btn"
-        style="border:none;cursor:pointer;padding:9px 16px;background:transparent;color:var(--color-ink-soft);user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
-      >EN</button>
+        aria-current={lang === 'en' ? 'true' : undefined}
+        class:list={['lang-toggle-btn', { 'is-active': lang === 'en' }]}
+        style="text-decoration:none;text-align:center;cursor:pointer;padding:9px 16px;user-select:none;transition:background-color .16s ease,transform .16s var(--ease-out)"
+      >EN</a>
     </div>
     {NAV.map((item, index) => (
       <a
-        href={item.href}
+        href={localize(item.href)}
         data-astro-prefetch="load"
         class="mobile-nav-link"
         style={`--menu-index:${index + 1};cursor:pointer;padding:14px 8px;font-family:var(--font-display);font-weight:700;font-size:21px;color:var(--color-ink);text-decoration:none;border-bottom:1px solid var(--color-border-soft)`}
@@ -133,9 +145,9 @@ const currentPath = Astro.url.pathname;
         <span class="lang-en" hidden>{item.label.en}</span>
       </a>
     ))}
-    <a href="/#contacto" class="mobile-nav-link btn btn-primary" style="margin-top:16px;text-align:center">
-      <span class="lang-es">Empieza aquí</span>
-      <span class="lang-en" hidden>Start here</span>
+    <a href={localize('/alquiler')} class="mobile-nav-link btn btn-primary" style="margin-top:16px;text-align:center">
+      <span class="lang-es">Ver alquileres</span>
+      <span class="lang-en" hidden>Browse rentals</span>
     </a>
   </div>
 </div>
@@ -303,7 +315,15 @@ const currentPath = Astro.url.pathname;
     box-shadow: var(--shadow-sm);
     transition: box-shadow .18s ease;
   }
-  .lang-toggle-btn { font-family: inherit; line-height: 1; position: relative; }
+  .lang-toggle-btn {
+    font-family: inherit;
+    line-height: 1;
+    position: relative;
+    display: inline-block;
+    background: transparent;
+    color: var(--color-ink-soft);
+  }
+  .lang-toggle-btn.is-active { background: var(--color-forest); color: var(--color-sand); }
   .lang-toggle-btn:active { transform: scale(.94); }
   .lang-toggle-btn:hover::after {
     content: '';
@@ -414,7 +434,7 @@ const currentPath = Astro.url.pathname;
   // `document` persiste durante toda la sesión bajo el ClientRouter, así
   // que este listener se ata una sola vez y sirve para cualquier página.
   document.addEventListener('click', (e) => {
-    const link = (e.target as HTMLElement)?.closest('a[href="/#contacto"], a[href="#contacto"]');
+    const link = (e.target as HTMLElement)?.closest('a[href$="/#contacto"], a[href="#contacto"]');
     if (!link) return;
     const target = document.getElementById('contacto');
     if (!target) return;

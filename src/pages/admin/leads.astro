@@ -12,7 +12,8 @@ const { data } = await getSupabase()
   .order('created_at', { ascending: false });
 const leads = data ?? [];
 const ownerLeads = leads.filter(l => l.type === 'propietario');
-const guideLeads = leads.filter(l => l.type !== 'propietario');
+const rentalLeads = leads.filter(l => l.type === 'alquiler');
+const guideLeads = leads.filter(l => l.type !== 'propietario' && l.type !== 'alquiler');
 
 const { data: rentalRows } = await getSupabase()
   .from('rentals')
@@ -31,7 +32,7 @@ const timelineLabels: Record<string, string> = {
   <div class="page-header">
     <div>
       <h1 class="page-title">Leads</h1>
-      <p class="page-subtitle">{leads.length} contactos registrados · {ownerLeads.length} propietarios</p>
+      <p class="page-subtitle">{leads.length} contactos registrados · {rentalLeads.length} solicitudes de alquiler · {ownerLeads.length} propietarios</p>
     </div>
   </div>
 
@@ -45,6 +46,10 @@ const timelineLabels: Record<string, string> = {
       <div class="stat-value">{guideLeads.length}</div>
     </div>
     <div class="stat-card">
+      <div class="stat-label">Solicitudes de alquiler</div>
+      <div class="stat-value">{rentalLeads.length}</div>
+    </div>
+    <div class="stat-card">
       <div class="stat-label">Propietarios</div>
       <div class="stat-value">{ownerLeads.length}</div>
     </div>
@@ -53,6 +58,7 @@ const timelineLabels: Record<string, string> = {
   <div class="tabs">
     <button type="button" class="tab is-active" data-filter="all">Todos <span class="tab-count">{leads.length}</span></button>
     <button type="button" class="tab" data-filter="guide">Guía <span class="tab-count">{guideLeads.length}</span></button>
+    <button type="button" class="tab" data-filter="alquiler">Alquiler <span class="tab-count">{rentalLeads.length}</span></button>
     <button type="button" class="tab" data-filter="propietario">Propietarios <span class="tab-count">{ownerLeads.length}</span></button>
   </div>
 
@@ -61,13 +67,13 @@ const timelineLabels: Record<string, string> = {
     <div class="help-box-content">
       <div class="help-box-title">¿Cómo funcionan los leads?</div>
       <div class="help-box-text">
-        Hay dos fuentes: el formulario <strong>"Recibe la guía gratis"</strong> en la página de inicio, y el formulario <strong>"Publica tu propiedad"</strong> para propietarios que quieren listar un alquiler. No necesitas crear leads manualmente.
+        Hay tres fuentes: el formulario <strong>"Recibe la guía gratis"</strong> en la página de inicio, la <strong>solicitud de información</strong> en la ficha de cada propiedad (3 pasos, sin cuenta), y el formulario <strong>"Publica tu propiedad"</strong> para propietarios. No necesitas crear leads manualmente.
         <ul>
-          <li><strong>Tipo</strong> — <code>Guía</code> (interés general/retiro) o <code>Propietario</code> (quiere publicar una propiedad).</li>
-          <li><strong>Retiro</strong> — Si planean retirarse: <code>si</code>, <code>talvez</code> o <code>investigando</code>.</li>
-          <li><strong>Timeline</strong> — Horizonte de tiempo: <code>0-6 meses</code>, <code>6-12 meses</code>, <code>1 año</code> o <code>2+ años</code>.</li>
-          <li><strong>Interés</strong> — Motivación principal: <code>retiro</code>, <code>estilo</code>, <code>casa</code>, <code>inversiones</code> o <code>info</code>.</li>
-          <li><strong>Tipo de propiedad / Ubicación / Mensaje</strong> — solo aplican a leads de propietarios.</li>
+          <li><strong>Tipo</strong> — <code>Guía</code> (interés general/retiro), <code>Alquiler</code> (solicitud sobre una propiedad) o <code>Propietario</code> (quiere publicar una propiedad).</li>
+          <li><strong>Retiro / Mudanza</strong> — Guía: si planean retirarse. Alquiler: fecha de mudanza deseada.</li>
+          <li><strong>Timeline / Duración</strong> — Guía: horizonte de tiempo. Alquiler: duración mínima buscada.</li>
+          <li><strong>Interés / Propiedad</strong> — Guía: motivación principal. Alquiler: la propiedad consultada. Propietario: tipo de propiedad a publicar.</li>
+          <li><strong>Pais / Detalles</strong> — Guía: país. Alquiler: personas y si viajan con mascota. Propietario: ubicación de la propiedad.</li>
         </ul>
         Puedes eliminar leads que no sean relevantes. Esta acción es permanente.
       </div>
@@ -92,10 +98,10 @@ const timelineLabels: Record<string, string> = {
               <th>Nombre</th>
               <th>Email</th>
               <th>Celular</th>
-              <th>Pais / Ubicación</th>
-              <th>Retiro</th>
-              <th>Timeline</th>
-              <th>Interes / Tipo propiedad</th>
+              <th>Pais / Detalles</th>
+              <th>Retiro / Mudanza</th>
+              <th>Timeline / Duración</th>
+              <th>Interes / Propiedad</th>
               <th>Mensaje</th>
               <th>Fecha</th>
               <th></th>
@@ -103,21 +109,49 @@ const timelineLabels: Record<string, string> = {
           </thead>
           <tbody>
             {leads.map(l => (
-              <tr data-id={l.id} data-type={l.type === 'propietario' ? 'propietario' : 'guide'}>
+              <tr data-id={l.id} data-type={l.type === 'propietario' ? 'propietario' : l.type === 'alquiler' ? 'alquiler' : 'guide'}>
                 <td style="color:#b5b5b0;font-size:12px;font-variant-numeric:tabular-nums">{l.id}</td>
-                <td>{l.type === 'propietario' ? <span class="badge badge-amber">Propietario</span> : <span class="badge badge-green">Guía</span>}</td>
+                <td>
+                  {l.type === 'propietario' ? <span class="badge badge-amber">Propietario</span>
+                    : l.type === 'alquiler' ? <span class="badge badge-blue">Alquiler</span>
+                    : <span class="badge badge-green">Guía</span>}
+                </td>
                 <td style="font-weight:600;color:#1a1918">{l.nombre}</td>
-                <td>{l.email}</td>
+                <td>{l.email || <span style="color:#b5b5b0">--</span>}</td>
                 <td>{l.celular || <span style="color:#b5b5b0">--</span>}</td>
-                <td>{l.pais || l.ubicacion || <span style="color:#b5b5b0">--</span>}</td>
-                <td>{l.retiro ? <span class="badge badge-green">{l.retiro}</span> : <span style="color:#b5b5b0">--</span>}</td>
-                <td>{l.timeline ? <span class="badge badge-amber">{timelineLabels[l.timeline] ?? l.timeline}</span> : <span style="color:#b5b5b0">--</span>}</td>
-                <td>{l.interes ? <span class="badge badge-blue">{l.interes}</span> : l.tipo_propiedad ? <span class="badge badge-blue">{l.tipo_propiedad}</span> : <span style="color:#b5b5b0">--</span>}</td>
+                <td>
+                  {l.type === 'alquiler'
+                    ? <>{l.personas ? `${l.personas} personas` : ''}{l.personas && l.mascotas != null ? ' · ' : ''}{l.mascotas === true ? 'con mascota' : l.mascotas === false ? 'sin mascota' : ''}</>
+                    : (l.pais || l.ubicacion || <span style="color:#b5b5b0">--</span>)}
+                </td>
+                <td>
+                  {l.type === 'alquiler'
+                    ? (l.move_in ? <span class="badge badge-green">{l.move_in}</span> : <span style="color:#b5b5b0">--</span>)
+                    : (l.retiro ? <span class="badge badge-green">{l.retiro}</span> : <span style="color:#b5b5b0">--</span>)}
+                </td>
+                <td>
+                  {l.type === 'alquiler'
+                    ? (l.duracion ? <span class="badge badge-amber">{l.duracion}</span> : <span style="color:#b5b5b0">--</span>)
+                    : (l.timeline ? <span class="badge badge-amber">{timelineLabels[l.timeline] ?? l.timeline}</span> : <span style="color:#b5b5b0">--</span>)}
+                </td>
+                <td>
+                  {l.type === 'alquiler'
+                    ? (l.rental_name ? <span class="badge badge-blue">{l.rental_name}</span> : <span style="color:#b5b5b0">--</span>)
+                    : (l.interes ? <span class="badge badge-blue">{l.interes}</span> : l.tipo_propiedad ? <span class="badge badge-blue">{l.tipo_propiedad}</span> : <span style="color:#b5b5b0">--</span>)}
+                </td>
                 <td style="max-width:220px;white-space:normal;color:#5b5650">{l.mensaje || <span style="color:#b5b5b0">--</span>}</td>
                 <td style="font-size:12px;color:#8c8c87;white-space:nowrap">{formatDate(l.created_at)}</td>
                 <td style="white-space:nowrap">
                   <div style="display:flex;gap:6px;justify-content:flex-end">
-                    <button class="btn btn-edit btn-sm send-pdf-btn" data-id={l.id} data-name={l.nombre} data-email={l.email}>
+                    <button
+                      class="btn btn-edit btn-sm send-pdf-btn"
+                      data-id={l.id}
+                      data-name={l.nombre}
+                      data-email={l.email || ''}
+                      data-rental-id={l.rental_id || ''}
+                      disabled={!l.email}
+                      title={!l.email ? 'Este lead no dejó correo — contáctalo por celular' : undefined}
+                    >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M4 4h16v16H4z" opacity="0"/>
                         <path d="M22 2 11 13"/>
@@ -251,6 +285,10 @@ const timelineLabels: Record<string, string> = {
       pdfLeadName.textContent = el.dataset.name || '';
       pdfLeadEmail.textContent = el.dataset.email || '';
       pdfStatus.textContent = '';
+      // Pre-select the property this lead actually asked about, when known.
+      pdfRentalSelect.value = el.dataset.rentalId && pdfRentalSelect.querySelector(`option[value="${el.dataset.rentalId}"]`)
+        ? el.dataset.rentalId
+        : '';
       pdfModal.style.display = 'flex';
     });
   });
