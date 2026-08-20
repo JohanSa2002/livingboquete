@@ -42,6 +42,10 @@ const enUrl = new URL(swapLocale(Astro.url.pathname, 'en'), Astro.site);
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {/* Page-specific early hints (e.g. an LCP image preload) — must stay this
+      high in <head> so the browser's preload scanner finds it before it
+      reaches render-blocking tags like the font stylesheet below. */}
+  <slot name="head" />
   <title>{pageTitle}</title>
   <meta name="description" content={pageDescription} />
   <link rel="canonical" href={canonicalUrl} />

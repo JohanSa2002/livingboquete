@@ -1,6 +1,8 @@
 # build output
 dist/
 .vercel/
+# generated at build time by scripts/generate-hero-images.mjs
+public/hero/
 # generated types
 .astro/
 

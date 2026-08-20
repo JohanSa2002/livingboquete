@@ -5,8 +5,12 @@ import GalleryMasonry from '../../components/GalleryMasonry';
 import { GALLERY_CATS } from '../../data/data';
 import { getSupabase } from '../../lib/supabase';
 import { Image, getImage } from 'astro:assets';
-import heroPoster from '../../assets/hero-poster.webp';
 import { isLocale, DEFAULT_LOCALE } from '../../lib/i18n';
+
+// Hero widths/quality must match scripts/generate-hero-images.mjs, which
+// pre-renders these into /public/hero at build time — see that file for why.
+const HERO_WIDTHS = [480, 768, 1080, 1440, 1920];
+const heroSrcset = HERO_WIDTHS.map((w) => `/hero/hero-${w}.webp ${w}w`).join(', ');
 
 const { lang: langParam } = Astro.params;
 if (!isLocale(langParam)) {
@@ -63,17 +67,28 @@ const jsonSafe = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 ---
 
 <Layout activeKey="home" lang={lang}>
+  <link
+    slot="head"
+    rel="preload"
+    as="image"
+    href="/hero/hero-1920.webp"
+    imagesrcset={heroSrcset}
+    imagesizes="100vw"
+    fetchpriority="high"
+  />
 
   <!-- HERO -->
   <section style="position:relative;min-height:92dvh;display:flex;align-items:flex-end;overflow:hidden">
-    <Image
-      src={heroPoster}
-      alt="Vista de Boquete"
-      widths={[480, 768, 1080, 1440, 1920]}
+    <img
+      src="/hero/hero-1920.webp"
+      srcset={heroSrcset}
       sizes="100vw"
-      quality={65}
+      width="1920"
+      height="1080"
+      alt="Vista de Boquete"
       loading="eager"
       fetchpriority="high"
+      decoding="async"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"
     />
     <div style="position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(20,28,18,.4) 0%,rgba(34,61,38,.08) 30%,rgba(18,22,15,.6) 76%,rgba(15,17,12,.88) 100%)"></div>

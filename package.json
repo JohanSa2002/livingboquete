@@ -7,7 +7,9 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "predev": "node scripts/generate-hero-images.mjs",
     "build": "astro build",
+    "prebuild": "node scripts/generate-hero-images.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "seed": "npx tsx scripts/seed.ts",
