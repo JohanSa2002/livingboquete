@@ -4,6 +4,7 @@ import 'lenis/dist/lenis.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { ClientRouter } from 'astro:transitions';
+import Analytics from '@vercel/analytics/astro';
 import { swapLocale, type Locale } from '../lib/i18n';
 
 interface Props {
@@ -89,6 +90,7 @@ const enUrl = new URL(swapLocale(Astro.url.pathname, 'en'), Astro.site);
     <slot />
   </main>
   <Footer lang={lang} />
+  <Analytics />
 
   <script>
     // Smooth scroll uses the browser's animation frame directly. Keeping
